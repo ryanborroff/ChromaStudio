@@ -21,7 +21,7 @@ export function Home() {
           >
             <div className="inline-flex items-center rounded-full border border-border bg-card/50 backdrop-blur-sm px-3 py-1 text-sm font-medium text-muted-foreground mb-8">
               <span className="flex h-2 w-2 rounded-full bg-primary mr-2"></span>
-              The Private Club for Serious Filmmakers
+              The Community in Motion
             </div>
             
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 text-white">
