@@ -21,7 +21,7 @@ export function Home() {
           >
             
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 text-white">
-              Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Cinematic</span> <br className="hidden md:block" /> Identity
+              Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Community</span> <br className="hidden md:block" /> in Motion
             </h1>
             
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 font-medium leading-relaxed">
