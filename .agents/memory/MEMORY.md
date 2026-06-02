@@ -1,0 +1,1 @@
+- [Chroma project overview](chroma-overview.md) — full-stack filmmaker platform; stack, route wiring, Clerk auth, codegen flow

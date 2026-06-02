@@ -3,20 +3,36 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Chroma - Professional Filmmaker Platform API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: users
+    description: User profile operations
+  - name: videos
+    description: Video hosting operations
+  - name: follows
+    description: Following system
+  - name: feed
+    description: Activity feed
+  - name: messages
+    description: Direct messaging
+  - name: projects
+    description: Project board / opportunities
+  - name: crew
+    description: Crew discovery
+  - name: stats
+    description: Platform stats and aggregates
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +40,581 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # ── Users ──────────────────────────────────────────────────────────────────
+  /users/me:
+    get:
+      operationId: getMe
+      tags: [users]
+      summary: Get current user profile
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+    patch:
+      operationId: updateMe
+      tags: [users]
+      summary: Update current user profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: Browse/search filmmakers
+      parameters:
+        - name: profession
+          in: query
+          schema:
+            type: string
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: genre
+          in: query
+          schema:
+            type: string
+        - name: skills
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [featured, newest, most_viewed]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+
+  /users/{username}:
+    get:
+      operationId: getUserByUsername
+      tags: [users]
+      summary: Get a user profile by username
+      parameters:
+        - name: username
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: User profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "404":
+          description: Not found
+
+  # ── Videos ─────────────────────────────────────────────────────────────────
+  /videos:
+    get:
+      operationId: listVideos
+      tags: [videos]
+      summary: List/search videos
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: integer
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: tags
+          in: query
+          schema:
+            type: string
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [newest, most_viewed, featured]
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: List of videos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoList"
+    post:
+      operationId: createVideo
+      tags: [videos]
+      summary: Create a new video entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoInput"
+      responses:
+        "201":
+          description: Created video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+
+  /videos/{id}:
+    get:
+      operationId: getVideo
+      tags: [videos]
+      summary: Get a single video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateVideo
+      tags: [videos]
+      summary: Update a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VideoUpdate"
+      responses:
+        "200":
+          description: Updated video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+    delete:
+      operationId: deleteVideo
+      tags: [videos]
+      summary: Delete a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /videos/{id}/like:
+    post:
+      operationId: likeVideo
+      tags: [videos]
+      summary: Like a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Like toggled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LikeResult"
+
+  /videos/{id}/comments:
+    get:
+      operationId: listComments
+      tags: [videos]
+      summary: Get comments for a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Comments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommentList"
+    post:
+      operationId: createComment
+      tags: [videos]
+      summary: Post a comment on a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentInput"
+      responses:
+        "201":
+          description: Comment created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Comment"
+
+  # ── Follows ─────────────────────────────────────────────────────────────────
+  /follows/{userId}:
+    post:
+      operationId: followUser
+      tags: [follows]
+      summary: Follow or unfollow a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Follow toggled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FollowResult"
+
+  /follows/{userId}/followers:
+    get:
+      operationId: listFollowers
+      tags: [follows]
+      summary: List followers of a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Followers
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+
+  /follows/{userId}/following:
+    get:
+      operationId: listFollowing
+      tags: [follows]
+      summary: List users followed by a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Following
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+
+  # ── Feed ────────────────────────────────────────────────────────────────────
+  /feed:
+    get:
+      operationId: getFeed
+      tags: [feed]
+      summary: Get activity feed
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Activity feed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoList"
+
+  # ── Messages ─────────────────────────────────────────────────────────────────
+  /messages:
+    get:
+      operationId: listConversations
+      tags: [messages]
+      summary: List inbox conversations
+      responses:
+        "200":
+          description: Conversations
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ConversationList"
+
+  /messages/{userId}:
+    get:
+      operationId: getConversation
+      tags: [messages]
+      summary: Get messages with a specific user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Messages
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MessageList"
+    post:
+      operationId: sendMessage
+      tags: [messages]
+      summary: Send a message to a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MessageInput"
+      responses:
+        "201":
+          description: Message sent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Message"
+
+  # ── Projects ─────────────────────────────────────────────────────────────────
+  /projects:
+    get:
+      operationId: listProjects
+      tags: [projects]
+      summary: List project opportunities
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+        - name: country
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Projects
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProjectList"
+    post:
+      operationId: createProject
+      tags: [projects]
+      summary: Post a project opportunity
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectInput"
+      responses:
+        "201":
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+
+  /projects/{id}:
+    get:
+      operationId: getProject
+      tags: [projects]
+      summary: Get a single project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateProject
+      tags: [projects]
+      summary: Update a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProjectUpdate"
+      responses:
+        "200":
+          description: Updated project
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Project"
+    delete:
+      operationId: deleteProject
+      tags: [projects]
+      summary: Delete a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /projects/{id}/apply:
+    post:
+      operationId: applyToProject
+      tags: [projects]
+      summary: Apply to a project
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApplicationInput"
+      responses:
+        "201":
+          description: Application submitted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Application"
+
+  # ── Stats ─────────────────────────────────────────────────────────────────────
+  /stats/platform:
+    get:
+      operationId: getPlatformStats
+      tags: [stats]
+      summary: Platform-wide stats summary
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformStats"
+
+  /stats/featured:
+    get:
+      operationId: getFeaturedContent
+      tags: [stats]
+      summary: Featured filmmakers and videos
+      responses:
+        "200":
+          description: Featured content
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FeaturedContent"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +625,445 @@ components:
       required:
         - status
 
+    # ── User schemas ──────────────────────────────────────────────────────────
+    User:
+      type: object
+      required: [id, clerkId, username, name, profession, createdAt]
+      properties:
+        id:
+          type: integer
+        clerkId:
+          type: string
+        username:
+          type: string
+        name:
+          type: string
+        profession:
+          type: string
+        location:
+          type: ["string", "null"]
+        bio:
+          type: ["string", "null"]
+        website:
+          type: ["string", "null"]
+        avatarUrl:
+          type: ["string", "null"]
+        coverUrl:
+          type: ["string", "null"]
+        skills:
+          type: array
+          items:
+            type: string
+        socialLinks:
+          type: ["object", "null"]
+        isFollowing:
+          type: boolean
+        followerCount:
+          type: integer
+        followingCount:
+          type: integer
+        videoCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    UserProfile:
+      type: object
+      required: [user, videos]
+      properties:
+        user:
+          $ref: "#/components/schemas/User"
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+        credits:
+          type: array
+          items:
+            type: string
+
+    UserUpdate:
+      type: object
+      properties:
+        username:
+          type: string
+        name:
+          type: string
+        profession:
+          type: string
+        location:
+          type: string
+        bio:
+          type: string
+        website:
+          type: string
+        avatarUrl:
+          type: string
+        coverUrl:
+          type: string
+        skills:
+          type: array
+          items:
+            type: string
+        socialLinks:
+          type: object
+
+    UserList:
+      type: object
+      required: [users, total]
+      properties:
+        users:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        total:
+          type: integer
+
+    # ── Video schemas ─────────────────────────────────────────────────────────
+    Video:
+      type: object
+      required: [id, userId, title, privacy, viewCount, likeCount, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        videoUrl:
+          type: ["string", "null"]
+        thumbnailUrl:
+          type: ["string", "null"]
+        privacy:
+          type: string
+          enum: [public, private, password_protected]
+        tags:
+          type: array
+          items:
+            type: string
+        credits:
+          type: ["string", "null"]
+        viewCount:
+          type: integer
+        likeCount:
+          type: integer
+        isLiked:
+          type: boolean
+        user:
+          $ref: "#/components/schemas/User"
+        createdAt:
+          type: string
+          format: date-time
+
+    VideoInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+        videoUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+        privacy:
+          type: string
+          enum: [public, private, password_protected]
+        tags:
+          type: array
+          items:
+            type: string
+        credits:
+          type: string
+
+    VideoUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        videoUrl:
+          type: string
+        thumbnailUrl:
+          type: string
+        privacy:
+          type: string
+          enum: [public, private, password_protected]
+        tags:
+          type: array
+          items:
+            type: string
+        credits:
+          type: string
+
+    VideoList:
+      type: object
+      required: [videos, total]
+      properties:
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
+        total:
+          type: integer
+
+    LikeResult:
+      type: object
+      required: [liked, likeCount]
+      properties:
+        liked:
+          type: boolean
+        likeCount:
+          type: integer
+
+    Comment:
+      type: object
+      required: [id, videoId, userId, body, createdAt]
+      properties:
+        id:
+          type: integer
+        videoId:
+          type: integer
+        userId:
+          type: integer
+        body:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+        createdAt:
+          type: string
+          format: date-time
+
+    CommentInput:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+          minLength: 1
+
+    CommentList:
+      type: object
+      required: [comments]
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/Comment"
+
+    # ── Follow schemas ────────────────────────────────────────────────────────
+    FollowResult:
+      type: object
+      required: [following, followerCount]
+      properties:
+        following:
+          type: boolean
+        followerCount:
+          type: integer
+
+    # ── Message schemas ───────────────────────────────────────────────────────
+    Conversation:
+      type: object
+      required: [userId, user, lastMessage, unreadCount, updatedAt]
+      properties:
+        userId:
+          type: integer
+        user:
+          $ref: "#/components/schemas/User"
+        lastMessage:
+          type: string
+        unreadCount:
+          type: integer
+        updatedAt:
+          type: string
+          format: date-time
+
+    ConversationList:
+      type: object
+      required: [conversations]
+      properties:
+        conversations:
+          type: array
+          items:
+            $ref: "#/components/schemas/Conversation"
+
+    Message:
+      type: object
+      required: [id, senderId, recipientId, body, read, createdAt]
+      properties:
+        id:
+          type: integer
+        senderId:
+          type: integer
+        recipientId:
+          type: integer
+        body:
+          type: string
+        read:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    MessageInput:
+      type: object
+      required: [body]
+      properties:
+        body:
+          type: string
+          minLength: 1
+
+    MessageList:
+      type: object
+      required: [messages]
+      properties:
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/Message"
+
+    # ── Project schemas ───────────────────────────────────────────────────────
+    Project:
+      type: object
+      required: [id, userId, title, description, rolesNeeded, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        location:
+          type: ["string", "null"]
+        budget:
+          type: ["string", "null"]
+        duration:
+          type: ["string", "null"]
+        rolesNeeded:
+          type: array
+          items:
+            type: string
+        applicationCount:
+          type: integer
+        user:
+          $ref: "#/components/schemas/User"
+        createdAt:
+          type: string
+          format: date-time
+
+    ProjectInput:
+      type: object
+      required: [title, description, rolesNeeded]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+        location:
+          type: string
+        budget:
+          type: string
+        duration:
+          type: string
+        rolesNeeded:
+          type: array
+          items:
+            type: string
+
+    ProjectUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        budget:
+          type: string
+        duration:
+          type: string
+        rolesNeeded:
+          type: array
+          items:
+            type: string
+
+    ProjectList:
+      type: object
+      required: [projects, total]
+      properties:
+        projects:
+          type: array
+          items:
+            $ref: "#/components/schemas/Project"
+        total:
+          type: integer
+
+    Application:
+      type: object
+      required: [id, projectId, userId, message, createdAt]
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        userId:
+          type: integer
+        message:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    ApplicationInput:
+      type: object
+      required: [message]
+      properties:
+        message:
+          type: string
+          minLength: 1
+
+    # ── Stats schemas ─────────────────────────────────────────────────────────
+    PlatformStats:
+      type: object
+      required: [totalUsers, totalVideos, totalProjects, professionBreakdown]
+      properties:
+        totalUsers:
+          type: integer
+        totalVideos:
+          type: integer
+        totalProjects:
+          type: integer
+        professionBreakdown:
+          type: array
+          items:
+            type: object
+            required: [profession, count]
+            properties:
+              profession:
+                type: string
+              count:
+                type: integer
+
+    FeaturedContent:
+      type: object
+      required: [filmmakers, videos]
+      properties:
+        filmmakers:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/Video"
