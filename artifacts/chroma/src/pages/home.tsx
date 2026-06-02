@@ -19,10 +19,6 @@ export function Home() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-            <div className="inline-flex items-center rounded-full border border-border bg-card/50 backdrop-blur-sm px-3 py-1 text-sm font-medium text-muted-foreground mb-8">
-              <span className="flex h-2 w-2 rounded-full bg-primary mr-2"></span>
-              The Community in Motion
-            </div>
             
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 text-white">
               Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Cinematic</span> <br className="hidden md:block" /> Identity
