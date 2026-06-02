@@ -23,7 +23,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/explore", label: "Explore" },
     { href: "/crew", label: "Crew" },
     { href: "/reels", label: "Reels" },
-    { href: "/projects", label: "Projects" },
+    { href: "/projects", label: "Jobs" },
   ];
 
   return (
