@@ -237,3 +237,7 @@
     inset: -1px;
   }
 }
+
+.cl-logoBox {
+  display: none !important;
+}

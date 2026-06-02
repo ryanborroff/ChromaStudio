@@ -11,7 +11,7 @@ export function SignInPage() {
             C
           </div>
         </div>
-        <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} />
+        <SignIn routing="path" path={`${basePath}/sign-in`} signUpUrl={`${basePath}/sign-up`} appearance={{ elements: { logoBox: { display: "none" } } }} />
       </div>
     </div>
   );
@@ -26,7 +26,7 @@ export function SignUpPage() {
             C
           </div>
         </div>
-        <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} />
+        <SignUp routing="path" path={`${basePath}/sign-up`} signInUrl={`${basePath}/sign-in`} appearance={{ elements: { logoBox: { display: "none" } } }} />
       </div>
     </div>
   );
