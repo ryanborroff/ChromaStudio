@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { useState } from "react";
 import { format } from "date-fns";
 import { Film, Heart, Eye } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,14 +11,17 @@ interface VideoCardProps {
 }
 
 export function VideoCard({ video, showAuthor = true }: VideoCardProps) {
+  const [imgError, setImgError] = useState(false);
+
   return (
     <div className="group flex flex-col gap-3" data-testid={`video-card-${video.id}`}>
       <Link href={`/videos/${video.id}`} className="block relative aspect-video rounded-xl overflow-hidden bg-card border border-border/50">
-        {video.thumbnailUrl ? (
+        {video.thumbnailUrl && !imgError ? (
           <img 
             src={video.thumbnailUrl} 
             alt={video.title}
             className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105"
+            onError={() => setImgError(true)}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-card transition-transform duration-500 group-hover:scale-105">
