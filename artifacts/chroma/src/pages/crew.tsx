@@ -47,7 +47,7 @@ export function Crew() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
         <div>
           <h1 className="text-3xl font-black text-white tracking-tight">Talent Directory</h1>
-          <p className="text-muted-foreground mt-2 font-medium">Crew your next production.</p>
+          <p className="text-muted-foreground mt-2 font-medium">Find your next work gig.</p>
         </div>
         
         <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
