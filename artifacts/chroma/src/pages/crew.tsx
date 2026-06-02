@@ -46,7 +46,7 @@ export function Crew() {
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Crew Directory</h1>
+          <h1 className="text-3xl font-black text-white tracking-tight">Talent Directory</h1>
           <p className="text-muted-foreground mt-2 font-medium">Crew your next production.</p>
         </div>
         
