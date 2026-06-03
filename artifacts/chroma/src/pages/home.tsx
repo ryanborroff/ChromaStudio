@@ -18,7 +18,7 @@ export function Home() {
             {" "}in Motion
           </h1>
 
-          <p className="text-base md:text-lg lg:text-xl text-white/50 mx-auto mb-12 font-medium leading-relaxed whitespace-nowrap">
+          <p className="text-lg md:text-xl lg:text-2xl text-white/50 mx-auto mb-12 font-medium leading-relaxed whitespace-nowrap">
             The online hosting platform for prefessional filmakers with community at it's heart.
           </p>
 
