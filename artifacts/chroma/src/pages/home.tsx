@@ -40,7 +40,7 @@ export function Home() {
               style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
               data-testid="hero-explore-btn"
             >
-              View Chroma
+              Explore Chroma
             </Link>
           </div>
         </div>
