@@ -1,114 +1,122 @@
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Play, Users, Briefcase, Camera } from "lucide-react";
-import { motion } from "framer-motion";
+import { ArrowRight, Play, Users, Briefcase, Clapperboard } from "lucide-react";
 
 export function Home() {
   return (
     <div className="flex flex-col w-full">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-24 pb-32 md:pt-36 md:pb-48">
-        <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:60px_60px]" />
-        <div className="absolute inset-0 bg-background/80" />
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-primary/20 rounded-full blur-[128px] opacity-50" />
-        <div className="absolute top-40 -left-40 w-96 h-96 bg-primary/10 rounded-full blur-[128px] opacity-50" />
-        
-        <div className="container relative z-10 px-4 mx-auto text-center max-w-5xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: "easeOut" }}
-          >
-            
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 text-white">
-              Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-blue-400">Community</span> <br className="hidden md:block" /> in Motion
-            </h1>
-            
-            <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto mb-12 font-medium leading-relaxed">
-              Chroma is not a social network. It's a professional ecosystem where directors, cinematographers, and craftspeople showcase work, find crew, and build their careers.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="h-14 px-8 text-lg font-bold w-full sm:w-auto" asChild data-testid="hero-join-btn">
-                <Link href="/sign-up">
-                  Join Chroma <ArrowRight className="ml-2 h-5 w-5" />
-                </Link>
-              </Button>
-              <Button size="lg" variant="secondary" className="h-14 px-8 text-lg font-bold w-full sm:w-auto" asChild data-testid="hero-explore-btn">
-                <Link href="/explore">
-                  Explore Filmmakers
-                </Link>
-              </Button>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      {/* Hero */}
+      <section className="relative overflow-hidden pt-28 pb-36 md:pt-40 md:pb-52">
+        <div className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-30" style={{ background: "radial-gradient(circle, hsl(0 80% 55% / 0.35) 0%, transparent 70%)" }} />
+        <div className="absolute top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-20" style={{ background: "radial-gradient(circle, hsl(0 80% 55% / 0.2) 0%, transparent 70%)" }} />
 
-      {/* Features */}
-      <section className="py-24 bg-card/30 border-y border-border/40">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="grid md:grid-cols-3 gap-8">
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.1 }}
-              className="p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-colors"
-            >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-6">
-                <Play className="h-6 w-6" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Premium Hosting</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Showcase your films in the highest quality without ads, algorithms, or distractions. Your work speaks for itself.
-              </p>
-            </motion.div>
-            
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              className="p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-colors"
-            >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-6">
-                <Users className="h-6 w-6" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Elite Network</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Connect with verified industry professionals. From DPs to colorists, find exactly who you need for your next shoot.
-              </p>
-            </motion.div>
+        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white/60 mb-8"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
+            <Clapperboard className="w-3.5 h-3.5 text-primary" />
+            Professional filmmaker platform
+          </div>
 
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: 0.3 }}
-              className="p-8 rounded-2xl bg-card border border-border/50 hover:border-primary/30 transition-colors"
+          <h1 className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 text-white leading-[0.95]" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif', letterSpacing: "-0.03em" }}>
+            Your{" "}
+            <span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(135deg, hsl(0 80% 65%) 0%, hsl(20 90% 65%) 100%)" }}>
+              Community
+            </span>
+            <br /> in Motion
+          </h1>
+
+          <p className="text-xl md:text-2xl text-white/50 max-w-3xl mx-auto mb-12 font-medium leading-relaxed">
+            A professional ecosystem where directors, cinematographers, and craftspeople showcase work, find crew, and build their careers.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/sign-up"
+              className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white transition-all"
+              style={{
+                background: "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)",
+                boxShadow: "0 4px 24px rgba(229,62,62,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
+              }}
+              data-testid="hero-join-btn"
             >
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary mb-6">
-                <Briefcase className="h-6 w-6" />
-              </div>
-              <h3 className="text-xl font-bold text-white mb-3">Project Board</h3>
-              <p className="text-muted-foreground leading-relaxed">
-                Discover unlisted opportunities or crew up your next production efficiently with our targeted project boards.
-              </p>
-            </motion.div>
+              Join Chroma <ArrowRight className="w-4 h-4" />
+            </Link>
+            <Link
+              href="/explore"
+              className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white/80 hover:text-white transition-all"
+              style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
+              data-testid="hero-explore-btn"
+            >
+              Explore Filmmakers
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-32 relative overflow-hidden">
-        <div className="container mx-auto px-4 text-center max-w-4xl relative z-10">
-          <h2 className="text-4xl md:text-5xl font-black mb-6 text-white">Every Pixel Earned.</h2>
-          <p className="text-xl text-muted-foreground mb-10 max-w-2xl mx-auto">
-            Stop competing with cat videos and influencers. Put your portfolio where the industry actually looks.
-          </p>
-          <Button size="lg" className="h-14 px-10 text-lg font-bold" asChild>
-            <Link href="/sign-up">Start Building Your Profile</Link>
-          </Button>
+      {/* Features */}
+      <section className="py-20" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.015)" }}>
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-5">
+          {[
+            { icon: <Play className="w-5 h-5" />, title: "Premium Hosting", desc: "Showcase your films in the highest quality without ads, algorithms, or distractions. Your work speaks for itself." },
+            { icon: <Users className="w-5 h-5" />, title: "Elite Network", desc: "Connect with verified industry professionals. From DPs to colorists, find exactly who you need for your next shoot." },
+            { icon: <Briefcase className="w-5 h-5" />, title: "Project Board", desc: "Discover unlisted opportunities or crew up your next production efficiently with targeted project boards." },
+          ].map(f => (
+            <div
+              key={f.title}
+              className="p-7 rounded-2xl transition-all duration-300 group"
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.07)",
+              }}
+              onMouseEnter={e => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.065)";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(229,62,62,0.25)";
+                (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)";
+                (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 32px rgba(0,0,0,0.4)";
+              }}
+              onMouseLeave={e => {
+                (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+                (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)";
+                (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+                (e.currentTarget as HTMLElement).style.boxShadow = "none";
+              }}
+            >
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center text-primary mb-5" style={{ background: "rgba(229,62,62,0.1)" }}>
+                {f.icon}
+              </div>
+              <h3 className="text-base font-semibold text-white mb-2 tracking-tight">{f.title}</h3>
+              <p className="text-sm text-white/45 leading-relaxed">{f.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-28 relative overflow-hidden">
+        <div className="max-w-4xl mx-auto px-6">
+          <div
+            className="rounded-3xl p-12 text-center relative overflow-hidden"
+            style={{
+              background: "linear-gradient(135deg, rgba(229,62,62,0.12) 0%, rgba(14,14,14,0) 60%)",
+              border: "1px solid rgba(229,62,62,0.2)",
+            }}
+          >
+            <h2 className="text-4xl md:text-5xl font-black mb-4 text-white tracking-tight" style={{ letterSpacing: "-0.02em" }}>
+              Every Pixel Earned.
+            </h2>
+            <p className="text-lg text-white/45 mb-8 max-w-xl mx-auto leading-relaxed">
+              Stop competing with cat videos and influencers. Put your portfolio where the industry actually looks.
+            </p>
+            <Link
+              href="/sign-up"
+              className="inline-flex items-center gap-2 h-12 px-8 rounded-xl text-base font-semibold text-white transition-all"
+              style={{
+                background: "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)",
+                boxShadow: "0 4px 24px rgba(229,62,62,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
+              }}
+            >
+              Start Building Your Profile <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
         </div>
       </section>
     </div>

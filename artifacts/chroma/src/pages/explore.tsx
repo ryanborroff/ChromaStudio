@@ -2,16 +2,14 @@ import { useState } from "react";
 import { useListVideos, getListVideosQueryKey } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/video-card";
 import { EmptyState } from "@/components/empty-state";
-import { Loader2, Search, Filter } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Loader2, Search, SlidersHorizontal, Grid3X3 } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+
+const SORT_OPTIONS = [
+  { value: "featured", label: "Featured" },
+  { value: "newest", label: "Newest" },
+  { value: "most_viewed", label: "Most Viewed" },
+] as const;
 
 export function Explore() {
   const [search, setSearch] = useState("");
@@ -24,56 +22,87 @@ export function Explore() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-7xl">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+    <div className="flex flex-col flex-1 min-h-0">
+      {/* macOS-style sticky toolbar */}
+      <div
+        className="sticky top-12 z-10 flex items-center justify-between px-6 py-3"
+        style={{
+          background: "rgba(14,14,14,0.92)",
+          backdropFilter: "blur(20px) saturate(180%)",
+          WebkitBackdropFilter: "blur(20px) saturate(180%)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+        }}
+      >
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Explore</h1>
-          <p className="text-muted-foreground mt-2 font-medium">Discover exceptional work.</p>
+          <h1 className="text-[15px] font-semibold text-white tracking-tight">Explore</h1>
+          <p className="text-xs text-white/35 font-medium">Discover exceptional work.</p>
         </div>
-        
-        <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
-          <div className="relative w-full sm:w-[300px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search videos..." 
+
+        <div className="flex items-center gap-2">
+          {/* Sort pills */}
+          <div className="hidden sm:flex items-center gap-1 mr-2">
+            {SORT_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setSort(opt.value)}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${sort === opt.value ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Search */}
+          <div className="relative">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+            <input
+              placeholder="Search…"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9 bg-card border-border/50"
+              onChange={e => setSearch(e.target.value)}
+              className="pl-8 h-8 w-44 md:w-56 text-sm rounded-lg outline-none text-white/80 placeholder:text-white/25 focus:ring-1 focus:ring-primary/40 transition-all"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
               data-testid="input-search-videos"
             />
           </div>
-          <Select value={sort} onValueChange={(v: any) => setSort(v)}>
-            <SelectTrigger className="w-full sm:w-[180px] bg-card border-border/50" data-testid="select-sort">
-              <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-muted-foreground" />
-                <SelectValue placeholder="Sort by" />
-              </div>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="featured">Featured</SelectItem>
-              <SelectItem value="newest">Newest</SelectItem>
-              <SelectItem value="most_viewed">Most Viewed</SelectItem>
-            </SelectContent>
-          </Select>
+
+          <button
+            className="h-8 w-8 flex items-center justify-center rounded-lg text-white/45 hover:text-white transition-all"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5" />
+          </button>
+
+          <button
+            className="h-8 w-8 flex items-center justify-center rounded-lg text-white transition-all"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+          >
+            <Grid3X3 className="w-3.5 h-3.5" />
+          </button>
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="flex items-center justify-center min-h-[50vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      ) : data?.videos && data.videos.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {data.videos.map((video) => (
-            <VideoCard key={video.id} video={video} />
-          ))}
-        </div>
-      ) : (
-        <EmptyState
-          title="No videos found"
-          description="We couldn't find any videos matching your search criteria. Try adjusting your filters."
-        />
-      )}
+      {/* Content */}
+      <div className="p-6 flex-1">
+        {isLoading ? (
+          <div className="flex items-center justify-center min-h-[50vh]">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
+        ) : data?.videos && data.videos.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+            {data.videos.map(video => (
+              <VideoCard key={video.id} video={video} />
+            ))}
+          </div>
+        ) : (
+          <EmptyState
+            title="No videos found"
+            description="We couldn't find any videos matching your search criteria. Try adjusting your filters."
+          />
+        )}
+      </div>
     </div>
   );
 }

@@ -132,10 +132,10 @@
   --chart-4: 0 0% 100%;
   --chart-5: 0 0% 15%;
 
-  --app-font-sans: 'Inter', sans-serif;
+  --app-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 'Inter', sans-serif;
   --app-font-serif: Georgia, serif;
-  --app-font-mono: Menlo, monospace;
-  --radius: 0.25rem;
+  --app-font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+  --radius: 0.625rem;
   
   --shadow-2xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.5);
   --shadow-xs: 0px 2px 0px 0px hsl(0 0% 0% / 0.5);
