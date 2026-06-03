@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "7P-FcPL-lmxdHMxJU9_gC"
+uri = "file://attached_assets/chroma-qr.png"
+type = "image"
+title = "Chroma — Scan to open"
