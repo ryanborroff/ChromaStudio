@@ -2,8 +2,14 @@ import { useState } from "react";
 import { useListVideos, getListVideosQueryKey } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/video-card";
 import { EmptyState } from "@/components/empty-state";
-import { Loader2, Search, SlidersHorizontal, Grid3X3 } from "lucide-react";
+import { Loader2, Search, SlidersHorizontal, Grid3X3, Check } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const SORT_OPTIONS = [
   { value: "featured", label: "Featured" },
@@ -69,15 +75,35 @@ export function Explore() {
             />
           </div>
 
-          <button
-            className="h-8 w-8 flex items-center justify-center rounded-lg text-white/45 hover:text-white transition-all"
-            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5" />
-          </button>
+          {/* Sort dropdown — mobile only */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className="sm:hidden h-8 w-8 flex items-center justify-center rounded-lg text-white/45 hover:text-white transition-all"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                aria-label="Sort"
+                data-testid="btn-sort-mobile"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="bg-card border-border">
+              {SORT_OPTIONS.map(opt => (
+                <DropdownMenuItem
+                  key={opt.value}
+                  onClick={() => setSort(opt.value)}
+                  className="cursor-pointer text-sm justify-between gap-4"
+                  data-testid={`sort-option-${opt.value}`}
+                >
+                  {opt.label}
+                  {sort === opt.value && <Check className="w-3.5 h-3.5 text-primary" />}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <button
-            className="h-8 w-8 flex items-center justify-center rounded-lg text-white transition-all"
+            className="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg text-white transition-all"
             style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
           >
             <Grid3X3 className="w-3.5 h-3.5" />

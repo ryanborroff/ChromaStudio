@@ -1,10 +1,18 @@
+import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Show, useClerk, useUser } from "@clerk/react";
 import {
   Film, LogOut, Settings, User as UserIcon,
   Grid3X3, Play, Users, Briefcase, Clapperboard, Sparkles, Rss,
-  Video, Server, Tag,
+  Video, Server, Tag, Menu,
 } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +35,7 @@ const GENRE_TAGS = ["Documentary", "Narrative", "Experimental", "Commercial", "M
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
+  const [mobileOpen, setMobileOpen] = useState(false);
   const { user } = useUser();
   const { signOut } = useClerk();
   const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -48,7 +57,110 @@ export function Layout({ children }: { children: React.ReactNode }) {
         }}
       >
         {/* Left — traffic lights + logo + nav */}
-        <div className="flex items-center gap-5">
+        <div className="flex items-center gap-3 sm:gap-5">
+          {/* Mobile menu trigger */}
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <button
+                className="md:hidden flex items-center justify-center w-8 h-8 -ml-1 rounded-md text-white/70 hover:text-white hover:bg-white/5 transition-all"
+                aria-label="Open menu"
+                data-testid="btn-mobile-menu"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            </SheetTrigger>
+            <SheetContent
+              side="left"
+              className="w-72 border-r border-white/10 p-0"
+              style={{ background: "rgba(13,13,13,0.97)", backdropFilter: "blur(20px)" }}
+            >
+              <SheetHeader className="px-4 h-12 flex flex-row items-center justify-start border-b border-white/10 space-y-0">
+                <SheetTitle className="flex items-center gap-1.5 text-white/90">
+                  <Clapperboard className="w-4 h-4 text-primary" strokeWidth={2.5} />
+                  <span className="font-semibold text-sm tracking-tight">Chroma</span>
+                </SheetTitle>
+              </SheetHeader>
+
+              <div className="flex flex-col py-3 px-2 overflow-y-auto h-[calc(100dvh-3rem)]">
+                <p className="px-3 text-[10px] font-semibold text-white/25 uppercase tracking-widest mb-1">Library</p>
+
+                <Show when="signed-in">
+                  <Link
+                    href="/feed"
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-0.5 ${location === "/feed" ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                    data-testid="mobile-link-feed"
+                  >
+                    <Rss className={`w-4 h-4 ${location === "/feed" ? "text-primary" : ""}`} />
+                    Feed
+                  </Link>
+                </Show>
+
+                {NAV_ITEMS.map(item => {
+                  const Icon = item.icon;
+                  const active = location.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-0.5 ${active ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                      data-testid={`mobile-link-${item.label.toLowerCase()}`}
+                    >
+                      <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
+
+                <Show when="signed-in">
+                  <Link
+                    href="/videos/upload"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all mb-0.5"
+                    data-testid="mobile-btn-upload"
+                  >
+                    <Film className="w-4 h-4" />
+                    Upload
+                  </Link>
+                </Show>
+
+                <p className="px-3 mt-5 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">Discover</p>
+                {GENRE_TAGS.map(tag => (
+                  <button
+                    key={tag}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-white/5 transition-all mb-0.5"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-white/15 ml-1 flex-shrink-0" />
+                    {tag}
+                  </button>
+                ))}
+
+                <Show when="signed-out">
+                  <div className="mt-auto px-1 pt-4 flex flex-col gap-2">
+                    <Link
+                      href="/sign-in"
+                      onClick={() => setMobileOpen(false)}
+                      className="w-full text-center text-sm font-medium text-white/70 hover:text-white px-4 py-2 rounded-lg bg-white/5 transition-all"
+                      data-testid="mobile-link-sign-in"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      href="/sign-up"
+                      onClick={() => setMobileOpen(false)}
+                      className="w-full text-center text-sm font-semibold px-4 py-2 rounded-lg text-white transition-all"
+                      style={{ background: "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)" }}
+                      data-testid="mobile-btn-join"
+                    >
+                      Join Chroma
+                    </Link>
+                  </div>
+                </Show>
+              </div>
+            </SheetContent>
+          </Sheet>
+
           {/* Traffic lights */}
           <div className="hidden sm:flex items-center gap-1.5">
             <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
