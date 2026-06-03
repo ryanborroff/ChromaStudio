@@ -25,7 +25,7 @@ export function Home() {
           </h1>
 
           <p className="text-xl md:text-2xl text-white/50 max-w-3xl mx-auto mb-12 font-medium leading-relaxed">
-            A professional ecosystem where directors, cinematographers, and craftspeople showcase work, find crew, and build their careers.
+            The online filmmaking platform with community at it's heart.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
