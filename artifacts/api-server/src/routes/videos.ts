@@ -77,7 +77,13 @@ router.get("/videos", async (req, res): Promise<void> => {
     .select()
     .from(videosTable)
     .where(sql`${conditions.map((c) => c).join(" AND ")}`)
-    .orderBy(sort === "most_viewed" ? desc(videosTable.viewCount) : desc(videosTable.createdAt))
+    .orderBy(
+      sort === "most_viewed"
+        ? desc(videosTable.viewCount)
+        : sort === "community_rated"
+          ? desc(videosTable.likeCount)
+          : desc(videosTable.createdAt),
+    )
     .limit(parseInt(limit))
     .offset(parseInt(offset))
     .catch(() =>

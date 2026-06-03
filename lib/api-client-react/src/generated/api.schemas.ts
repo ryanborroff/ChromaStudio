@@ -306,6 +306,7 @@ export const ListVideosSort = {
   newest: 'newest',
   most_viewed: 'most_viewed',
   featured: 'featured',
+  community_rated: 'community_rated',
 } as const;
 
 export type GetFeedParams = {

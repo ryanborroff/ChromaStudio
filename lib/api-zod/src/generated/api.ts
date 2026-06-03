@@ -199,7 +199,7 @@ export const ListVideosQueryParams = zod.object({
   "userId": zod.coerce.number().optional(),
   "search": zod.coerce.string().optional(),
   "tags": zod.coerce.string().optional(),
-  "sort": zod.enum(['newest', 'most_viewed', 'featured']).optional(),
+  "sort": zod.enum(['newest', 'most_viewed', 'featured', 'community_rated']).optional(),
   "limit": zod.coerce.number().optional(),
   "offset": zod.coerce.number().optional()
 })

@@ -9,12 +9,13 @@ const SORT_OPTIONS = [
   { value: "featured", label: "Featured" },
   { value: "newest", label: "Newest" },
   { value: "most_viewed", label: "Most Viewed" },
+  { value: "community_rated", label: "Community Rated" },
 ] as const;
 
 export function Explore() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
-  const [sort, setSort] = useState<"featured" | "newest" | "most_viewed">("featured");
+  const [sort, setSort] = useState<"featured" | "newest" | "most_viewed" | "community_rated">("featured");
 
   const { data, isLoading } = useListVideos(
     { search: debouncedSearch || undefined, sort },
