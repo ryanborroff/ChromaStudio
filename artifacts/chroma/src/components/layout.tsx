@@ -18,8 +18,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const NAV_ITEMS = [
   { href: "/explore",  label: "Watch",   icon: Grid3X3 },
   { href: "/create",   label: "Create",  icon: Video },
-  { href: "/crew",     label: "Crew",    icon: Users },
   { href: "/host",     label: "Host",    icon: Server },
+  { href: "/crew",     label: "Crew",    icon: Users },
   { href: "/pricing",  label: "Pricing", icon: Tag },
 ];
 
