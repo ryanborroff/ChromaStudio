@@ -3,6 +3,7 @@ import { Show, useClerk, useUser } from "@clerk/react";
 import {
   Film, LogOut, Settings, User as UserIcon,
   Grid3X3, Play, Users, Briefcase, Clapperboard, Sparkles, Rss,
+  Video, Server, Tag,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -15,10 +16,13 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const NAV_ITEMS = [
-  { href: "/explore", label: "View", icon: Grid3X3 },
-  { href: "/crew",    label: "Talent",  icon: Users },
-  { href: "/reels",  label: "Reels",   icon: Play },
-  { href: "/projects", label: "Jobs",  icon: Briefcase },
+  { href: "/explore",  label: "Watch",   icon: Grid3X3 },
+  { href: "/crew",     label: "Talent",  icon: Users },
+  { href: "/reels",    label: "Reels",   icon: Play },
+  { href: "/projects", label: "Jobs",    icon: Briefcase },
+  { href: "/create",   label: "Create",  icon: Video },
+  { href: "/host",     label: "Host",    icon: Server },
+  { href: "/pricing",  label: "Pricing", icon: Tag },
 ];
 
 const GENRE_TAGS = ["Documentary", "Narrative", "Experimental", "Commercial", "Music Video"];
