@@ -10,12 +10,6 @@ export function Home() {
         <div className="absolute top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-20" style={{ background: "radial-gradient(circle, hsl(0 80% 55% / 0.2) 0%, transparent 70%)" }} />
 
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold text-white/60 mb-8"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)" }}>
-            <Clapperboard className="w-3.5 h-3.5 text-primary" />
-            Professional filmmaker platform
-          </div>
-
           <h1 className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 text-white leading-[0.95]" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif', letterSpacing: "-0.03em" }}>
             Your{" "}
             <span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(135deg, hsl(0 80% 65%) 0%, hsl(20 90% 65%) 100%)" }}>
