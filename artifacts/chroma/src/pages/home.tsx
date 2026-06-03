@@ -19,7 +19,7 @@ export function Home() {
           </h1>
 
           <p className="text-xl md:text-2xl text-white/50 max-w-3xl mx-auto mb-12 font-medium leading-relaxed">
-            The online filmmaking platform with community at it's heart.
+            The online hosting platform for prefessional filmakers with community at it's heart.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
