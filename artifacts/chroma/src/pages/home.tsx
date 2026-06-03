@@ -10,12 +10,12 @@ export function Home() {
         <div className="absolute top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-20" style={{ background: "radial-gradient(circle, hsl(0 80% 55% / 0.2) 0%, transparent 70%)" }} />
 
         <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-          <h1 className="text-6xl md:text-7xl lg:text-8xl font-black tracking-tight mb-8 text-white leading-[0.95]" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif', letterSpacing: "-0.03em" }}>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-8 text-white leading-[0.95]" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", Inter, sans-serif', letterSpacing: "-0.03em" }}>
             Your{" "}
             <span className="text-transparent bg-clip-text" style={{ backgroundImage: "linear-gradient(135deg, hsl(0 80% 65%) 0%, hsl(20 90% 65%) 100%)" }}>
               Community
             </span>
-            <br /> in Motion
+            {" "}in Motion
           </h1>
 
           <p className="text-xl md:text-2xl text-white/50 max-w-3xl mx-auto mb-12 font-medium leading-relaxed">
