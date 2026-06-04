@@ -32,7 +32,7 @@ export function Home() {
               }}
               data-testid="hero-join-btn"
             >
-              Join Chroma <ArrowRight className="w-4 h-4" />
+              Join Chroma
             </Link>
             <Link
               href="/explore"
