@@ -76,7 +76,7 @@ export function Explore() {
                   className="cursor-pointer text-sm justify-between gap-4"
                   data-testid="sort-option-community_rated"
                 >
-                  <span className="flex items-center gap-2"><ArrowDownWideNarrow className="w-3.5 h-3.5" /> Highest Rated</span>
+                  <span className="flex items-center gap-2"><ArrowDownWideNarrow className="w-3.5 h-3.5" /> Highest</span>
                   {sort === "community_rated" && <Check className="w-3.5 h-3.5 text-primary" />}
                 </DropdownMenuItem>
                 <DropdownMenuItem
@@ -84,7 +84,7 @@ export function Explore() {
                   className="cursor-pointer text-sm justify-between gap-4"
                   data-testid="sort-option-community_rated_asc"
                 >
-                  <span className="flex items-center gap-2"><ArrowUpNarrowWide className="w-3.5 h-3.5" /> Lowest Rated</span>
+                  <span className="flex items-center gap-2"><ArrowUpNarrowWide className="w-3.5 h-3.5" /> Lowest</span>
                   {sort === "community_rated_asc" && <Check className="w-3.5 h-3.5 text-primary" />}
                 </DropdownMenuItem>
               </DropdownMenuContent>
