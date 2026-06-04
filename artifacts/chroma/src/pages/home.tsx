@@ -43,6 +43,10 @@ export function Home() {
               Explore Chroma
             </Link>
           </div>
+
+          <p className="mt-8 text-sm md:text-base font-medium text-white/40 tracking-wide">
+            Create <span className="text-white/25">→</span> Host <span className="text-white/25">→</span> Manage <span className="text-white/25">→</span> Stream <span className="text-white/25">→</span> Monetize <span className="text-white/25">→</span> Analyze
+          </p>
         </div>
       </section>
 
