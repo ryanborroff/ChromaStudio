@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useListVideos, getListVideosQueryKey } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/video-card";
 import { EmptyState } from "@/components/empty-state";
-import { Loader2, Search, SlidersHorizontal, Grid3X3, Check, ArrowDownWideNarrow, ArrowUpNarrowWide } from "lucide-react";
+import { Loader2, Search, SlidersHorizontal, Grid3X3, Check, ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronDown } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
   DropdownMenu,
@@ -49,40 +49,46 @@ export function Explore() {
         <div className="flex items-center gap-2">
           {/* Sort pills */}
           <div className="hidden sm:flex items-center gap-1 mr-2">
-            {SORT_OPTIONS.map(opt => {
-              const active = opt.value === "community_rated" ? isCommunity : sort === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => setSort(opt.value)}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${active ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
-                >
-                  {opt.label}
-                </button>
-              );
-            })}
+            {SORT_OPTIONS.filter(opt => opt.value !== "community_rated").map(opt => (
+              <button
+                key={opt.value}
+                onClick={() => setSort(opt.value)}
+                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${sort === opt.value ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
+              >
+                {opt.label}
+              </button>
+            ))}
 
-            {/* Highest / Lowest toggle — community rated only */}
-            {isCommunity && (
-              <div className="flex items-center gap-0.5 ml-1 pl-2 border-l border-white/10">
+            {/* Community Rated — dropdown with Highest / Lowest */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
                 <button
+                  className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-all ${isCommunity ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
+                  data-testid="btn-community-rated"
+                >
+                  Community Rated
+                  <ChevronDown className="w-3 h-3 opacity-70" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-card border-border">
+                <DropdownMenuItem
                   onClick={() => setSort("community_rated")}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all ${sort === "community_rated" ? "bg-primary/15 text-primary" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
-                  data-testid="btn-rated-highest"
+                  className="cursor-pointer text-sm justify-between gap-4"
+                  data-testid="sort-option-community_rated"
                 >
-                  <ArrowDownWideNarrow className="w-3.5 h-3.5" />
-                  Highest
-                </button>
-                <button
+                  <span className="flex items-center gap-2"><ArrowDownWideNarrow className="w-3.5 h-3.5" /> Highest Rated</span>
+                  {sort === "community_rated" && <Check className="w-3.5 h-3.5 text-primary" />}
+                </DropdownMenuItem>
+                <DropdownMenuItem
                   onClick={() => setSort("community_rated_asc")}
-                  className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium transition-all ${sort === "community_rated_asc" ? "bg-primary/15 text-primary" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
-                  data-testid="btn-rated-lowest"
+                  className="cursor-pointer text-sm justify-between gap-4"
+                  data-testid="sort-option-community_rated_asc"
                 >
-                  <ArrowUpNarrowWide className="w-3.5 h-3.5" />
-                  Lowest
-                </button>
-              </div>
-            )}
+                  <span className="flex items-center gap-2"><ArrowUpNarrowWide className="w-3.5 h-3.5" /> Lowest Rated</span>
+                  {sort === "community_rated_asc" && <Check className="w-3.5 h-3.5 text-primary" />}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           {/* Search */}
