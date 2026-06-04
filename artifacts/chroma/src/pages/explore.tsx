@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const SORT_OPTIONS = [
-  { value: "featured", label: "Featured" },
+  { value: "featured", label: "Trending" },
   { value: "newest", label: "Newest" },
   { value: "most_viewed", label: "Most Viewed" },
   { value: "community_rated", label: "Community Rated" },
