@@ -1,5 +1,5 @@
 import { Router, type IRouter } from "express";
-import { eq, sql, desc, ilike, or } from "drizzle-orm";
+import { eq, sql, desc, asc, ilike, or } from "drizzle-orm";
 import { db, videosTable, usersTable, videoLikesTable, commentsTable } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import {
@@ -82,7 +82,9 @@ router.get("/videos", async (req, res): Promise<void> => {
         ? desc(videosTable.viewCount)
         : sort === "community_rated"
           ? desc(videosTable.likeCount)
-          : desc(videosTable.createdAt),
+          : sort === "community_rated_asc"
+            ? asc(videosTable.likeCount)
+            : desc(videosTable.createdAt),
     )
     .limit(parseInt(limit))
     .offset(parseInt(offset))

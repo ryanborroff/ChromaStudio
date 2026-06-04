@@ -165,7 +165,7 @@ paths:
           in: query
           schema:
             type: string
-            enum: [newest, most_viewed, featured, community_rated]
+            enum: [newest, most_viewed, featured, community_rated, community_rated_asc]
         - name: limit
           in: query
           schema:
