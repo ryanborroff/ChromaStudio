@@ -44,9 +44,14 @@ export function Home() {
             </Link>
           </div>
 
-          <p className="mt-8 text-sm md:text-base font-medium text-white/40 tracking-wide">
-            Create <span className="text-white/25">→</span> Host <span className="text-white/25">→</span> Manage <span className="text-white/25">→</span> Stream <span className="text-white/25">→</span> Monetize <span className="text-white/25">→</span> Analyze
-          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs md:text-sm font-medium uppercase tracking-[0.2em] text-white/45">
+            {["Create", "Host", "Manage", "Stream", "Monetize", "Analyze"].map((step, i) => (
+              <span key={step} className="flex items-center gap-x-3">
+                {i > 0 && <span className="w-1 h-1 rounded-full bg-primary/60" />}
+                {step}
+              </span>
+            ))}
+          </div>
         </div>
       </section>
 
