@@ -45,7 +45,7 @@ export function Home() {
           </div>
 
           <div className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs md:text-sm font-medium uppercase tracking-[0.2em] text-white/45">
-            {["Create", "Host", "Manage", "Stream", "Monetize", "Analyze"].map((step, i) => (
+            {["Discover", "Create", "Host", "Manage", "Stream"].map((step, i) => (
               <span key={step} className="flex items-center gap-x-3">
                 {i > 0 && <span className="w-1 h-1 rounded-full bg-primary/60" />}
                 {step}
