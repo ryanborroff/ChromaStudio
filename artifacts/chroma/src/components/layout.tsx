@@ -51,9 +51,9 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "Store",
+    label: "Shop",
     items: [
-      { href: "/store", label: "Download Store", icon: ShoppingBag, desc: "LUTs, presets & project files" },
+      { href: "/store", label: "Download Shop", icon: ShoppingBag, desc: "LUTs, presets & project files" },
     ],
   },
   {

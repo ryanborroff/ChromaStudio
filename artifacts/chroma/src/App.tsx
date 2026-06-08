@@ -139,7 +139,7 @@ function AppRoutes() {
         <Route path="/store">
           <ComingSoon
             icon={ShoppingBag}
-            title="Download Store"
+            title="Download Shop"
             description="Sell and buy LUTs, presets, project files and other creator assets."
             features={["LUTs, presets & project files", "Instant secure downloads", "Creator payouts"]}
           />
