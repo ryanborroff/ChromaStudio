@@ -51,7 +51,7 @@ async function buildVideoResponse(
     isLiked,
     user: user
       ? (() => {
-          const { googleId: _g, email: _e, ...safeUser } = user;
+          const { googleId: _g, appleId: _a, email: _e, passwordHash: _p, ...safeUser } = user;
           return {
             ...safeUser,
             skills: user.skills ?? [],
@@ -302,7 +302,7 @@ router.get("/videos/:id/comments", async (req, res): Promise<void> => {
         ...c,
         user: user
           ? (() => {
-              const { googleId: _g, email: _e, ...safeUser } = user;
+              const { googleId: _g, appleId: _a, email: _e, passwordHash: _p, ...safeUser } = user;
               return {
                 ...safeUser,
                 skills: user.skills ?? [],
@@ -336,7 +336,7 @@ router.post("/videos/:id/comments", requireAuth, async (req, res): Promise<void>
     .values({ videoId: id, userId: user.id, body: parsed.data.body })
     .returning();
 
-  const { googleId: _g, email: _e, ...safeUser } = user;
+  const { googleId: _g, appleId: _a, email: _e, passwordHash: _p, ...safeUser } = user;
   res.status(201).json({
     ...comment,
     user: {

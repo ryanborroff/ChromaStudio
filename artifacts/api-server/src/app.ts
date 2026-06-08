@@ -34,7 +34,15 @@ app.use(
   }),
 );
 
-app.use(cors({ credentials: true, origin: true }));
+// The SPA and API are same-origin behind the Replit proxy, so cross-origin
+// credentialed requests are limited to our own domains rather than reflected
+// back with `origin: true` (which is unsafe when combined with credentials).
+const allowedOrigins = (process.env.REPLIT_DOMAINS?.split(",") ?? [])
+  .map((d) => `https://${d.trim()}`)
+  .filter(Boolean);
+app.use(
+  cors({ credentials: true, origin: allowedOrigins.length ? allowedOrigins : false }),
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -50,7 +58,10 @@ app.use(
     store: new PgSession({
       pool,
       tableName: "user_sessions",
-      createTableIfMissing: true,
+      // The table is created via SQL migration. `createTableIfMissing` is not
+      // used because connect-pg-simple reads its bundled `table.sql` from disk,
+      // which is unavailable inside the esbuild output bundle.
+      createTableIfMissing: false,
     }),
     secret: SESSION_SECRET,
     resave: false,
@@ -58,6 +69,12 @@ app.use(
     cookie: {
       httpOnly: true,
       secure: true,
+      // `lax` keeps default CSRF protection for the app's own mutating routes.
+      // OAuth still works: Google's callback is a top-level GET redirect (lax
+      // cookies are sent), and Apple's cross-site form_post establishes the
+      // session on the callback response, which is then sent on the same-site
+      // redirect to /feed. Apple relies on signed id_token verification rather
+      // than session-stored OAuth state (a lax cookie can't survive the POST).
       sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24 * 30,
     },

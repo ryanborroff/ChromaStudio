@@ -31,7 +31,13 @@ async function buildProjectResponse(project: typeof projectsTable.$inferSelect) 
     applicationCount: countRow?.count ?? 0,
     user: user
       ? {
-          ...user,
+          ...(({ googleId, appleId, email, passwordHash, ...safe }) => {
+            void googleId;
+            void appleId;
+            void email;
+            void passwordHash;
+            return safe;
+          })(user),
           skills: user.skills ?? [],
           socialLinks: user.socialLinks ?? null,
           followerCount: 0,

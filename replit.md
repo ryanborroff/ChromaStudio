@@ -16,7 +16,7 @@ A premium, cinematic professional filmmaker platform for video hosting, networki
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
 - Frontend: React + Vite, Tailwind CSS, shadcn/ui, Wouter (routing), TanStack Query
-- Auth: Clerk (`@clerk/react` + `@clerk/express`)
+- Auth: Sign in with Google + Apple (Passport OAuth) and email/password (bcryptjs); Postgres-backed sessions (`express-session` + `connect-pg-simple`)
 - API: Express 5
 - DB: PostgreSQL + Drizzle ORM
 - Validation: Zod (`zod/v4`), `drizzle-zod`
@@ -32,7 +32,9 @@ A premium, cinematic professional filmmaker platform for video hosting, networki
   - `index.css` — cinematic dark theme, Tailwind layers, Clerk integration
 - `artifacts/api-server/src/` — Express backend
   - `routes/` — users, videos, follows, feed, messages, projects, stats, health
-  - `lib/auth.ts` — Clerk auth helper
+  - `lib/auth.ts` — session auth helpers (`requireAuth`, `getCurrentUser`)
+  - `lib/passport.ts` — Passport strategies (Google, Apple) + username generation
+  - `routes/auth.ts` — Google/Apple OAuth + email register/login/logout
 - `lib/api-spec/openapi.yaml` — source-of-truth OpenAPI spec
 - `lib/api-client-react/` — generated TanStack Query hooks (do not hand-edit)
 - `lib/db/src/schema/` — Drizzle ORM schemas (users, videos, follows, messages, projects)
@@ -40,9 +42,9 @@ A premium, cinematic professional filmmaker platform for video hosting, networki
 ## Architecture decisions
 
 - Contract-first API: OpenAPI spec → Orval codegen → typed hooks used in frontend and Zod schemas in backend
-- Clerk handles all auth (JWT verification server-side via `@clerk/express`); users synced to DB on first profile load
+- Auth via Passport + server sessions stored in Postgres (`user_sessions` table); users created on first OAuth login or email registration. Sensitive fields (`googleId`, `appleId`, `email`, `passwordHash`) are stripped from all API responses
 - All routes registered in `artifacts/api-server/src/routes/index.ts`
-- Frontend uses Wouter for routing (lightweight, no React Router peer dep conflicts with Clerk)
+- Frontend uses Wouter for routing (lightweight)
 - Cinematic dark theme: background `#0B0B0B`, card `#181818`, accent `#6B5BFF`, font Inter
 
 ## Product
@@ -62,13 +64,15 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-- Clerk dev key warning in browser console is expected; use production keys when deploying
 - `pnpm run typecheck` is the canonical check; don't rely on editor/LSP alone
 - After adding new routes, always import them in `artifacts/api-server/src/routes/index.ts`
 - `lib/api-client-react/` is auto-generated — run codegen after any OpenAPI spec changes
-- Tailwind must use `optimize: false` in `vite.config.ts` for Clerk prod builds
+- Session cookie is `sameSite: "lax"` + `secure` (lax preserves CSRF protection; Apple works via signed id_token rather than session-stored OAuth state). Secure cookies only round-trip over HTTPS, so test sessions against the HTTPS dev domain, not `http://localhost`
+- The `user_sessions` table is created via raw SQL, not `createTableIfMissing` (connect-pg-simple can't read its `table.sql` from the esbuild bundle)
+- `drizzle push` prompts interactively (TTY) — apply column changes with raw SQL `ALTER TABLE` instead
+- Google/Apple sign-in require OAuth secrets; without them those routes return 503 but email/password still works
 
 ## Pointers
 
 - See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
-- See the `clerk-auth` skill for Clerk configuration and customization
+- Google OAuth redirect URI: `https://<domain>/api/auth/google/callback`; Apple: `https://<domain>/api/auth/apple/callback`

@@ -38,7 +38,7 @@ async function buildUserResponse(user: typeof usersTable.$inferSelect, currentUs
     isFollowing = followRow.length > 0;
   }
 
-  const { googleId: _googleId, email: _email, ...safeUser } = user;
+  const { googleId: _googleId, appleId: _appleId, email: _email, passwordHash: _passwordHash, ...safeUser } = user;
 
   return {
     ...safeUser,

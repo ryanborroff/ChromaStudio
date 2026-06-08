@@ -36,6 +36,48 @@ export function loginWithGoogle(): void {
   window.location.href = `${apiBase}/auth/google`;
 }
 
+export function loginWithApple(): void {
+  window.location.href = `${apiBase}/auth/apple`;
+}
+
+async function postAuth(
+  path: string,
+  body: Record<string, string>,
+): Promise<void> {
+  const res = await fetch(`${apiBase}${path}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "same-origin",
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    let message = "Something went wrong. Please try again.";
+    try {
+      const data = (await res.json()) as { error?: string };
+      if (data.error) message = data.error;
+    } catch {
+      // keep default message
+    }
+    throw new Error(message);
+  }
+  await queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
+}
+
+export function registerWithEmail(input: {
+  email: string;
+  password: string;
+  name?: string;
+}): Promise<void> {
+  return postAuth("/auth/register", input);
+}
+
+export function loginWithEmail(input: {
+  email: string;
+  password: string;
+}): Promise<void> {
+  return postAuth("/auth/login", input);
+}
+
 export async function logout(): Promise<void> {
   try {
     await fetch(`${apiBase}/auth/logout`, {
