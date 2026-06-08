@@ -24,6 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
+import { ImageUploader } from "@/components/ImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 
@@ -63,6 +64,7 @@ export function VideoUpload() {
   const [, setLocation] = useLocation();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [thumbnailUrl, setThumbnailUrl] = useState<string>("");
   const [progress, setProgress] = useState(0);
   const [phase, setPhase] = useState<"idle" | "uploading" | "saving">("idle");
 
@@ -105,7 +107,11 @@ export function VideoUpload() {
 
       setPhase("saving");
       const video = await createMutation.mutateAsync({
-        data: { ...data, streamUid: ticket.uid },
+        data: {
+          ...data,
+          streamUid: ticket.uid,
+          ...(thumbnailUrl ? { thumbnailUrl } : {}),
+        },
       });
       toast({ title: "Video uploaded — now processing" });
       setLocation(`/videos/${video.id}`);
@@ -183,6 +189,13 @@ export function VideoUpload() {
                 </p>
               </div>
             )}
+
+            <ImageUploader
+              label="Thumbnail (optional)"
+              variant="wide"
+              value={thumbnailUrl}
+              onChange={setThumbnailUrl}
+            />
 
             <FormField
               control={form.control}

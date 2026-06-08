@@ -50,11 +50,10 @@ export function MessageThread() {
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
-    sendMutation.mutate({ data: { recipientId: userId, body: message } });
+    sendMutation.mutate({ userId, data: { body: message } });
   };
 
-  const otherUser = conversation?.user;
-  const messages = conversation?.messages || []; // Assuming the API returns full messages list here
+  const messages = conversation?.messages || [];
 
   return (
     <div className="container mx-auto max-w-4xl h-[calc(100vh-4rem)] flex flex-col py-4 px-4 sm:px-6">
@@ -66,20 +65,7 @@ export function MessageThread() {
               <ArrowLeft className="w-5 h-5" />
             </Link>
           </Button>
-          {otherUser && (
-            <Link href={`/profile/${otherUser.username}`} className="flex items-center gap-3 group">
-              <Avatar className="h-10 w-10 border border-border/50">
-                <AvatarImage src={otherUser.avatarUrl || undefined} />
-                <AvatarFallback className="bg-secondary text-secondary-foreground font-semibold">
-                  {otherUser.name?.charAt(0) || "U"}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <p className="font-bold text-white group-hover:text-primary transition-colors leading-tight">{otherUser.name}</p>
-                <p className="text-xs text-primary font-medium">{otherUser.profession}</p>
-              </div>
-            </Link>
-          )}
+          <p className="font-bold text-white leading-tight">Conversation</p>
         </div>
 
         {/* Messages Area */}

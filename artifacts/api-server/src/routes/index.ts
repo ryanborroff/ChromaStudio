@@ -8,6 +8,7 @@ import feedRouter from "./feed";
 import messagesRouter from "./messages";
 import projectsRouter from "./projects";
 import statsRouter from "./stats";
+import storageRouter from "./storage";
 
 const router: IRouter = Router();
 
@@ -20,5 +21,6 @@ router.use(feedRouter);
 router.use(messagesRouter);
 router.use(projectsRouter);
 router.use(statsRouter);
+router.use(storageRouter);
 
 export default router;

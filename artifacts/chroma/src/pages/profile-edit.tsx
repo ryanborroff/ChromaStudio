@@ -16,7 +16,8 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
-import { useEffect, useRef } from "react";
+import { ImageUploader } from "@/components/ImageUploader";
+import { useEffect, useRef, useState } from "react";
 
 const profileSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -46,6 +47,8 @@ export function ProfileEdit() {
   });
 
   const initRef = useRef(false);
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
+  const [coverUrl, setCoverUrl] = useState<string>("");
 
   useEffect(() => {
     if (user && !initRef.current) {
@@ -56,6 +59,8 @@ export function ProfileEdit() {
         location: user.location || "",
         website: user.website || "",
       });
+      setAvatarUrl(user.avatarUrl || "");
+      setCoverUrl(user.coverUrl || "");
       initRef.current = true;
     }
   }, [user, form]);
@@ -73,7 +78,9 @@ export function ProfileEdit() {
   });
 
   function onSubmit(data: ProfileFormValues) {
-    updateMutation.mutate({ data });
+    updateMutation.mutate({
+      data: { ...data, avatarUrl, coverUrl },
+    });
   }
 
   if (isLoading) {
@@ -91,6 +98,20 @@ export function ProfileEdit() {
       <div className="bg-card border border-border/50 rounded-xl p-6">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <ImageUploader
+              label="Cover Image"
+              variant="wide"
+              value={coverUrl}
+              onChange={setCoverUrl}
+            />
+
+            <ImageUploader
+              label="Profile Photo"
+              variant="avatar"
+              value={avatarUrl}
+              onChange={setAvatarUrl}
+            />
+
             <FormField
               control={form.control}
               name="name"

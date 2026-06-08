@@ -64,7 +64,7 @@ export function ProjectDetail() {
   const handleApply = (e: React.FormEvent) => {
     e.preventDefault();
     if (!message.trim()) return;
-    applyMutation.mutate({ data: { projectId, message } });
+    applyMutation.mutate({ id: projectId, data: { message } });
   };
 
   return (

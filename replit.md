@@ -31,10 +31,13 @@ A premium, cinematic professional filmmaker platform for video hosting, networki
   - `lib/queryClient.ts` — TanStack Query client singleton
   - `index.css` — cinematic dark theme, Tailwind layers, Clerk integration
 - `artifacts/api-server/src/` — Express backend
-  - `routes/` — users, videos, follows, feed, messages, projects, stats, health
+  - `routes/` — users, videos, follows, feed, messages, projects, stats, health, storage
   - `lib/auth.ts` — session auth helpers (`requireAuth`, `getCurrentUser`)
   - `lib/passport.ts` — Passport strategies (Google, Apple) + username generation
+  - `lib/objectStorage.ts`, `lib/objectAcl.ts` — Replit Object Storage service + ACL helpers
   - `routes/auth.ts` — Google/Apple OAuth + email register/login/logout
+  - `routes/storage.ts` — image upload (presigned URL) + public object serving
+- `lib/object-storage-web/` — client upload helpers (`useUpload`, `ObjectUploader`)
 - `lib/api-spec/openapi.yaml` — source-of-truth OpenAPI spec
 - `lib/api-client-react/` — generated TanStack Query hooks (do not hand-edit)
 - `lib/db/src/schema/` — Drizzle ORM schemas (users, videos, follows, messages, projects)
@@ -71,6 +74,7 @@ _Populate as you build — explicit user instructions worth remembering across s
 - The `user_sessions` table is created via raw SQL, not `createTableIfMissing` (connect-pg-simple can't read its `table.sql` from the esbuild bundle)
 - `drizzle push` prompts interactively (TTY) — apply column changes with raw SQL `ALTER TABLE` instead
 - Google/Apple sign-in require OAuth secrets; without them those routes return 503 but email/password still works
+- Image uploads use **Replit Object Storage** (not Cloudflare R2). All uploads are public-by-design (avatars/covers/thumbnails); `/api/storage/objects/*` serves them with no ACL. Store the serving URL `/api/storage{objectPath}` in DB. Upload endpoint requires auth + enforces image-only, ≤10 MB
 
 ## Pointers
 

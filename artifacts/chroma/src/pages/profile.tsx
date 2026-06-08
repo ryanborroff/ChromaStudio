@@ -74,7 +74,7 @@ export function Profile() {
       toast({ title: "Please sign in to follow filmmakers" });
       return;
     }
-    followMutation.mutate({ data: { userId: user.id } });
+    followMutation.mutate({ userId: user.id });
   };
 
   return (

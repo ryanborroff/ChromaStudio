@@ -1,2 +1,3 @@
-- [Chroma project overview](chroma-overview.md) — full-stack filmmaker platform; stack, route wiring, Clerk auth, codegen flow
-- [clerk/shared pnpm linking](clerk-shared-pnpm-linking.md) — `pnpm add` can relink api-server to a broken peerless @clerk/shared copy; `pnpm install` repairs it, don't edit the import.
+- [Auth & sessions](auth-sessions.md) — Passport OAuth + Postgres sessions; cookie/CSRF and Apple id_token gotchas.
+- [Object storage](object-storage.md) — Replit Object Storage for public avatar/cover/thumbnail images; serving-URL convention and public-media decision.
+- [Clerk/shared pnpm linking](clerk-shared-pnpm-linking.md) — pnpm workspace linking quirks for shared packages.

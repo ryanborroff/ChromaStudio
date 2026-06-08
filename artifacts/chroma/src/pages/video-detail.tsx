@@ -85,13 +85,13 @@ export function VideoDetail() {
       toast({ title: "Please sign in to like videos" });
       return;
     }
-    likeMutation.mutate({ data: { videoId } });
+    likeMutation.mutate({ id: videoId });
   };
 
   const handleComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentText.trim()) return;
-    commentMutation.mutate({ data: { videoId, body: commentText } });
+    commentMutation.mutate({ id: videoId, data: { body: commentText } });
   };
 
   return (
