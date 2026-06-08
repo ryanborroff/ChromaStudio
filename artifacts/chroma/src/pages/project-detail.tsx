@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { useState } from "react";
-import { Show } from "@clerk/react";
+import { useAuth } from "@/lib/useAuth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,7 @@ export function ProjectDetail() {
   const { toast } = useToast();
   const [message, setMessage] = useState("");
   const [open, setOpen] = useState(false);
+  const { isSignedIn } = useAuth();
 
   const { data: project, isLoading, error } = useGetProject(projectId, {
     query: {
@@ -143,7 +144,7 @@ export function ProjectDetail() {
               )}
             </div>
             
-            <Show when="signed-in">
+            {isSignedIn && (
               <Dialog open={open} onOpenChange={setOpen}>
                 <DialogTrigger asChild>
                   <Button size="lg" className="w-full sm:w-auto px-10 h-14 text-lg font-bold">
@@ -174,7 +175,7 @@ export function ProjectDetail() {
                   </form>
                 </DialogContent>
               </Dialog>
-            </Show>
+            )}
           </div>
         </div>
       </div>

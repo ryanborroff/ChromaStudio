@@ -21,7 +21,6 @@ export const HealthCheckResponse = zod.object({
  */
 export const GetMeResponse = zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -62,7 +61,6 @@ export const UpdateMeBody = zod.object({
 
 export const UpdateMeResponse = zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -100,7 +98,6 @@ export const ListUsersQueryParams = zod.object({
 export const ListUsersResponse = zod.object({
   "users": zod.array(zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -133,7 +130,6 @@ export const GetUserByUsernameParams = zod.object({
 export const GetUserByUsernameResponse = zod.object({
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -169,7 +165,6 @@ export const GetUserByUsernameResponse = zod.object({
   "isLiked": zod.boolean().optional(),
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -224,7 +219,6 @@ export const ListVideosResponse = zod.object({
   "isLiked": zod.boolean().optional(),
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -300,7 +294,6 @@ export const GetVideoResponse = zod.object({
   "isLiked": zod.boolean().optional(),
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -357,7 +350,6 @@ export const UpdateVideoResponse = zod.object({
   "isLiked": zod.boolean().optional(),
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -416,7 +408,6 @@ export const ListCommentsResponse = zod.object({
   "body": zod.string(),
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -478,7 +469,6 @@ export const ListFollowersParams = zod.object({
 export const ListFollowersResponse = zod.object({
   "users": zod.array(zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -511,7 +501,6 @@ export const ListFollowingParams = zod.object({
 export const ListFollowingResponse = zod.object({
   "users": zod.array(zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -560,7 +549,6 @@ export const GetFeedResponse = zod.object({
   "isLiked": zod.boolean().optional(),
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -593,7 +581,6 @@ export const ListConversationsResponse = zod.object({
   "userId": zod.number(),
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -677,7 +664,6 @@ export const ListProjectsResponse = zod.object({
   "applicationCount": zod.number().optional(),
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -738,7 +724,6 @@ export const GetProjectResponse = zod.object({
   "applicationCount": zod.number().optional(),
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -789,7 +774,6 @@ export const UpdateProjectResponse = zod.object({
   "applicationCount": zod.number().optional(),
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -855,7 +839,6 @@ export const GetPlatformStatsResponse = zod.object({
 export const GetFeaturedContentResponse = zod.object({
   "filmmakers": zod.array(zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),
@@ -891,7 +874,6 @@ export const GetFeaturedContentResponse = zod.object({
   "isLiked": zod.boolean().optional(),
   "user": zod.object({
   "id": zod.number(),
-  "clerkId": zod.string(),
   "username": zod.string(),
   "name": zod.string(),
   "profession": zod.string(),

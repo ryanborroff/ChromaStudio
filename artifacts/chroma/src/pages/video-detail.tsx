@@ -14,14 +14,14 @@ import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Show, useUser } from "@clerk/react";
+import { useAuth } from "@/lib/useAuth";
 import { Stream } from "@cloudflare/stream-react";
 
 export function VideoDetail() {
   const params = useParams();
   const videoId = Number(params.id);
   const { toast } = useToast();
-  const { user } = useUser();
+  const { user, isSignedIn } = useAuth();
   const [commentText, setCommentText] = useState("");
 
   const { data: video, isLoading, error } = useGetVideo(videoId, {
@@ -143,12 +143,12 @@ export function VideoDetail() {
                   </Link>
                 )}
                 
-                <Show when="signed-in">
+                {isSignedIn && (
                   <Button variant="secondary" size="sm" className="ml-2 font-semibold">
                     <UserPlus className="w-4 h-4 mr-2" />
                     Follow
                   </Button>
-                </Show>
+                )}
               </div>
               
               <div className="flex items-center gap-3">
@@ -199,12 +199,12 @@ export function VideoDetail() {
           <div>
             <h3 className="text-xl font-bold text-white mb-6">{commentsData?.comments.length || 0} Comments</h3>
             
-            <Show when="signed-in">
+            {isSignedIn && (
               <form onSubmit={handleComment} className="flex gap-4 mb-8">
                 <Avatar className="h-10 w-10 border border-border/50 shrink-0">
-                  <AvatarImage src={user?.imageUrl} />
+                  <AvatarImage src={user?.avatarUrl ?? undefined} />
                   <AvatarFallback className="bg-secondary text-secondary-foreground font-semibold">
-                    {user?.firstName?.charAt(0) || "U"}
+                    {user?.name?.charAt(0) || "U"}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-3">
@@ -223,7 +223,7 @@ export function VideoDetail() {
                   </div>
                 </div>
               </form>
-            </Show>
+            )}
             
             <div className="space-y-6">
               {commentsLoading ? (

@@ -6,13 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState, useRef, useEffect } from "react";
 import { format } from "date-fns";
-import { useUser } from "@clerk/react";
+import { useAuth } from "@/lib/useAuth";
 import { queryClient } from "@/lib/queryClient";
 
 export function MessageThread() {
   const params = useParams();
   const userId = Number(params.userId);
-  const { user: currentUser } = useUser();
+  const { user: currentUser } = useAuth();
   const [message, setMessage] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +87,7 @@ export function MessageThread() {
           {messages.length > 0 ? (
             messages.map((msg: any) => {
               // Note: using string comparison if IDs are different types, but assuming numbers here
-              const isMine = msg.senderId.toString() === currentUser?.id || msg.senderId === currentUser?.id;
+              const isMine = msg.senderId === currentUser?.id;
               
               return (
                 <div key={msg.id} className={`flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>

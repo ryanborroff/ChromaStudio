@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { VideoCard } from "@/components/video-card";
 import { EmptyState } from "@/components/empty-state";
-import { useUser } from "@clerk/react";
+import { useAuth } from "@/lib/useAuth";
 import { Link } from "wouter";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -20,7 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export function Profile() {
   const params = useParams();
   const username = params.username;
-  const { user: currentUser } = useUser();
+  const { user: currentUser } = useAuth();
   const { toast } = useToast();
 
   const { data, isLoading, error } = useGetUserByUsername(username || "", {
@@ -67,7 +67,7 @@ export function Profile() {
   }
 
   const { user, videos } = data;
-  const isOwnProfile = currentUser?.username === user.username || currentUser?.id === user.clerkId;
+  const isOwnProfile = currentUser?.username === user.username || currentUser?.id === user.id;
 
   const handleFollow = () => {
     if (!currentUser) {

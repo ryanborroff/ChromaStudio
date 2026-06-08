@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq, ilike, or, sql } from "drizzle-orm";
 import { db, usersTable, videosTable, followsTable } from "@workspace/db";
-import { requireAuth, getCurrentUser, getOrCreateUser } from "../lib/auth";
+import { requireAuth, getCurrentUser } from "../lib/auth";
 import {
   GetMeResponse,
   UpdateMeBody,
@@ -38,8 +38,10 @@ async function buildUserResponse(user: typeof usersTable.$inferSelect, currentUs
     isFollowing = followRow.length > 0;
   }
 
+  const { googleId: _googleId, email: _email, ...safeUser } = user;
+
   return {
-    ...user,
+    ...safeUser,
     followerCount: followerCountRow?.count ?? 0,
     followingCount: followingCountRow?.count ?? 0,
     videoCount: videoCountRow?.count ?? 0,

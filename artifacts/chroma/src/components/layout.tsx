@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Show, useClerk, useUser } from "@clerk/react";
+import { useAuth, logout } from "@/lib/useAuth";
 import {
   Film, LogOut, Settings, User as UserIcon,
   Grid3X3, Play, Users, Briefcase, Clapperboard, Sparkles, Rss,
@@ -36,9 +36,7 @@ const GENRE_TAGS = ["Documentary", "Narrative", "Experimental", "Commercial", "M
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { user } = useUser();
-  const { signOut } = useClerk();
-  const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
+  const { user, isSignedIn } = useAuth();
 
   const isHome = location === "/";
   const showSidebar = !isHome && !location.startsWith("/sign");
@@ -84,7 +82,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="flex flex-col py-3 px-2 overflow-y-auto h-[calc(100dvh-3rem)]">
                 <p className="px-3 text-[10px] font-semibold text-white/25 uppercase tracking-widest mb-1">Library</p>
 
-                <Show when="signed-in">
+                {isSignedIn && (
                   <Link
                     href="/feed"
                     onClick={() => setMobileOpen(false)}
@@ -94,7 +92,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <Rss className={`w-4 h-4 ${location === "/feed" ? "text-primary" : ""}`} />
                     Feed
                   </Link>
-                </Show>
+                )}
 
                 {NAV_ITEMS.map(item => {
                   const Icon = item.icon;
@@ -113,7 +111,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   );
                 })}
 
-                <Show when="signed-in">
+                {isSignedIn && (
                   <Link
                     href="/videos/upload"
                     onClick={() => setMobileOpen(false)}
@@ -123,7 +121,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <Film className="w-4 h-4" />
                     Upload
                   </Link>
-                </Show>
+                )}
 
                 <p className="px-3 mt-5 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">Discover</p>
                 {GENRE_TAGS.map(tag => (
@@ -136,7 +134,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </button>
                 ))}
 
-                <Show when="signed-out">
+                {!isSignedIn && (
                   <div className="mt-auto px-1 pt-4 flex flex-col gap-2">
                     <Link
                       href="/sign-in"
@@ -156,7 +154,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       Join Chroma
                     </Link>
                   </div>
-                </Show>
+                )}
               </div>
             </SheetContent>
           </Sheet>
@@ -176,7 +174,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Top-level nav links */}
           <nav className="hidden md:flex items-center gap-0.5">
-            <Show when="signed-in">
+            {isSignedIn && (
               <Link
                 href="/feed"
                 className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${location === "/feed" ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
@@ -184,7 +182,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               >
                 Feed
               </Link>
-            </Show>
+            )}
             {NAV_ITEMS.map(item => (
               <Link
                 key={item.href}
@@ -200,7 +198,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
         {/* Right — auth */}
         <div className="flex items-center gap-2">
-          <Show when="signed-in">
+          {isSignedIn && (
+            <>
             <Link
               href="/videos/upload"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all"
@@ -214,9 +213,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <DropdownMenuTrigger asChild>
                 <button className="rounded-full ring-offset-background transition-opacity hover:opacity-80 outline-none" data-testid="menu-user">
                   <Avatar className="h-7 w-7">
-                    <AvatarImage src={user?.imageUrl} alt={user?.fullName || ""} />
+                    <AvatarImage src={user?.avatarUrl ?? undefined} alt={user?.name || ""} />
                     <AvatarFallback className="bg-white/10 text-white/80 text-xs font-semibold">
-                      {user?.firstName?.charAt(0) || "U"}
+                      {user?.name?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
                 </button>
@@ -224,15 +223,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <DropdownMenuContent align="end" className="w-56 bg-card border-border">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none text-foreground">{user?.fullName}</p>
+                    <p className="text-sm font-medium leading-none text-foreground">{user?.name}</p>
                     <p className="text-xs leading-none text-muted-foreground">
-                      {user?.primaryEmailAddress?.emailAddress}
+                      @{user?.username}
                     </p>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem asChild className="cursor-pointer focus:bg-secondary focus:text-secondary-foreground">
-                  <Link href={`/profile/${user?.username || user?.id}`} className="flex items-center w-full" data-testid="menu-item-profile">
+                  <Link href={`/profile/${user?.username}`} className="flex items-center w-full" data-testid="menu-item-profile">
                     <UserIcon className="mr-2 h-4 w-4" />
                     <span>Profile</span>
                   </Link>
@@ -246,7 +245,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <DropdownMenuSeparator className="bg-border" />
                 <DropdownMenuItem
                   className="cursor-pointer focus:bg-destructive/20 focus:text-destructive text-destructive"
-                  onClick={() => signOut({ redirectUrl: basePath || "/" })}
+                  onClick={() => void logout()}
                   data-testid="menu-item-logout"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
@@ -254,9 +253,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          </Show>
+            </>
+          )}
 
-          <Show when="signed-out">
+          {!isSignedIn && (
+            <>
             <Link
               href="/sign-in"
               className="text-sm font-medium text-white/50 hover:text-white px-3 py-1 rounded-md hover:bg-white/5 transition-all"
@@ -275,7 +276,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               Join Chroma
             </Link>
-          </Show>
+            </>
+          )}
         </div>
       </header>
 
@@ -292,7 +294,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           >
             <p className="px-3 text-[10px] font-semibold text-white/25 uppercase tracking-widest mb-1">Library</p>
 
-            <Show when="signed-in">
+            {isSignedIn && (
               <Link
                 href="/feed"
                 className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${location === "/feed" ? "bg-white/10 text-white" : "text-white/40 hover:text-white/75 hover:bg-white/5"}`}
@@ -301,7 +303,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Rss className={`w-4 h-4 ${location === "/feed" ? "text-primary" : ""}`} />
                 Feed
               </Link>
-            </Show>
+            )}
 
             {NAV_ITEMS.map(item => {
               const Icon = item.icon;

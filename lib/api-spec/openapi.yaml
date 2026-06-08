@@ -641,12 +641,10 @@ components:
     # ── User schemas ──────────────────────────────────────────────────────────
     User:
       type: object
-      required: [id, clerkId, username, name, profession, createdAt]
+      required: [id, username, name, profession, createdAt]
       properties:
         id:
           type: integer
-        clerkId:
-          type: string
         username:
           type: string
         name:

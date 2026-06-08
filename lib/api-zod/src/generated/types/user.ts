@@ -9,7 +9,6 @@ import type { UserSocialLinks } from './userSocialLinks';
 
 export interface User {
   id: number;
-  clerkId: string;
   username: string;
   name: string;
   profession: string;

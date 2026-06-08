@@ -50,15 +50,18 @@ async function buildVideoResponse(
     tags: video.tags ?? [],
     isLiked,
     user: user
-      ? {
-          ...user,
-          skills: user.skills ?? [],
-          socialLinks: user.socialLinks ?? null,
-          followerCount: 0,
-          followingCount: 0,
-          videoCount: 0,
-          isFollowing: false,
-        }
+      ? (() => {
+          const { googleId: _g, email: _e, ...safeUser } = user;
+          return {
+            ...safeUser,
+            skills: user.skills ?? [],
+            socialLinks: user.socialLinks ?? null,
+            followerCount: 0,
+            followingCount: 0,
+            videoCount: 0,
+            isFollowing: false,
+          };
+        })()
       : null,
   };
 }
@@ -298,15 +301,18 @@ router.get("/videos/:id/comments", async (req, res): Promise<void> => {
       return {
         ...c,
         user: user
-          ? {
-              ...user,
-              skills: user.skills ?? [],
-              socialLinks: user.socialLinks ?? null,
-              followerCount: 0,
-              followingCount: 0,
-              videoCount: 0,
-              isFollowing: false,
-            }
+          ? (() => {
+              const { googleId: _g, email: _e, ...safeUser } = user;
+              return {
+                ...safeUser,
+                skills: user.skills ?? [],
+                socialLinks: user.socialLinks ?? null,
+                followerCount: 0,
+                followingCount: 0,
+                videoCount: 0,
+                isFollowing: false,
+              };
+            })()
           : null,
       };
     }),
@@ -330,10 +336,11 @@ router.post("/videos/:id/comments", requireAuth, async (req, res): Promise<void>
     .values({ videoId: id, userId: user.id, body: parsed.data.body })
     .returning();
 
+  const { googleId: _g, email: _e, ...safeUser } = user;
   res.status(201).json({
     ...comment,
     user: {
-      ...user,
+      ...safeUser,
       skills: user.skills ?? [],
       socialLinks: user.socialLinks ?? null,
       followerCount: 0,
