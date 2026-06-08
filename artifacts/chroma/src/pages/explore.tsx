@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, Fragment } from "react";
 import { useListVideos, getListVideosQueryKey } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/video-card";
 import { EmptyState } from "@/components/empty-state";
@@ -13,9 +13,9 @@ import {
 
 const SORT_OPTIONS = [
   { value: "featured", label: "Trending" },
-  { value: "newest", label: "Newest" },
-  { value: "most_viewed", label: "Most Viewed" },
   { value: "community_rated", label: "Community Rated" },
+  { value: "most_viewed", label: "Most Viewed" },
+  { value: "newest", label: "Newest" },
 ] as const;
 
 export function Explore() {
@@ -50,46 +50,48 @@ export function Explore() {
         <div className="flex items-center gap-2">
           {/* Sort pills */}
           <div className="hidden sm:flex items-center gap-1 mr-2">
-            {SORT_OPTIONS.filter(opt => opt.value !== "community_rated").map(opt => (
-              <button
-                key={opt.value}
-                onClick={() => setSort(opt.value)}
-                className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${sort === opt.value ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
-              >
-                {opt.label}
-              </button>
-            ))}
-
-            {/* Community Rated — dropdown with Highest / Lowest */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+            {SORT_OPTIONS.map(opt => (
+              opt.value === "community_rated" ? (
+                /* Community Rated — dropdown with Highest / Lowest */
+                <DropdownMenu key="community_rated">
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-all ${isCommunity ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
+                      data-testid="btn-community-rated"
+                    >
+                      Community Rated
+                      <ChevronDown className="w-3 h-3 opacity-70" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-card border-border">
+                    <DropdownMenuItem
+                      onClick={() => setSort("community_rated")}
+                      className="cursor-pointer text-sm justify-between gap-4"
+                      data-testid="sort-option-community_rated"
+                    >
+                      <span className="flex items-center gap-2"><ArrowDownWideNarrow className="w-3.5 h-3.5" /> Highest</span>
+                      {sort === "community_rated" && <Check className="w-3.5 h-3.5 text-primary" />}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setSort("community_rated_asc")}
+                      className="cursor-pointer text-sm justify-between gap-4"
+                      data-testid="sort-option-community_rated_asc"
+                    >
+                      <span className="flex items-center gap-2"><ArrowUpNarrowWide className="w-3.5 h-3.5" /> Lowest</span>
+                      {sort === "community_rated_asc" && <Check className="w-3.5 h-3.5 text-primary" />}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
                 <button
-                  className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-all ${isCommunity ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
-                  data-testid="btn-community-rated"
+                  key={opt.value}
+                  onClick={() => setSort(opt.value)}
+                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${sort === opt.value ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
                 >
-                  Community Rated
-                  <ChevronDown className="w-3 h-3 opacity-70" />
+                  {opt.label}
                 </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-card border-border">
-                <DropdownMenuItem
-                  onClick={() => setSort("community_rated")}
-                  className="cursor-pointer text-sm justify-between gap-4"
-                  data-testid="sort-option-community_rated"
-                >
-                  <span className="flex items-center gap-2"><ArrowDownWideNarrow className="w-3.5 h-3.5" /> Highest</span>
-                  {sort === "community_rated" && <Check className="w-3.5 h-3.5 text-primary" />}
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setSort("community_rated_asc")}
-                  className="cursor-pointer text-sm justify-between gap-4"
-                  data-testid="sort-option-community_rated_asc"
-                >
-                  <span className="flex items-center gap-2"><ArrowUpNarrowWide className="w-3.5 h-3.5" /> Lowest</span>
-                  {sort === "community_rated_asc" && <Check className="w-3.5 h-3.5 text-primary" />}
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              )
+            ))}
           </div>
 
           {/* Search */}
@@ -121,33 +123,38 @@ export function Explore() {
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="bg-card border-border">
-              {SORT_OPTIONS.filter(opt => opt.value !== "community_rated").map(opt => (
-                <DropdownMenuItem
-                  key={opt.value}
-                  onClick={() => setSort(opt.value)}
-                  className="cursor-pointer text-sm justify-between gap-4"
-                  data-testid={`sort-option-${opt.value}`}
-                >
-                  {opt.label}
-                  {sort === opt.value && <Check className="w-3.5 h-3.5 text-primary" />}
-                </DropdownMenuItem>
+              {SORT_OPTIONS.map(opt => (
+                opt.value === "community_rated" ? (
+                  <Fragment key="community_rated">
+                    <DropdownMenuItem
+                      onClick={() => setSort("community_rated")}
+                      className="cursor-pointer text-sm justify-between gap-4"
+                      data-testid="sort-option-community_rated"
+                    >
+                      Community Rated · Highest
+                      {sort === "community_rated" && <Check className="w-3.5 h-3.5 text-primary" />}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setSort("community_rated_asc")}
+                      className="cursor-pointer text-sm justify-between gap-4"
+                      data-testid="sort-option-community_rated_asc"
+                    >
+                      Community Rated · Lowest
+                      {sort === "community_rated_asc" && <Check className="w-3.5 h-3.5 text-primary" />}
+                    </DropdownMenuItem>
+                  </Fragment>
+                ) : (
+                  <DropdownMenuItem
+                    key={opt.value}
+                    onClick={() => setSort(opt.value)}
+                    className="cursor-pointer text-sm justify-between gap-4"
+                    data-testid={`sort-option-${opt.value}`}
+                  >
+                    {opt.label}
+                    {sort === opt.value && <Check className="w-3.5 h-3.5 text-primary" />}
+                  </DropdownMenuItem>
+                )
               ))}
-              <DropdownMenuItem
-                onClick={() => setSort("community_rated")}
-                className="cursor-pointer text-sm justify-between gap-4"
-                data-testid="sort-option-community_rated"
-              >
-                Community Rated · Highest
-                {sort === "community_rated" && <Check className="w-3.5 h-3.5 text-primary" />}
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSort("community_rated_asc")}
-                className="cursor-pointer text-sm justify-between gap-4"
-                data-testid="sort-option-community_rated_asc"
-              >
-                Community Rated · Lowest
-                {sort === "community_rated_asc" && <Check className="w-3.5 h-3.5 text-primary" />}
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
