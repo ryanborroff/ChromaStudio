@@ -3,6 +3,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { Film, Heart, Eye, Play } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StarRating } from "@/components/star-rating";
 import type { Video } from "@workspace/api-client-react";
 
 interface VideoCardProps {
@@ -102,9 +103,17 @@ export function VideoCard({ video, showAuthor = true }: VideoCardProps) {
             </div>
           )}
 
-          <span className="text-xs text-white/25 mt-1" data-testid={`video-date-${video.id}`}>
-            {format(new Date(video.createdAt), "MMM d, yyyy")}
-          </span>
+          <div className="flex items-center justify-between gap-2 mt-1.5">
+            <StarRating
+              videoId={video.id}
+              ratingAvg={video.ratingAvg ?? 0}
+              ratingCount={video.ratingCount ?? 0}
+              userRating={video.userRating ?? null}
+            />
+            <span className="text-xs text-white/25 shrink-0" data-testid={`video-date-${video.id}`}>
+              {format(new Date(video.createdAt), "MMM d, yyyy")}
+            </span>
+          </div>
         </div>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, boolean, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { usersTable } from "./users";
@@ -23,6 +23,8 @@ export const videosTable = pgTable("videos", {
   credits: text("credits"),
   viewCount: integer("view_count").notNull().default(0),
   likeCount: integer("like_count").notNull().default(0),
+  ratingSum: integer("rating_sum").notNull().default(0),
+  ratingCount: integer("rating_count").notNull().default(0),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -40,6 +42,18 @@ export const videoLikesTable = pgTable("video_likes", {
   videoId: integer("video_id").notNull().references(() => videosTable.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export const videoRatingsTable = pgTable(
+  "video_ratings",
+  {
+    id: serial("id").primaryKey(),
+    userId: integer("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+    videoId: integer("video_id").notNull().references(() => videosTable.id, { onDelete: "cascade" }),
+    rating: integer("rating").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [unique("video_ratings_user_video_unique").on(t.userId, t.videoId)],
+);
 
 export const commentsTable = pgTable("comments", {
   id: serial("id").primaryKey(),

@@ -48,6 +48,8 @@ import type {
   ProjectInput,
   ProjectList,
   ProjectUpdate,
+  RateInput,
+  RateResult,
   SharePublic,
   ShareSettings,
   ShareSettingsInput,
@@ -1209,6 +1211,78 @@ export const useLikeVideo = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getLikeVideoMutationOptions(options));
+    }
+
+export const getRateVideoUrl = (id: number,) => {
+
+
+
+
+  return `/api/videos/${id}/rate`
+}
+
+/**
+ * @summary Rate a video (1-5 stars)
+ */
+export const rateVideo = async (id: number,
+    rateInput: RateInput, options?: RequestInit): Promise<RateResult> => {
+
+  return customFetch<RateResult>(getRateVideoUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      rateInput,)
+  }
+);}
+
+
+
+
+export const getRateVideoMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rateVideo>>, TError,{id: number;data: BodyType<RateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof rateVideo>>, TError,{id: number;data: BodyType<RateInput>}, TContext> => {
+
+const mutationKey = ['rateVideo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof rateVideo>>, {id: number;data: BodyType<RateInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  rateVideo(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RateVideoMutationResult = NonNullable<Awaited<ReturnType<typeof rateVideo>>>
+    export type RateVideoMutationBody = BodyType<RateInput>
+    export type RateVideoMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Rate a video (1-5 stars)
+ */
+export const useRateVideo = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof rateVideo>>, TError,{id: number;data: BodyType<RateInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof rateVideo>>,
+        TError,
+        {id: number;data: BodyType<RateInput>},
+        TContext
+      > => {
+      return useMutation(getRateVideoMutationOptions(options));
     }
 
 export const getListCommentsUrl = (id: number,) => {

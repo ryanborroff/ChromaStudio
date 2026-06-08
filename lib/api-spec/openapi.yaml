@@ -407,6 +407,31 @@ paths:
               schema:
                 $ref: "#/components/schemas/LikeResult"
 
+  /videos/{id}/rate:
+    post:
+      operationId: rateVideo
+      tags: [videos]
+      summary: Rate a video (1-5 stars)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RateInput"
+      responses:
+        "200":
+          description: Rating recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RateResult"
+
   /videos/{id}/comments:
     get:
       operationId: listComments
@@ -1096,6 +1121,12 @@ components:
           type: integer
         isLiked:
           type: boolean
+        ratingAvg:
+          type: number
+        ratingCount:
+          type: integer
+        userRating:
+          type: ["integer", "null"]
         user:
           $ref: "#/components/schemas/User"
         createdAt:
@@ -1288,6 +1319,26 @@ components:
           type: boolean
         likeCount:
           type: integer
+
+    RateInput:
+      type: object
+      required: [rating]
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+
+    RateResult:
+      type: object
+      required: [ratingAvg, ratingCount, userRating]
+      properties:
+        ratingAvg:
+          type: number
+        ratingCount:
+          type: integer
+        userRating:
+          type: ["integer", "null"]
 
     Comment:
       type: object

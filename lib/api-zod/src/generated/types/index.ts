@@ -38,6 +38,8 @@ export * from './project';
 export * from './projectInput';
 export * from './projectList';
 export * from './projectUpdate';
+export * from './rateInput';
+export * from './rateResult';
 export * from './sharePublic';
 export * from './shareSettings';
 export * from './shareSettingsInput';

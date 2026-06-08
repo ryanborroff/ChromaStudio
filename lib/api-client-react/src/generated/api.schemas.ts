@@ -116,6 +116,10 @@ export interface Video {
   viewCount: number;
   likeCount: number;
   isLiked?: boolean;
+  ratingAvg?: number;
+  ratingCount?: number;
+  /** @nullable */
+  userRating?: number | null;
   user?: User;
   createdAt: string;
 }
@@ -267,6 +271,21 @@ export interface VideoList {
 export interface LikeResult {
   liked: boolean;
   likeCount: number;
+}
+
+export interface RateInput {
+  /**
+     * @minimum 1
+     * @maximum 5
+     */
+  rating: number;
+}
+
+export interface RateResult {
+  ratingAvg: number;
+  ratingCount: number;
+  /** @nullable */
+  userRating: number | null;
 }
 
 export interface Comment {

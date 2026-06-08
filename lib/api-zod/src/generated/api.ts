@@ -223,6 +223,9 @@ export const GetUserByUsernameResponse = zod.object({
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
+  "ratingAvg": zod.number().optional(),
+  "ratingCount": zod.number().optional(),
+  "userRating": zod.number().nullish(),
   "user": zod.object({
   "id": zod.number(),
   "username": zod.string(),
@@ -285,6 +288,9 @@ export const ListVideosResponse = zod.object({
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
+  "ratingAvg": zod.number().optional(),
+  "ratingCount": zod.number().optional(),
+  "userRating": zod.number().nullish(),
   "user": zod.object({
   "id": zod.number(),
   "username": zod.string(),
@@ -365,6 +371,9 @@ export const GetVideoResponse = zod.object({
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
+  "ratingAvg": zod.number().optional(),
+  "ratingCount": zod.number().optional(),
+  "userRating": zod.number().nullish(),
   "user": zod.object({
   "id": zod.number(),
   "username": zod.string(),
@@ -428,6 +437,9 @@ export const UpdateVideoResponse = zod.object({
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
+  "ratingAvg": zod.number().optional(),
+  "ratingCount": zod.number().optional(),
+  "userRating": zod.number().nullish(),
   "user": zod.object({
   "id": zod.number(),
   "username": zod.string(),
@@ -470,6 +482,28 @@ export const LikeVideoParams = zod.object({
 export const LikeVideoResponse = zod.object({
   "liked": zod.boolean(),
   "likeCount": zod.number()
+})
+
+
+/**
+ * @summary Rate a video (1-5 stars)
+ */
+export const RateVideoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const rateVideoBodyRatingMax = 5;
+
+
+
+export const RateVideoBody = zod.object({
+  "rating": zod.number().min(1).max(rateVideoBodyRatingMax)
+})
+
+export const RateVideoResponse = zod.object({
+  "ratingAvg": zod.number(),
+  "ratingCount": zod.number(),
+  "userRating": zod.number().nullable()
 })
 
 
@@ -589,6 +623,9 @@ export const GetCollectionResponse = zod.object({
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
+  "ratingAvg": zod.number().optional(),
+  "ratingCount": zod.number().optional(),
+  "userRating": zod.number().nullish(),
   "user": zod.object({
   "id": zod.number(),
   "username": zod.string(),
@@ -810,6 +847,9 @@ export const GetFeedResponse = zod.object({
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
+  "ratingAvg": zod.number().optional(),
+  "ratingCount": zod.number().optional(),
+  "userRating": zod.number().nullish(),
   "user": zod.object({
   "id": zod.number(),
   "username": zod.string(),
@@ -1140,6 +1180,9 @@ export const GetFeaturedContentResponse = zod.object({
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
+  "ratingAvg": zod.number().optional(),
+  "ratingCount": zod.number().optional(),
+  "userRating": zod.number().nullish(),
   "user": zod.object({
   "id": zod.number(),
   "username": zod.string(),

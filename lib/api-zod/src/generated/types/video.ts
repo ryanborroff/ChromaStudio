@@ -37,6 +37,10 @@ export interface Video {
   viewCount: number;
   likeCount: number;
   isLiked?: boolean;
+  ratingAvg?: number;
+  ratingCount?: number;
+  /** @nullable */
+  userRating?: number | null;
   user?: User;
   createdAt: Date;
 }

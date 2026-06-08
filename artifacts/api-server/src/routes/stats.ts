@@ -61,13 +61,15 @@ router.get("/stats/featured", async (_req, res): Promise<void> => {
         .from(usersTable)
         .where(eq(usersTable.id, v.userId))
         .limit(1);
-      const { sharePasswordHash, shareToken: _t, ...rest } = v;
+      const { sharePasswordHash, shareToken: _t, ratingSum: _rs, ...rest } = v;
       return {
         ...rest,
         tags: v.tags ?? [],
         shareToken: null,
         hasSharePassword: !!sharePasswordHash,
         isLiked: false,
+        ratingAvg: v.ratingCount > 0 ? v.ratingSum / v.ratingCount : 0,
+        userRating: null,
         user: user
           ? {
               ...user,

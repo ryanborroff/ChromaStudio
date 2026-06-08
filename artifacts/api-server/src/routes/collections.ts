@@ -66,8 +66,8 @@ router.get("/collections/:id", requireAuth, async (req, res): Promise<void> => {
   res.json({
     collection: { ...collection, videoCount: videos.length },
     videos: videos.map((v) => {
-      const { sharePasswordHash, ...rest } = v;
-      return { ...rest, tags: v.tags ?? [], hasSharePassword: !!sharePasswordHash, isLiked: false, user: null };
+      const { sharePasswordHash, ratingSum: _rs, ...rest } = v;
+      return { ...rest, tags: v.tags ?? [], hasSharePassword: !!sharePasswordHash, isLiked: false, ratingAvg: v.ratingCount > 0 ? v.ratingSum / v.ratingCount : 0, userRating: null, user: null };
     }),
   });
 });

@@ -7,6 +7,7 @@ import {
 } from "@workspace/api-client-react";
 import { Loader2, Heart, Share2, Eye, UserPlus, Clock } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
+import { StarRating } from "@/components/star-rating";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
@@ -169,7 +170,17 @@ export function VideoDetail() {
                     {video.viewCount}
                   </div>
                 </div>
-                
+
+                <div className="flex items-center bg-secondary/50 rounded-full px-4 py-2 border border-border/50">
+                  <StarRating
+                    videoId={video.id}
+                    ratingAvg={video.ratingAvg ?? 0}
+                    ratingCount={video.ratingCount ?? 0}
+                    userRating={video.userRating ?? null}
+                    size="md"
+                  />
+                </div>
+
                 <Button variant="secondary" size="icon" className="rounded-full" onClick={() => {
                   navigator.clipboard.writeText(window.location.href);
                   toast({ title: "Link copied to clipboard" });

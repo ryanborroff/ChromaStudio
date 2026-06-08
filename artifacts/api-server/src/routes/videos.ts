@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, sql, desc, asc, ilike, or, and } from "drizzle-orm";
-import { db, videosTable, usersTable, videoLikesTable, commentsTable, streamUploadTicketsTable, collectionsTable } from "@workspace/db";
+import { db, videosTable, usersTable, videoLikesTable, videoRatingsTable, commentsTable, streamUploadTicketsTable, collectionsTable } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import {
   CreateVideoBody,
@@ -16,6 +16,9 @@ import {
   GetVideoResponse,
   UpdateVideoResponse,
   LikeVideoResponse,
+  RateVideoParams,
+  RateVideoBody,
+  RateVideoResponse,
   ListCommentsResponse,
   CreateVideoUploadUrlResponse,
 } from "@workspace/api-zod";
@@ -34,6 +37,7 @@ async function buildVideoResponse(
     .limit(1);
 
   let isLiked = false;
+  let userRating: number | null = null;
   if (currentUserId) {
     const likeRow = await db
       .select()
@@ -43,15 +47,26 @@ async function buildVideoResponse(
       )
       .limit(1);
     isLiked = likeRow.length > 0;
+
+    const [ratingRow] = await db
+      .select({ rating: videoRatingsTable.rating })
+      .from(videoRatingsTable)
+      .where(
+        sql`${videoRatingsTable.userId} = ${currentUserId} AND ${videoRatingsTable.videoId} = ${video.id}`,
+      )
+      .limit(1);
+    userRating = ratingRow?.rating ?? null;
   }
 
-  const { sharePasswordHash, shareToken, ...rest } = video;
+  const { sharePasswordHash, shareToken, ratingSum, ...rest } = video;
   return {
     ...rest,
     tags: video.tags ?? [],
     shareToken: currentUserId === video.userId ? shareToken ?? null : null,
     hasSharePassword: !!sharePasswordHash,
     isLiked,
+    ratingAvg: video.ratingCount > 0 ? ratingSum / video.ratingCount : 0,
+    userRating,
     user: user
       ? (() => {
           const { googleId: _g, appleId: _a, email: _e, passwordHash: _p, ...safeUser } = user;
@@ -220,7 +235,8 @@ router.get("/videos/:id", async (req, res): Promise<void> => {
     .set({ viewCount: (video.viewCount ?? 0) + 1 })
     .where(eq(videosTable.id, id));
 
-  const full = await buildVideoResponse({ ...video, viewCount: (video.viewCount ?? 0) + 1 });
+  const viewer = (req.user as typeof usersTable.$inferSelect | undefined)?.id;
+  const full = await buildVideoResponse({ ...video, viewCount: (video.viewCount ?? 0) + 1 }, viewer);
   res.json(GetVideoResponse.parse(full));
 });
 
@@ -304,6 +320,71 @@ router.post("/videos/:id/like", requireAuth, async (req, res): Promise<void> => 
 
   const [video] = await db.select().from(videosTable).where(eq(videosTable.id, id)).limit(1);
   res.json(LikeVideoResponse.parse({ liked, likeCount: video?.likeCount ?? 0 }));
+});
+
+// POST /videos/:id/rate
+router.post("/videos/:id/rate", requireAuth, async (req, res): Promise<void> => {
+  const params = RateVideoParams.safeParse(req.params);
+  if (!params.success) {
+    res.status(400).json({ error: params.error.message });
+    return;
+  }
+  const body = RateVideoBody.safeParse(req.body);
+  if (!body.success) {
+    res.status(400).json({ error: body.error.message });
+    return;
+  }
+  const id = params.data.id;
+  const rating = body.data.rating;
+  const user = await getCurrentUser(req);
+
+  const [exists] = await db.select({ id: videosTable.id }).from(videosTable).where(eq(videosTable.id, id)).limit(1);
+  if (!exists) {
+    res.status(404).json({ error: "Video not found" });
+    return;
+  }
+
+  await db.transaction(async (tx) => {
+    const [previous] = await tx
+      .select()
+      .from(videoRatingsTable)
+      .where(sql`${videoRatingsTable.userId} = ${user.id} AND ${videoRatingsTable.videoId} = ${id}`)
+      .limit(1);
+
+    if (previous) {
+      const delta = rating - previous.rating;
+      if (delta !== 0) {
+        await tx
+          .update(videoRatingsTable)
+          .set({ rating })
+          .where(eq(videoRatingsTable.id, previous.id));
+        await tx
+          .update(videosTable)
+          .set({ ratingSum: sql`${videosTable.ratingSum} + ${delta}` })
+          .where(eq(videosTable.id, id));
+      }
+    } else {
+      await tx
+        .insert(videoRatingsTable)
+        .values({ userId: user.id, videoId: id, rating })
+        .onConflictDoUpdate({
+          target: [videoRatingsTable.userId, videoRatingsTable.videoId],
+          set: { rating },
+        });
+      await tx
+        .update(videosTable)
+        .set({
+          ratingSum: sql`${videosTable.ratingSum} + ${rating}`,
+          ratingCount: sql`${videosTable.ratingCount} + 1`,
+        })
+        .where(eq(videosTable.id, id));
+    }
+  });
+
+  const [video] = await db.select().from(videosTable).where(eq(videosTable.id, id)).limit(1);
+  const count = video?.ratingCount ?? 0;
+  const avg = count > 0 ? (video?.ratingSum ?? 0) / count : 0;
+  res.json(RateVideoResponse.parse({ ratingAvg: avg, ratingCount: count, userRating: rating }));
 });
 
 // GET /videos/:id/comments

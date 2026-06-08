@@ -22,6 +22,7 @@ import { ProfileEdit } from "@/pages/profile-edit";
 import { VideoUpload } from "@/pages/video-upload";
 import { VideoDetail } from "@/pages/video-detail";
 import { Library } from "@/pages/library";
+import { Pricing } from "@/pages/pricing";
 import { SharePage } from "@/pages/share-page";
 import { EmbedPlayer } from "@/pages/embed-player";
 import { SignInPage, SignUpPage } from "@/pages/auth";
@@ -60,6 +61,7 @@ function AppRoutes() {
         <Route path="/sign-up" component={SignUpPage} />
         <ProtectedRoute path="/feed" component={Feed} />
         <Route path="/explore" component={Explore} />
+        <Route path="/pricing" component={Pricing} />
         <Route path="/crew" component={Crew} />
         <Route path="/projects" component={Projects} />
         <ProtectedRoute path="/projects/new" component={ProjectNew} />

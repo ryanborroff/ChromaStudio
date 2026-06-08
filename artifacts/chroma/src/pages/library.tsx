@@ -12,6 +12,7 @@ import {
 } from "@workspace/api-client-react";
 import type { Video, ListVideosParams } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/queryClient";
+import { StarRating } from "@/components/star-rating";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,6 +29,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   Loader2, FolderPlus, Folder, Film, UploadCloud, Share2,
   Trash2, Pencil, Check, X, Library as LibraryIcon, Lock,
+  Eye, Heart,
 } from "lucide-react";
 
 const CATEGORIES = [
@@ -217,6 +219,19 @@ export function Library() {
 
                   <div className="p-3 flex flex-col gap-3 flex-1">
                     <p className="text-sm font-semibold text-white line-clamp-1">{v.title}</p>
+
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-3 text-xs font-medium text-white/55">
+                        <span className="flex items-center gap-1"><Eye className="w-3.5 h-3.5" />{v.viewCount}</span>
+                        <span className="flex items-center gap-1"><Heart className="w-3.5 h-3.5" />{v.likeCount}</span>
+                      </div>
+                    </div>
+                    <StarRating
+                      videoId={v.id}
+                      ratingAvg={v.ratingAvg ?? 0}
+                      ratingCount={v.ratingCount ?? 0}
+                      userRating={v.userRating ?? null}
+                    />
 
                     <div className="grid grid-cols-2 gap-2 mt-auto">
                       <Select value={v.category ?? "other"} onValueChange={(val) => updateVideoMutation.mutate({ id: v.id, data: { category: val as Video["category"] } })}>

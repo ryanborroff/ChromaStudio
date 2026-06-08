@@ -1,1 +1,1 @@
-- [Video serializer sensitive-field policy](video-serializer-policy.md) — sensitive Video columns (shareToken, sharePasswordHash) must be stripped in EVERY video serializer (feed/stats/users/collections), not just buildVideoResponse.
+- [Video serializer sensitive-field policy](video-serializer-policy.md) — sensitive/denormalized Video columns (shareToken, sharePasswordHash, ratingSum) must be stripped in EVERY serializer (feed/stats/users/collections), not just buildVideoResponse; rating write path must be transactional.
