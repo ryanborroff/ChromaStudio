@@ -59,7 +59,7 @@ export function Home() {
       <section className="py-20" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", borderBottom: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.015)" }}>
         <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-5">
           {[
-            { icon: <Play className="w-5 h-5" />, title: "Premium Hosting", desc: "Showcase your films in the highest quality without ads, algorithms, or distractions. Your work speaks for itself." },
+            { icon: <Play className="w-5 h-5" />, title: "Premium Hosting", desc: "Showcase your films in the highest quality without ads, algorithms, or distractions. Let your work speak for itself." },
             { icon: <Users className="w-5 h-5" />, title: "Professional Community", desc: "Connect with verified industry professionals. From DPs to colorists, find exactly who you need for your next shoot." },
             { icon: <Briefcase className="w-5 h-5" />, title: "Project Board", desc: "Discover unlisted opportunities or crew up your next production efficiently with targeted project boards." },
           ].map(f => (
