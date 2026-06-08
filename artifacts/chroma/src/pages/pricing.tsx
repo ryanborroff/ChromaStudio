@@ -106,8 +106,8 @@ export function Pricing() {
             </span>
           </h1>
           <p className="text-lg text-white/50 font-medium leading-relaxed">
-            Every plan is metered in video-hours — host your footage and stream it to
-            clients and fans. Pick the plan that fits how much you shoot and share.
+            Every plan is metered in video-hours. Host your footage and stream it to
+            clients and film fans. Pick the plan that fits how much you shoot and share.
           </p>
         </div>
       </section>
