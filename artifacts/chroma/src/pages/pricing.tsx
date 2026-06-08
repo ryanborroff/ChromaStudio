@@ -1,11 +1,12 @@
 import { Link } from "wouter";
-import { Check, HardDrive } from "lucide-react";
+import { Check, Film, Clock } from "lucide-react";
 
 type Tier = {
   name: string;
   price: string;
   cadence?: string;
-  storage: string;
+  hosting: string;
+  streaming: string;
   tagline: string;
   features: string[];
   cta: string;
@@ -17,7 +18,8 @@ const TIERS: Tier[] = [
   {
     name: "Reel",
     price: "Free",
-    storage: "10 GB",
+    hosting: "2 hours",
+    streaming: "10 hrs / mo",
     tagline: "For emerging filmmakers building their first reel.",
     features: [
       "1080p video hosting",
@@ -32,7 +34,8 @@ const TIERS: Tier[] = [
     name: "Creator",
     price: "$19",
     cadence: "/month",
-    storage: "250 GB",
+    hosting: "10 hours",
+    streaming: "25 hrs / mo",
     tagline: "For working creators sharing with clients & fans.",
     features: [
       "4K video hosting",
@@ -49,7 +52,8 @@ const TIERS: Tier[] = [
     name: "Studio",
     price: "$49",
     cadence: "/month",
-    storage: "2 TB",
+    hosting: "25 hours",
+    streaming: "75 hrs / mo",
     tagline: "For studios delivering work at scale.",
     features: [
       "4K HDR hosting",
@@ -64,10 +68,11 @@ const TIERS: Tier[] = [
   {
     name: "Enterprise",
     price: "Custom",
-    storage: "Unlimited",
+    hosting: "Volume",
+    streaming: "Volume",
     tagline: "For teams with bespoke security & scale needs.",
     features: [
-      "Unlimited storage",
+      "Volume hosting & streaming",
       "SSO / SAML",
       "Dedicated account manager",
       "Custom SLA & onboarding",
@@ -101,8 +106,8 @@ export function Pricing() {
             </span>
           </h1>
           <p className="text-lg text-white/50 font-medium leading-relaxed">
-            Every plan includes ad-free hosting, your own profile, and the Chroma community.
-            Choose the storage that fits your library.
+            Every plan is metered in video-hours — host your footage and stream it to
+            clients and fans. Pick the plan that fits how much you shoot and share.
           </p>
         </div>
       </section>
@@ -140,13 +145,23 @@ export function Pricing() {
                 {tier.cadence && <span className="text-sm text-white/45 font-medium">{tier.cadence}</span>}
               </div>
 
-              <div
-                className="mt-4 flex items-center gap-2 px-3 py-2 rounded-lg"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
-              >
-                <HardDrive className="w-4 h-4 text-primary" />
-                <span className="text-sm font-semibold text-white">{tier.storage}</span>
-                <span className="text-sm text-white/45">storage</span>
+              <div className="mt-4 space-y-2">
+                <div
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+                >
+                  <Film className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-sm font-semibold text-white">{tier.hosting}</span>
+                  <span className="text-sm text-white/45">hosted</span>
+                </div>
+                <div
+                  className="flex items-center gap-2 px-3 py-2 rounded-lg"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+                >
+                  <Clock className="w-4 h-4 text-primary shrink-0" />
+                  <span className="text-sm font-semibold text-white whitespace-nowrap">{tier.streaming}</span>
+                  <span className="text-sm text-white/45">streaming</span>
+                </div>
               </div>
 
               <ul className="mt-6 space-y-3 flex-1">
@@ -182,7 +197,12 @@ export function Pricing() {
           ))}
         </div>
 
-        <p className="mt-10 text-center text-sm text-white/40">
+        <p className="mt-10 text-center text-sm text-white/40 max-w-2xl mx-auto px-6">
+          Need more room? Extra hosting is{" "}
+          <span className="text-white/60 font-medium">$1.50 / video-hour</span> and streaming is{" "}
+          <span className="text-white/60 font-medium">$0.30 / hour</span>, billed only as you use it.
+        </p>
+        <p className="mt-2 text-center text-sm text-white/40">
           All plans are billed in USD. Upgrade, downgrade or cancel anytime.
         </p>
       </section>
