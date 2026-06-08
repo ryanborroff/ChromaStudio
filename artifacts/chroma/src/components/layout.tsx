@@ -3,8 +3,10 @@ import { Link, useLocation } from "wouter";
 import { useAuth, logout } from "@/lib/useAuth";
 import {
   Film, LogOut, Settings, User as UserIcon,
-  Grid3X3, Play, Users, Briefcase, Clapperboard, Sparkles, Rss,
-  Video, Server, Tag, Menu,
+  Grid3X3, Users, Clapperboard, Sparkles, Rss,
+  Tag, Menu, ChevronDown,
+  Radio, History, FolderOpen, Cloud, Send, Code2, BarChart3,
+  ShoppingBag, ShieldCheck, KeyRound, type LucideIcon,
 } from "lucide-react";
 import {
   Sheet,
@@ -23,12 +25,42 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-const NAV_ITEMS = [
-  { href: "/explore",  label: "View",   icon: Grid3X3 },
-  { href: "/create",   label: "Create",  icon: Video },
-  { href: "/host",     label: "Host",    icon: Server },
-  { href: "/crew",     label: "Crew",    icon: Users },
-  { href: "/pricing",  label: "Pricing", icon: Tag },
+type NavItem = { href: string; label: string; icon: LucideIcon; desc?: string };
+type NavGroup = { label: string; signedInOnly?: boolean; items: NavItem[] };
+
+const NAV_VIEW: NavItem = { href: "/explore", label: "View", icon: Grid3X3 };
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    label: "Live",
+    items: [
+      { href: "/live", label: "Live Streaming", icon: Radio, desc: "Broadcast ticketed events" },
+      { href: "/cinema", label: "Cinema Events", icon: Clapperboard, desc: "Scheduled screenings & premieres" },
+      { href: "/live/replays", label: "Replays", icon: History, desc: "Watch past streams on demand" },
+    ],
+  },
+  {
+    label: "Studio",
+    signedInOnly: true,
+    items: [
+      { href: "/studio/portfolio", label: "Portfolio Collections", icon: FolderOpen, desc: "Showreels & categories" },
+      { href: "/studio/storage", label: "Cloud Storage", icon: Cloud, desc: "Files, folders & versions" },
+      { href: "/studio/delivery", label: "Client Delivery", icon: Send, desc: "Branded delivery & approvals" },
+      { href: "/studio/embeds", label: "Website Embedding", icon: Code2, desc: "Embeddable players & galleries" },
+      { href: "/studio/analytics", label: "Analytics", icon: BarChart3, desc: "Views, audience & revenue" },
+    ],
+  },
+  {
+    label: "Store",
+    items: [
+      { href: "/store", label: "Download Store", icon: ShoppingBag, desc: "LUTs, presets & project files" },
+    ],
+  },
+];
+
+const NAV_TAIL: NavItem[] = [
+  { href: "/crew", label: "Crew", icon: Users },
+  { href: "/pricing", label: "Pricing", icon: Tag },
 ];
 
 const GENRE_TAGS = ["Documentary", "Narrative", "Experimental", "Commercial", "Music Video"];
@@ -94,7 +126,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </Link>
                 )}
 
-                {NAV_ITEMS.map(item => {
+                {[NAV_VIEW, ...NAV_TAIL].map(item => {
                   const Icon = item.icon;
                   const active = location.startsWith(item.href);
                   return (
@@ -122,6 +154,31 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     Upload
                   </Link>
                 )}
+
+                {NAV_GROUPS.map(group => {
+                  if (group.signedInOnly && !isSignedIn) return null;
+                  return (
+                    <div key={group.label} className="mt-4">
+                      <p className="px-3 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">{group.label}</p>
+                      {group.items.map(item => {
+                        const Icon = item.icon;
+                        const active = location.startsWith(item.href);
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setMobileOpen(false)}
+                            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-0.5 ${active ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                            data-testid={`mobile-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+                          >
+                            <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
+                            {item.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  );
+                })}
 
                 <p className="px-3 mt-5 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">Discover</p>
                 {GENRE_TAGS.map(tag => (
@@ -183,7 +240,54 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 Feed
               </Link>
             )}
-            {NAV_ITEMS.map(item => (
+
+            <Link
+              href={NAV_VIEW.href}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${location.startsWith(NAV_VIEW.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+              data-testid="link-view"
+            >
+              {NAV_VIEW.label}
+            </Link>
+
+            {NAV_GROUPS.map(group => {
+              if (group.signedInOnly && !isSignedIn) return null;
+              const active = group.items.some(i => location.startsWith(i.href));
+              return (
+                <DropdownMenu key={group.label}>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`flex items-center gap-1 px-3 py-1 rounded-md text-sm font-medium transition-all outline-none ${active ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                      data-testid={`nav-group-${group.label.toLowerCase()}`}
+                    >
+                      {group.label}
+                      <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-64 bg-card border-border">
+                    <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      {group.label}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-border" />
+                    {group.items.map(item => {
+                      const Icon = item.icon;
+                      return (
+                        <DropdownMenuItem key={item.href} asChild className="cursor-pointer focus:bg-secondary focus:text-secondary-foreground">
+                          <Link href={item.href} className="flex items-start gap-2.5 w-full" data-testid={`nav-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}>
+                            <Icon className="mt-0.5 h-4 w-4 text-primary flex-shrink-0" />
+                            <span className="flex flex-col">
+                              <span className="text-sm font-medium text-foreground">{item.label}</span>
+                              {item.desc && <span className="text-xs text-muted-foreground">{item.desc}</span>}
+                            </span>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              );
+            })}
+
+            {NAV_TAIL.map(item => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -222,11 +326,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 bg-card border-border">
                 <DropdownMenuLabel className="font-normal">
-                  <div className="flex flex-col space-y-1">
+                  <div className="flex flex-col space-y-1.5">
                     <p className="text-sm font-medium leading-none text-foreground">{user?.name}</p>
                     <p className="text-xs leading-none text-muted-foreground">
                       @{user?.username}
                     </p>
+                    <span className="mt-0.5 inline-flex w-fit items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                      Creator
+                    </span>
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border" />
@@ -240,6 +347,28 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   <Link href="/profile/me" className="flex items-center w-full" data-testid="menu-item-settings">
                     <Settings className="mr-2 h-4 w-4" />
                     <span>Settings</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer focus:bg-secondary focus:text-secondary-foreground">
+                  <Link href="/account/security" className="flex items-center w-full" data-testid="menu-item-security">
+                    <KeyRound className="mr-2 h-4 w-4" />
+                    <span>Account &amp; Security</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator className="bg-border" />
+                <DropdownMenuLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                  Management
+                </DropdownMenuLabel>
+                <DropdownMenuItem asChild className="cursor-pointer focus:bg-secondary focus:text-secondary-foreground">
+                  <Link href="/studio/analytics" className="flex items-center w-full" data-testid="menu-item-analytics">
+                    <BarChart3 className="mr-2 h-4 w-4" />
+                    <span>Analytics</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild className="cursor-pointer focus:bg-secondary focus:text-secondary-foreground">
+                  <Link href="/admin" className="flex items-center w-full" data-testid="menu-item-admin">
+                    <ShieldCheck className="mr-2 h-4 w-4" />
+                    <span>Admin Dashboard</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-border" />
@@ -305,7 +434,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             )}
 
-            {NAV_ITEMS.map(item => {
+            {[NAV_VIEW, ...NAV_TAIL].map(item => {
               const Icon = item.icon;
               const active = location.startsWith(item.href);
               return (
@@ -318,6 +447,30 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
                   {item.label}
                 </Link>
+              );
+            })}
+
+            {NAV_GROUPS.map(group => {
+              if (group.signedInOnly && !isSignedIn) return null;
+              return (
+                <div key={group.label}>
+                  <p className="px-3 mt-5 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">{group.label}</p>
+                  {group.items.map(item => {
+                    const Icon = item.icon;
+                    const active = location.startsWith(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${active ? "bg-white/10 text-white" : "text-white/40 hover:text-white/75 hover:bg-white/5"}`}
+                        data-testid={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+                      >
+                        <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
               );
             })}
 

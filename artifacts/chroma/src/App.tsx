@@ -22,6 +22,11 @@ import { ProfileEdit } from "@/pages/profile-edit";
 import { VideoUpload } from "@/pages/video-upload";
 import { VideoDetail } from "@/pages/video-detail";
 import { SignInPage, SignUpPage } from "@/pages/auth";
+import { ComingSoon } from "@/pages/coming-soon";
+import {
+  Radio, Clapperboard, History, FolderOpen, Cloud, Send,
+  Code2, BarChart3, ShoppingBag, ShieldCheck, KeyRound,
+} from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
@@ -62,6 +67,105 @@ function AppRoutes() {
         <Route path="/profile/:username" component={Profile} />
         <ProtectedRoute path="/videos/upload" component={VideoUpload} />
         <Route path="/videos/:id" component={VideoDetail} />
+
+        {/* Live & cinema events */}
+        <Route path="/live">
+          <ComingSoon
+            icon={Radio}
+            title="Live Streaming"
+            description="Broadcast premieres, Q&As and ticketed events to your audience in real time."
+            features={["Ticketed live events", "Pay-per-view & free streams", "Automatic replays after the broadcast"]}
+          />
+        </Route>
+        <Route path="/cinema">
+          <ComingSoon
+            icon={Clapperboard}
+            title="Cinema Events"
+            description="Host scheduled online screenings and premieres with a true cinema feel."
+            features={["Timed screenings & countdowns", "Ticketing and capacity limits", "Audience chat during the show"]}
+          />
+        </Route>
+        <Route path="/live/replays">
+          <ComingSoon
+            icon={History}
+            title="Replays"
+            description="Catch up on past live streams and cinema events on demand."
+            features={["Full replay library", "Chapter markers", "Viewer analytics per replay"]}
+          />
+        </Route>
+
+        {/* Studio — creator workspace */}
+        <ProtectedRoute path="/studio/portfolio" component={() => (
+          <ComingSoon
+            icon={FolderOpen}
+            title="Portfolio Collections"
+            description="Organise your work into showreels and categories with drag-and-drop."
+            features={["Showreels & themed collections", "Drag-and-drop ordering", "Featured work on your profile"]}
+          />
+        )} />
+        <ProtectedRoute path="/studio/storage" component={() => (
+          <ComingSoon
+            icon={Cloud}
+            title="Cloud Storage"
+            description="A professional, Dropbox-style file manager built for film projects."
+            features={["Folders & version history", "Storage plans & quotas", "Shareable secure links"]}
+          />
+        )} />
+        <ProtectedRoute path="/studio/delivery" component={() => (
+          <ComingSoon
+            icon={Send}
+            title="Client Delivery Portal"
+            description="Send branded deliveries and collect approvals and feedback in one place."
+            features={["Branded delivery pages", "Approvals & timestamped feedback", "Download permissions"]}
+          />
+        )} />
+        <ProtectedRoute path="/studio/embeds" component={() => (
+          <ComingSoon
+            icon={Code2}
+            title="Website Embedding"
+            description="Embed your players and galleries on any external website."
+            features={["Embeddable video players", "Gallery & showreel embeds", "Custom branding controls"]}
+          />
+        )} />
+        <ProtectedRoute path="/studio/analytics" component={() => (
+          <ComingSoon
+            icon={BarChart3}
+            title="Analytics Dashboard"
+            description="A full creator dashboard for views, audience and revenue."
+            features={["Views, watch time & retention", "Audience & traffic sources", "Revenue & payout tracking"]}
+          />
+        )} />
+
+        {/* Store */}
+        <Route path="/store">
+          <ComingSoon
+            icon={ShoppingBag}
+            title="Download Store"
+            description="Sell and buy LUTs, presets, project files and other creator assets."
+            features={["LUTs, presets & project files", "Instant secure downloads", "Creator payouts"]}
+          />
+        </Route>
+
+        {/* Admin */}
+        <ProtectedRoute path="/admin" component={() => (
+          <ComingSoon
+            icon={ShieldCheck}
+            title="Admin Dashboard"
+            description="Manage users, moderate content and review reports across the platform."
+            features={["User & role management", "Content moderation", "Reports & platform insights"]}
+          />
+        )} />
+
+        {/* Account security */}
+        <ProtectedRoute path="/account/security" component={() => (
+          <ComingSoon
+            icon={KeyRound}
+            title="Account & Security"
+            description="Manage your password, email verification and account security."
+            features={["Password reset", "Email verification", "Active sessions & devices"]}
+          />
+        )} />
+
         <Route component={NotFound} />
       </Switch>
     </Layout>
