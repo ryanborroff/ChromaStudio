@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useListVideos, getListVideosQueryKey } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/video-card";
 import { EmptyState } from "@/components/empty-state";
-import { Loader2, Search, SlidersHorizontal, Grid3X3, Check, ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronDown } from "lucide-react";
+import { Loader2, Search, SlidersHorizontal, Grid3X3, List, Check, ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronDown } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
   DropdownMenu,
@@ -22,6 +22,7 @@ export function Explore() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const [sort, setSort] = useState<"featured" | "newest" | "most_viewed" | "community_rated" | "community_rated_asc">("featured");
+  const [view, setView] = useState<"grid" | "list">("grid");
   const isCommunity = sort === "community_rated" || sort === "community_rated_asc";
 
   const { data, isLoading } = useListVideos(
@@ -151,10 +152,14 @@ export function Explore() {
           </DropdownMenu>
 
           <button
+            onClick={() => setView(view === "grid" ? "list" : "grid")}
+            aria-label={view === "grid" ? "Switch to list view" : "Switch to grid view"}
+            title={view === "grid" ? "Switch to list view" : "Switch to grid view"}
             className="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg text-white transition-all"
             style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+            data-testid="button-view-toggle"
           >
-            <Grid3X3 className="w-3.5 h-3.5" />
+            {view === "grid" ? <Grid3X3 className="w-3.5 h-3.5" /> : <List className="w-3.5 h-3.5" />}
           </button>
         </div>
       </div>
@@ -166,7 +171,7 @@ export function Explore() {
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : data?.videos && data.videos.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+          <div className={view === "grid" ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4" : "grid grid-cols-1 gap-4 max-w-3xl"}>
             {data.videos.map(video => (
               <VideoCard key={video.id} video={video} />
             ))}
