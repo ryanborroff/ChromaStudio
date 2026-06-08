@@ -61,7 +61,7 @@ export function Home() {
           {[
             { icon: <Play className="w-5 h-5" />, title: "Premium Hosting", desc: "Showcase your films in the highest quality without ads, algorithms, or distractions. Let your work speak for itself." },
             { icon: <Users className="w-5 h-5" />, title: "Professional Community", desc: "Connect with verified industry professionals. From DPs to colorists, find exactly who you need for your next shoot." },
-            { icon: <Briefcase className="w-5 h-5" />, title: "Project Board", desc: "Discover unlisted opportunities or crew up your next production efficiently with targeted project boards." },
+            { icon: <Briefcase className="w-5 h-5" />, title: "Project Board", desc: "Discover job opportunities or crew your next production with targeted project boards." },
           ].map(f => (
             <div
               key={f.title}
