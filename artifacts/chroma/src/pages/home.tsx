@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { ArrowRight, Play, Users, Briefcase, Clapperboard } from "lucide-react";
+import { Play, Users, Briefcase, Clapperboard } from "lucide-react";
 
 export function Home() {
   return (
@@ -90,36 +90,6 @@ export function Home() {
               <p className="text-sm text-white/45 leading-relaxed">{f.desc}</p>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="py-28 relative overflow-hidden">
-        <div className="max-w-4xl mx-auto px-6">
-          <div
-            className="rounded-3xl p-12 text-center relative overflow-hidden"
-            style={{
-              background: "linear-gradient(135deg, rgba(229,62,62,0.12) 0%, rgba(14,14,14,0) 60%)",
-              border: "1px solid rgba(229,62,62,0.2)",
-            }}
-          >
-            <h2 className="text-4xl md:text-5xl font-black mb-4 text-white tracking-tight" style={{ letterSpacing: "-0.02em" }}>
-              Every Pixel Earned.
-            </h2>
-            <p className="text-lg text-white/45 mb-8 max-w-xl mx-auto leading-relaxed">
-              Stop competing with cat videos and influencers. Put your portfolio where the industry actually looks.
-            </p>
-            <Link
-              href="/sign-up"
-              className="inline-flex items-center gap-2 h-12 px-8 rounded-xl text-base font-semibold text-white transition-all"
-              style={{
-                background: "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)",
-                boxShadow: "0 4px 24px rgba(229,62,62,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
-              }}
-            >
-              Start Building Your Profile <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
         </div>
       </section>
     </div>
