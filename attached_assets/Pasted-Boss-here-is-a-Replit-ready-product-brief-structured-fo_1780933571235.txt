@@ -1,0 +1,599 @@
+Boss, here is a Replit-ready product brief structured for an AI developer to build the platform.
+
+Chroma
+
+Professional Filmmaker Platform
+
+Product Overview
+
+Chroma is a professional filmmaking platform designed for filmmakers, production companies, cinematographers, editors, colourists, sound designers, and creative professionals.
+
+Unlike consumer video platforms, Chroma is not advertising-driven. Its purpose is to provide filmmakers with tools to showcase portfolios, host media assets, distribute films, collaborate with clients, monetise content, and manage professional digital storage.
+
+The platform combines:
+
+* Professional portfolio hosting
+* Video hosting and streaming
+* Media asset management
+* Cloud storage
+* Video-on-demand distribution
+* Digital product sales
+* Live event streaming
+* Cinema-on-demand screenings
+* Public filmmaker profiles
+
+⸻
+
+Target Users
+
+Creators
+
+* Directors
+* Producers
+* Cinematographers
+* Editors
+* Colourists
+* Sound Designers
+* Production Companies
+* Film Schools
+
+Viewers
+
+* General audiences
+* Clients
+* Film buyers
+* Festival programmers
+* Collaborators
+* Industry professionals
+
+⸻
+
+Core Platform Modules
+
+1. Authentication & User Accounts
+
+Registration Methods
+
+* Google Sign-In
+* Apple Sign-In
+* Email & Password
+
+Requirements
+
+* Fast onboarding flow
+* Minimal signup friction
+* Automatic profile creation
+* Secure authentication
+* Password reset functionality
+* Email verification
+
+User Roles
+
+* Viewer
+* Creator
+* Studio
+* Administrator
+
+⸻
+
+2. Professional Profiles
+
+Every creator receives a public filmmaker profile.
+
+Profile Fields
+
+* Profile photo
+* Cover image
+* Biography
+* Location
+* Contact information
+* Website links
+* Social media links
+* Professional credits
+* Awards
+* Portfolio collections
+
+Public URL Structure
+
+/chroma.com/username
+
+Future Feature
+
+Custom domains:
+
+* portfolio.filmmaker.com
+* filmmakerstudio.com
+
+⸻
+
+3. Portfolio Management
+
+Creators can organise work into collections.
+
+Portfolio Categories
+
+* Showreels
+* Feature films
+* Short films
+* Commercials
+* Music videos
+* Behind-the-scenes content
+* Production diaries
+* Rushes
+* Downloads
+
+Features
+
+* Drag-and-drop organisation
+* Featured projects
+* Collection management
+* Embedded video galleries
+* Public and private visibility controls
+
+⸻
+
+4. Video Hosting
+
+Professional-grade video hosting and streaming.
+
+Features
+
+* Adaptive bitrate streaming
+* 1080p support
+* 4K support
+* HDR support (future)
+* Custom thumbnails
+* Chapters
+* Video analytics
+* Password protection
+* Private links
+* Unlisted videos
+* Website embedding
+
+Viewing Model
+
+Default content is:
+
+* Free to watch
+* Ad-free
+* No forced monetisation
+
+⸻
+
+5. Video On Demand (VOD)
+
+Creators can monetise completed productions.
+
+Monetisation Options
+
+Rental
+
+Examples:
+
+* £2.99 rental
+* 48-hour viewing period
+
+Purchase
+
+Examples:
+
+* £9.99 permanent access
+
+Future
+
+* Subscription channels
+* Creator memberships
+
+Revenue Share
+
+Recommended:
+
+* Creator: 90%
+* Chroma: 10%
+
+⸻
+
+6. Chroma Cinema
+
+Premium scheduled screening platform.
+
+Purpose
+
+Allow creators to host digital premieres and special events.
+
+Screening Types
+
+* Film premieres
+* Festival screenings
+* Director’s cuts
+* Limited-run screenings
+* Educational screenings
+
+Features
+
+* Scheduled screenings
+* Ticket sales
+* Live chat
+* Audience Q&A
+* Virtual red carpet events
+* Replay access controls
+
+Revenue Share
+
+* Creator: 90%
+* Platform: 10%
+
+⸻
+
+7. Live Streaming
+
+Professional event streaming.
+
+Supported Events
+
+* Film premieres
+* Festivals
+* Workshops
+* Masterclasses
+* Production diaries
+* Behind-the-scenes broadcasts
+
+Monetisation
+
+* Free
+* Ticketed
+* Pay What You Want
+
+Features
+
+* Adaptive streaming
+* Live chat
+* Replay archives
+* Viewer analytics
+* Ticket management
+
+⸻
+
+8. Download Store
+
+Creators can sell downloadable digital products.
+
+Supported Products
+
+* Films
+* Educational videos
+* LUT packs
+* Presets
+* Templates
+* Production assets
+* Sound libraries
+* Project files
+
+Features
+
+* Instant delivery
+* Secure downloads
+* Download limits
+* Purchase history
+
+Revenue Share
+
+* Creator: 90%
+* Platform: 10%
+
+⸻
+
+9. Professional Cloud Storage
+
+Dropbox-style storage designed for filmmakers.
+
+Use Cases
+
+Store and distribute:
+
+* Rushes
+* Dailies
+* Proxies
+* Showreels
+* Deliverables
+* Scripts
+* Production documents
+
+Storage Plans
+
+Free
+
+10GB
+
+Creator
+
+500GB
+
+Studio
+
+2TB
+
+Enterprise
+
+Custom
+
+Features
+
+* Folder management
+* Drag-and-drop uploads
+* Bulk uploads
+* Version history
+* Download tracking
+* Shareable links
+* Password protection
+* Expiry dates
+* Watermarked previews
+
+⸻
+
+10. Client Delivery Portal
+
+Branded delivery experience for clients.
+
+Features
+
+* Custom branding
+* Logo uploads
+* Branded download pages
+* Approval workflows
+* Download permissions
+* Review and feedback tools
+* Custom domains
+
+⸻
+
+11. Website Embedding
+
+Creators can embed Chroma content anywhere.
+
+Embed Types
+
+* Video player
+* Portfolio gallery
+* Showreel carousel
+* Download portal
+
+Supported Destinations
+
+* Personal websites
+* Agency websites
+* Production company websites
+* Portfolio websites
+
+⸻
+
+12. Payments & Payouts
+
+Payment Provider
+
+Stripe Connect
+
+Features
+
+* Marketplace payments
+* Creator payouts
+* Revenue sharing
+* Tax handling
+* Refund management
+
+Supported Currencies
+
+* GBP
+* USD
+* EUR
+* Additional currencies via Stripe
+
+⸻
+
+13. Rights & Copyright Management
+
+Required Features
+
+* Rights ownership declaration
+* Copyright reporting workflow
+* DMCA-compliant takedown process
+* Dispute management
+* Terms acceptance before monetisation
+
+Future Features
+
+* Content fingerprinting
+* Automated copyright matching
+* Duplicate content detection
+
+⸻
+
+14. Analytics Dashboard
+
+Creators receive detailed analytics.
+
+Metrics
+
+* Video views
+* Watch time
+* Revenue
+* Rentals
+* Purchases
+* Downloads
+* Storage usage
+* Audience geography
+* Traffic sources
+
+⸻
+
+15. Admin Dashboard
+
+Platform administration tools.
+
+Features
+
+* User management
+* Content moderation
+* Copyright claims
+* Revenue reporting
+* Storage monitoring
+* Subscription management
+* Support ticket management
+* Platform analytics
+
+⸻
+
+Recommended Technology Stack
+
+Frontend
+
+* Next.js
+* React
+* TypeScript
+* Tailwind CSS
+
+Backend
+
+* Node.js
+* NestJS
+
+Database
+
+* PostgreSQL
+
+Authentication
+
+* Google OAuth
+* Apple Sign-In
+* Email Authentication
+
+Payments
+
+* Stripe Connect
+
+Storage
+
+* AWS S3
+* Cloudflare R2
+
+Video Infrastructure
+
+MVP
+
+* Cloudflare Stream
+
+Alternative
+
+* Mux
+
+Future
+
+* AWS MediaConvert
+
+CDN
+
+* Cloudflare CDN
+
+Hosting
+
+* AWS
+
+⸻
+
+Development Roadmap
+
+Phase 1 MVP
+
+Focus on Portfolio + Storage business model.
+
+Deliver:
+
+1. User registration
+2. Public profiles
+3. Portfolio pages
+4. Video hosting
+5. Cloud storage
+6. Public sharing
+7. Website embeds
+8. Stripe subscriptions
+9. Basic client delivery links
+
+Goal:
+Launch quickly and validate recurring subscription revenue.
+
+⸻
+
+Phase 2
+
+Add monetisation features.
+
+Deliver:
+
+1. Video rentals
+2. Video purchases
+3. Creator payouts
+4. Live streaming
+5. Chroma Cinema
+6. Mobile apps
+
+Goal:
+Expand into film distribution.
+
+⸻
+
+Phase 3
+
+Scale into a full professional filmmaking ecosystem.
+
+Deliver:
+
+1. Subscription channels
+2. Rights automation
+3. Marketplace features
+4. Team collaboration
+5. Production workflows
+6. AI media search
+7. AI tagging
+8. AI transcription
+
+Goal:
+Become the operating system for independent filmmakers.
+
+⸻
+
+Strategic Direction
+
+Chroma should be built around two distinct business pillars.
+
+Pillar 1: Portfolio Hosting + Cloud Storage
+
+Benefits:
+
+* Recurring subscription revenue
+* Predictable cash flow
+* Lower legal complexity
+* Easier support requirements
+* Faster MVP delivery
+
+Pillar 2: Film Distribution + Chroma Cinema
+
+Benefits:
+
+* Higher revenue potential
+* Creator monetisation
+* Premium positioning
+
+Challenges:
+
+* Copyright disputes
+* Refunds
+* Tax compliance
+* Rights verification
+* Customer support
+* Payment management
+
+Recommendation:
+
+Launch with Portfolio Hosting + Cloud Storage first, then introduce film sales, rentals, and Chroma Cinema after the platform has established recurring subscription revenue.
+
+This version is structured specifically for Replit Agent so it can identify features, user roles, database entities, roadmap phases, and implementation priorities more reliably.
