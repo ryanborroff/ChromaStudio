@@ -32,6 +32,7 @@ export * from './project';
 export * from './projectInput';
 export * from './projectList';
 export * from './projectUpdate';
+export * from './streamUploadTicket';
 export * from './user';
 export * from './userList';
 export * from './userProfile';

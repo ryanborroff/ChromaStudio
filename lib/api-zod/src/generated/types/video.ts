@@ -18,6 +18,10 @@ export interface Video {
   videoUrl?: string | null;
   /** @nullable */
   thumbnailUrl?: string | null;
+  /** @nullable */
+  streamUid?: string | null;
+  /** @nullable */
+  streamStatus?: string | null;
   privacy: VideoPrivacy;
   tags?: string[];
   /** @nullable */

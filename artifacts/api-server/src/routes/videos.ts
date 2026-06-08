@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, sql, desc, asc, ilike, or } from "drizzle-orm";
-import { db, videosTable, usersTable, videoLikesTable, commentsTable } from "@workspace/db";
+import { eq, sql, desc, asc, ilike, or, and } from "drizzle-orm";
+import { db, videosTable, usersTable, videoLikesTable, commentsTable, streamUploadTicketsTable } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import {
   CreateVideoBody,
@@ -17,7 +17,9 @@ import {
   UpdateVideoResponse,
   LikeVideoResponse,
   ListCommentsResponse,
+  CreateVideoUploadUrlResponse,
 } from "@workspace/api-zod";
+import { createDirectUpload, getStreamConfig, deleteStreamVideo } from "../lib/cloudflare";
 
 const router: IRouter = Router();
 
@@ -115,12 +117,72 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
     return;
   }
   const user = await getCurrentUser(req);
-  const [video] = await db
-    .insert(videosTable)
-    .values({ ...parsed.data, userId: user.id, privacy: parsed.data.privacy ?? "public", tags: parsed.data.tags ?? [] })
-    .returning();
+
+  // If a Stream upload UID is supplied, verify it was issued to this user and
+  // has not already been consumed. This prevents clients from attaching
+  // arbitrary or forged media to their account.
+  const streamUid = parsed.data.streamUid;
+  if (streamUid) {
+    const [ticket] = await db
+      .select()
+      .from(streamUploadTicketsTable)
+      .where(
+        and(
+          eq(streamUploadTicketsTable.uid, streamUid),
+          eq(streamUploadTicketsTable.userId, user.id),
+          eq(streamUploadTicketsTable.consumed, false),
+        ),
+      )
+      .limit(1);
+    if (!ticket) {
+      res.status(403).json({ error: "Invalid or already-used upload reference" });
+      return;
+    }
+  }
+
+  let video: typeof videosTable.$inferSelect;
+  try {
+    [video] = await db
+      .insert(videosTable)
+      .values({ ...parsed.data, userId: user.id, privacy: parsed.data.privacy ?? "public", tags: parsed.data.tags ?? [] })
+      .returning();
+  } catch (err) {
+    // Persisting the record failed after the asset was uploaded — clean up the
+    // orphaned Stream video so we don't pay to store unreferenced media.
+    if (streamUid) await deleteStreamVideo(streamUid);
+    req.log.error({ err }, "Failed to persist video record");
+    res.status(500).json({ error: "Could not save video" });
+    return;
+  }
+
+  if (streamUid) {
+    await db
+      .update(streamUploadTicketsTable)
+      .set({ consumed: true })
+      .where(eq(streamUploadTicketsTable.uid, streamUid));
+  }
+
   const full = await buildVideoResponse(video, user.id);
   res.status(201).json(full);
+});
+
+// POST /videos/upload-url
+router.post("/videos/upload-url", requireAuth, async (req, res): Promise<void> => {
+  if (!getStreamConfig()) {
+    res.status(503).json({ error: "Video uploads are not configured yet" });
+    return;
+  }
+  try {
+    const user = await getCurrentUser(req);
+    const ticket = await createDirectUpload();
+    await db
+      .insert(streamUploadTicketsTable)
+      .values({ uid: ticket.uid, userId: user.id });
+    res.json(CreateVideoUploadUrlResponse.parse(ticket));
+  } catch (err) {
+    req.log.error({ err }, "Failed to create Cloudflare Stream upload URL");
+    res.status(502).json({ error: "Could not start upload" });
+  }
 });
 
 // GET /videos/:id

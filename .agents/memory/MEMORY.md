@@ -1,1 +1,2 @@
 - [Chroma project overview](chroma-overview.md) — full-stack filmmaker platform; stack, route wiring, Clerk auth, codegen flow
+- [clerk/shared pnpm linking](clerk-shared-pnpm-linking.md) — `pnpm add` can relink api-server to a broken peerless @clerk/shared copy; `pnpm install` repairs it, don't edit the import.

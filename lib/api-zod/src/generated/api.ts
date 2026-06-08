@@ -159,6 +159,8 @@ export const GetUserByUsernameResponse = zod.object({
   "description": zod.string().nullish(),
   "videoUrl": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
@@ -212,6 +214,8 @@ export const ListVideosResponse = zod.object({
   "description": zod.string().nullish(),
   "videoUrl": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
@@ -256,9 +260,19 @@ export const CreateVideoBody = zod.object({
   "description": zod.string().optional(),
   "videoUrl": zod.string().optional(),
   "thumbnailUrl": zod.string().optional(),
+  "streamUid": zod.string().optional(),
   "privacy": zod.enum(['public', 'private', 'password_protected']).optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().optional()
+})
+
+
+/**
+ * @summary Create a Cloudflare Stream direct upload URL
+ */
+export const CreateVideoUploadUrlResponse = zod.object({
+  "uploadURL": zod.string(),
+  "uid": zod.string()
 })
 
 
@@ -276,6 +290,8 @@ export const GetVideoResponse = zod.object({
   "description": zod.string().nullish(),
   "videoUrl": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
@@ -331,6 +347,8 @@ export const UpdateVideoResponse = zod.object({
   "description": zod.string().nullish(),
   "videoUrl": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
@@ -532,6 +550,8 @@ export const GetFeedResponse = zod.object({
   "description": zod.string().nullish(),
   "videoUrl": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
@@ -861,6 +881,8 @@ export const GetFeaturedContentResponse = zod.object({
   "description": zod.string().nullish(),
   "videoUrl": zod.string().nullish(),
   "thumbnailUrl": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),

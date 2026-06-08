@@ -15,6 +15,7 @@ import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Show, useUser } from "@clerk/react";
+import { Stream } from "@cloudflare/stream-react";
 
 export function VideoDetail() {
   const params = useParams();
@@ -96,7 +97,16 @@ export function VideoDetail() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="aspect-video bg-black rounded-xl overflow-hidden mb-8 border border-border/50 shadow-xl shadow-black/50">
-        {video.videoUrl ? (
+        {video.streamUid ? (
+          <Stream
+            controls
+            responsive={false}
+            height="100%"
+            width="100%"
+            src={video.streamUid}
+            poster={video.thumbnailUrl || undefined}
+          />
+        ) : video.videoUrl ? (
           <video
             src={video.videoUrl}
             poster={video.thumbnailUrl || undefined}

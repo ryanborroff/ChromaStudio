@@ -59,6 +59,10 @@ export interface Video {
   videoUrl?: string | null;
   /** @nullable */
   thumbnailUrl?: string | null;
+  /** @nullable */
+  streamUid?: string | null;
+  /** @nullable */
+  streamStatus?: string | null;
   privacy: VideoPrivacy;
   tags?: string[];
   /** @nullable */
@@ -111,9 +115,15 @@ export interface VideoInput {
   description?: string;
   videoUrl?: string;
   thumbnailUrl?: string;
+  streamUid?: string;
   privacy?: VideoInputPrivacy;
   tags?: string[];
   credits?: string;
+}
+
+export interface StreamUploadTicket {
+  uploadURL: string;
+  uid: string;
 }
 
 export type VideoUpdatePrivacy = typeof VideoUpdatePrivacy[keyof typeof VideoUpdatePrivacy];

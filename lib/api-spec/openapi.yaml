@@ -199,6 +199,19 @@ paths:
               schema:
                 $ref: "#/components/schemas/Video"
 
+  /videos/upload-url:
+    post:
+      operationId: createVideoUploadUrl
+      tags: [videos]
+      summary: Create a Cloudflare Stream direct upload URL
+      responses:
+        "200":
+          description: One-time upload ticket
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StreamUploadTicket"
+
   /videos/{id}:
     get:
       operationId: getVideo
@@ -737,6 +750,10 @@ components:
           type: ["string", "null"]
         thumbnailUrl:
           type: ["string", "null"]
+        streamUid:
+          type: ["string", "null"]
+        streamStatus:
+          type: ["string", "null"]
         privacy:
           type: string
           enum: [public, private, password_protected]
@@ -771,6 +788,8 @@ components:
           type: string
         thumbnailUrl:
           type: string
+        streamUid:
+          type: string
         privacy:
           type: string
           enum: [public, private, password_protected]
@@ -779,6 +798,15 @@ components:
           items:
             type: string
         credits:
+          type: string
+
+    StreamUploadTicket:
+      type: object
+      required: [uploadURL, uid]
+      properties:
+        uploadURL:
+          type: string
+        uid:
           type: string
 
     VideoUpdate:

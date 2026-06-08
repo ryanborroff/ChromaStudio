@@ -42,6 +42,7 @@ import type {
   ProjectInput,
   ProjectList,
   ProjectUpdate,
+  StreamUploadTicket,
   User,
   UserList,
   UserProfile,
@@ -603,6 +604,76 @@ export const useCreateVideo = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCreateVideoMutationOptions(options));
+    }
+
+export const getCreateVideoUploadUrlUrl = () => {
+
+
+
+
+  return `/api/videos/upload-url`
+}
+
+/**
+ * @summary Create a Cloudflare Stream direct upload URL
+ */
+export const createVideoUploadUrl = async ( options?: RequestInit): Promise<StreamUploadTicket> => {
+
+  return customFetch<StreamUploadTicket>(getCreateVideoUploadUrlUrl(),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getCreateVideoUploadUrlMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVideoUploadUrl>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createVideoUploadUrl>>, TError,void, TContext> => {
+
+const mutationKey = ['createVideoUploadUrl'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createVideoUploadUrl>>, void> = () => {
+
+
+          return  createVideoUploadUrl(requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateVideoUploadUrlMutationResult = NonNullable<Awaited<ReturnType<typeof createVideoUploadUrl>>>
+
+    export type CreateVideoUploadUrlMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a Cloudflare Stream direct upload URL
+ */
+export const useCreateVideoUploadUrl = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createVideoUploadUrl>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createVideoUploadUrl>>,
+        TError,
+        void,
+        TContext
+      > => {
+      return useMutation(getCreateVideoUploadUrlMutationOptions(options));
     }
 
 export const getGetVideoUrl = (id: number,) => {
