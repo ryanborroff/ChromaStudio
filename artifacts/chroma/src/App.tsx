@@ -21,6 +21,9 @@ import { Profile } from "@/pages/profile";
 import { ProfileEdit } from "@/pages/profile-edit";
 import { VideoUpload } from "@/pages/video-upload";
 import { VideoDetail } from "@/pages/video-detail";
+import { Library } from "@/pages/library";
+import { SharePage } from "@/pages/share-page";
+import { EmbedPlayer } from "@/pages/embed-player";
 import { SignInPage, SignUpPage } from "@/pages/auth";
 import { ComingSoon } from "@/pages/coming-soon";
 import {
@@ -67,6 +70,7 @@ function AppRoutes() {
         <Route path="/profile/:username" component={Profile} />
         <ProtectedRoute path="/videos/upload" component={VideoUpload} />
         <Route path="/videos/:id" component={VideoDetail} />
+        <Route path="/watch/:token" component={SharePage} />
 
         {/* Live & cinema events */}
         <Route path="/live">
@@ -103,14 +107,7 @@ function AppRoutes() {
             features={["Showreels & themed collections", "Drag-and-drop ordering", "Featured work on your profile"]}
           />
         )} />
-        <ProtectedRoute path="/studio/storage" component={() => (
-          <ComingSoon
-            icon={Cloud}
-            title="Cloud Storage"
-            description="A professional, Dropbox-style file manager built for film projects."
-            features={["Folders & version history", "Storage plans & quotas", "Shareable secure links"]}
-          />
-        )} />
+        <ProtectedRoute path="/studio/storage" component={Library} />
         <ProtectedRoute path="/studio/delivery" component={() => (
           <ComingSoon
             icon={Send}
@@ -177,7 +174,12 @@ function App() {
     <TooltipProvider>
       <QueryClientProvider client={queryClient}>
         <WouterRouter base={basePath}>
-          <AppRoutes />
+          <Switch>
+            <Route path="/embed/:token" component={EmbedPlayer} />
+            <Route>
+              <AppRoutes />
+            </Route>
+          </Switch>
         </WouterRouter>
         <Toaster />
       </QueryClientProvider>

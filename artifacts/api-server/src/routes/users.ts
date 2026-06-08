@@ -135,12 +135,17 @@ router.get("/users/:username", async (req, res): Promise<void> => {
   res.json(
     GetUserByUsernameResponse.parse({
       user: userFull,
-      videos: videos.map((v) => ({
-        ...v,
-        tags: v.tags ?? [],
-        isLiked: false,
-        user: userFull,
-      })),
+      videos: videos.map((v) => {
+        const { sharePasswordHash, shareToken: _t, ...rest } = v;
+        return {
+          ...rest,
+          tags: v.tags ?? [],
+          shareToken: null,
+          hasSharePassword: !!sharePasswordHash,
+          isLiked: false,
+          user: userFull,
+        };
+      }),
       credits: [],
     }),
   );

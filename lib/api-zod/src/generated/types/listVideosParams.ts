@@ -6,9 +6,19 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { ListVideosSort } from './listVideosSort';
+import type { VideoCategory } from './videoCategory';
 
 export type ListVideosParams = {
 userId?: number;
+/**
+ * When true, returns the authenticated user's own videos (including private).
+ */
+mine?: boolean;
+/**
+ * Filter by collection id, or "none" for uncategorized videos. Only with mine=true.
+ */
+collectionId?: string;
+category?: VideoCategory;
 search?: string;
 tags?: string;
 sort?: ListVideosSort;

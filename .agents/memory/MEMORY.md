@@ -1,3 +1,1 @@
-- [Auth & sessions](auth-sessions.md) — Passport OAuth + Postgres sessions; cookie/CSRF and Apple id_token gotchas.
-- [Object storage](object-storage.md) — Replit Object Storage for public avatar/cover/thumbnail images; serving-URL convention and public-media decision.
-- [Clerk/shared pnpm linking](clerk-shared-pnpm-linking.md) — pnpm workspace linking quirks for shared packages.
+- [Video serializer sensitive-field policy](video-serializer-policy.md) — sensitive Video columns (shareToken, sharePasswordHash) must be stripped in EVERY video serializer (feed/stats/users/collections), not just buildVideoResponse.

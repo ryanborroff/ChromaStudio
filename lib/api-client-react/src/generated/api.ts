@@ -22,6 +22,11 @@ import type {
 import type {
   Application,
   ApplicationInput,
+  Collection,
+  CollectionDetail,
+  CollectionInput,
+  CollectionList,
+  CollectionUpdate,
   Comment,
   CommentInput,
   CommentList,
@@ -43,6 +48,10 @@ import type {
   ProjectInput,
   ProjectList,
   ProjectUpdate,
+  SharePublic,
+  ShareSettings,
+  ShareSettingsInput,
+  ShareUnlockInput,
   StreamUploadTicket,
   UploadUrlRequest,
   UploadUrlResponse,
@@ -1349,6 +1358,594 @@ export const useCreateComment = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getCreateCommentMutationOptions(options));
+    }
+
+export const getListCollectionsUrl = () => {
+
+
+
+
+  return `/api/collections`
+}
+
+/**
+ * @summary List the current user's collections
+ */
+export const listCollections = async ( options?: RequestInit): Promise<CollectionList> => {
+
+  return customFetch<CollectionList>(getListCollectionsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListCollectionsQueryKey = () => {
+    return [
+    `/api/collections`
+    ] as const;
+    }
+
+
+export const getListCollectionsQueryOptions = <TData = Awaited<ReturnType<typeof listCollections>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCollections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListCollectionsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listCollections>>> = ({ signal }) => listCollections({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listCollections>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListCollectionsQueryResult = NonNullable<Awaited<ReturnType<typeof listCollections>>>
+export type ListCollectionsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List the current user's collections
+ */
+
+export function useListCollections<TData = Awaited<ReturnType<typeof listCollections>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listCollections>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListCollectionsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateCollectionUrl = () => {
+
+
+
+
+  return `/api/collections`
+}
+
+/**
+ * @summary Create a collection
+ */
+export const createCollection = async (collectionInput: CollectionInput, options?: RequestInit): Promise<Collection> => {
+
+  return customFetch<Collection>(getCreateCollectionUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      collectionInput,)
+  }
+);}
+
+
+
+
+export const getCreateCollectionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCollection>>, TError,{data: BodyType<CollectionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createCollection>>, TError,{data: BodyType<CollectionInput>}, TContext> => {
+
+const mutationKey = ['createCollection'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createCollection>>, {data: BodyType<CollectionInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createCollection(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateCollectionMutationResult = NonNullable<Awaited<ReturnType<typeof createCollection>>>
+    export type CreateCollectionMutationBody = BodyType<CollectionInput>
+    export type CreateCollectionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a collection
+ */
+export const useCreateCollection = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCollection>>, TError,{data: BodyType<CollectionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createCollection>>,
+        TError,
+        {data: BodyType<CollectionInput>},
+        TContext
+      > => {
+      return useMutation(getCreateCollectionMutationOptions(options));
+    }
+
+export const getGetCollectionUrl = (id: number,) => {
+
+
+
+
+  return `/api/collections/${id}`
+}
+
+/**
+ * @summary Get a collection and its videos
+ */
+export const getCollection = async (id: number, options?: RequestInit): Promise<CollectionDetail> => {
+
+  return customFetch<CollectionDetail>(getGetCollectionUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetCollectionQueryKey = (id: number,) => {
+    return [
+    `/api/collections/${id}`
+    ] as const;
+    }
+
+
+export const getGetCollectionQueryOptions = <TData = Awaited<ReturnType<typeof getCollection>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCollection>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetCollectionQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getCollection>>> = ({ signal }) => getCollection(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getCollection>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetCollectionQueryResult = NonNullable<Awaited<ReturnType<typeof getCollection>>>
+export type GetCollectionQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get a collection and its videos
+ */
+
+export function useGetCollection<TData = Awaited<ReturnType<typeof getCollection>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getCollection>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetCollectionQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateCollectionUrl = (id: number,) => {
+
+
+
+
+  return `/api/collections/${id}`
+}
+
+/**
+ * @summary Update a collection
+ */
+export const updateCollection = async (id: number,
+    collectionUpdate: CollectionUpdate, options?: RequestInit): Promise<Collection> => {
+
+  return customFetch<Collection>(getUpdateCollectionUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      collectionUpdate,)
+  }
+);}
+
+
+
+
+export const getUpdateCollectionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCollection>>, TError,{id: number;data: BodyType<CollectionUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateCollection>>, TError,{id: number;data: BodyType<CollectionUpdate>}, TContext> => {
+
+const mutationKey = ['updateCollection'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateCollection>>, {id: number;data: BodyType<CollectionUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateCollection(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateCollectionMutationResult = NonNullable<Awaited<ReturnType<typeof updateCollection>>>
+    export type UpdateCollectionMutationBody = BodyType<CollectionUpdate>
+    export type UpdateCollectionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update a collection
+ */
+export const useUpdateCollection = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCollection>>, TError,{id: number;data: BodyType<CollectionUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateCollection>>,
+        TError,
+        {id: number;data: BodyType<CollectionUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateCollectionMutationOptions(options));
+    }
+
+export const getDeleteCollectionUrl = (id: number,) => {
+
+
+
+
+  return `/api/collections/${id}`
+}
+
+/**
+ * @summary Delete a collection
+ */
+export const deleteCollection = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteCollectionUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteCollectionMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCollection>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteCollection>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteCollection'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteCollection>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteCollection(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteCollectionMutationResult = NonNullable<Awaited<ReturnType<typeof deleteCollection>>>
+
+    export type DeleteCollectionMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a collection
+ */
+export const useDeleteCollection = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCollection>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteCollection>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteCollectionMutationOptions(options));
+    }
+
+export const getUpdateVideoShareUrl = (id: number,) => {
+
+
+
+
+  return `/api/videos/${id}/share`
+}
+
+/**
+ * @summary Enable, disable, or password-protect a video's share link
+ */
+export const updateVideoShare = async (id: number,
+    shareSettingsInput: ShareSettingsInput, options?: RequestInit): Promise<ShareSettings> => {
+
+  return customFetch<ShareSettings>(getUpdateVideoShareUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      shareSettingsInput,)
+  }
+);}
+
+
+
+
+export const getUpdateVideoShareMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateVideoShare>>, TError,{id: number;data: BodyType<ShareSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateVideoShare>>, TError,{id: number;data: BodyType<ShareSettingsInput>}, TContext> => {
+
+const mutationKey = ['updateVideoShare'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateVideoShare>>, {id: number;data: BodyType<ShareSettingsInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateVideoShare(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateVideoShareMutationResult = NonNullable<Awaited<ReturnType<typeof updateVideoShare>>>
+    export type UpdateVideoShareMutationBody = BodyType<ShareSettingsInput>
+    export type UpdateVideoShareMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Enable, disable, or password-protect a video's share link
+ */
+export const useUpdateVideoShare = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateVideoShare>>, TError,{id: number;data: BodyType<ShareSettingsInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateVideoShare>>,
+        TError,
+        {id: number;data: BodyType<ShareSettingsInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateVideoShareMutationOptions(options));
+    }
+
+export const getGetSharedVideoUrl = (token: string,) => {
+
+
+
+
+  return `/api/share/${token}`
+}
+
+/**
+ * @summary Get a shared video by token (public)
+ */
+export const getSharedVideo = async (token: string, options?: RequestInit): Promise<SharePublic> => {
+
+  return customFetch<SharePublic>(getGetSharedVideoUrl(token),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSharedVideoQueryKey = (token: string,) => {
+    return [
+    `/api/share/${token}`
+    ] as const;
+    }
+
+
+export const getGetSharedVideoQueryOptions = <TData = Awaited<ReturnType<typeof getSharedVideo>>, TError = ErrorType<void>>(token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSharedVideo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSharedVideoQueryKey(token);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSharedVideo>>> = ({ signal }) => getSharedVideo(token, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(token), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSharedVideo>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSharedVideoQueryResult = NonNullable<Awaited<ReturnType<typeof getSharedVideo>>>
+export type GetSharedVideoQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get a shared video by token (public)
+ */
+
+export function useGetSharedVideo<TData = Awaited<ReturnType<typeof getSharedVideo>>, TError = ErrorType<void>>(
+ token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSharedVideo>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSharedVideoQueryOptions(token,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUnlockSharedVideoUrl = (token: string,) => {
+
+
+
+
+  return `/api/share/${token}/unlock`
+}
+
+/**
+ * @summary Unlock a password-protected shared video (public)
+ */
+export const unlockSharedVideo = async (token: string,
+    shareUnlockInput: ShareUnlockInput, options?: RequestInit): Promise<SharePublic> => {
+
+  return customFetch<SharePublic>(getUnlockSharedVideoUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      shareUnlockInput,)
+  }
+);}
+
+
+
+
+export const getUnlockSharedVideoMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unlockSharedVideo>>, TError,{token: string;data: BodyType<ShareUnlockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof unlockSharedVideo>>, TError,{token: string;data: BodyType<ShareUnlockInput>}, TContext> => {
+
+const mutationKey = ['unlockSharedVideo'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof unlockSharedVideo>>, {token: string;data: BodyType<ShareUnlockInput>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  unlockSharedVideo(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UnlockSharedVideoMutationResult = NonNullable<Awaited<ReturnType<typeof unlockSharedVideo>>>
+    export type UnlockSharedVideoMutationBody = BodyType<ShareUnlockInput>
+    export type UnlockSharedVideoMutationError = ErrorType<void>
+
+    /**
+ * @summary Unlock a password-protected shared video (public)
+ */
+export const useUnlockSharedVideo = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unlockSharedVideo>>, TError,{token: string;data: BodyType<ShareUnlockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof unlockSharedVideo>>,
+        TError,
+        {token: string;data: BodyType<ShareUnlockInput>},
+        TContext
+      > => {
+      return useMutation(getUnlockSharedVideoMutationOptions(options));
     }
 
 export const getFollowUserUrl = (userId: number,) => {

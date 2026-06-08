@@ -78,6 +78,16 @@ export const VideoPrivacy = {
   password_protected: 'password_protected',
 } as const;
 
+export type VideoCategory = typeof VideoCategory[keyof typeof VideoCategory];
+
+
+export const VideoCategory = {
+  reel: 'reel',
+  showreel: 'showreel',
+  rushes: 'rushes',
+  other: 'other',
+} as const;
+
 export interface Video {
   id: number;
   userId: number;
@@ -93,6 +103,13 @@ export interface Video {
   /** @nullable */
   streamStatus?: string | null;
   privacy: VideoPrivacy;
+  category?: VideoCategory;
+  /** @nullable */
+  collectionId?: number | null;
+  shareEnabled?: boolean;
+  /** @nullable */
+  shareToken?: string | null;
+  hasSharePassword?: boolean;
   tags?: string[];
   /** @nullable */
   credits?: string | null;
@@ -170,8 +187,76 @@ export interface VideoUpdate {
   videoUrl?: string;
   thumbnailUrl?: string;
   privacy?: VideoUpdatePrivacy;
+  category?: VideoCategory;
+  /** @nullable */
+  collectionId?: number | null;
   tags?: string[];
   credits?: string;
+}
+
+export interface Collection {
+  id: number;
+  userId: number;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  videoCount: number;
+  createdAt: string;
+}
+
+export interface CollectionInput {
+  /** @minLength 1 */
+  name: string;
+  description?: string;
+}
+
+export interface CollectionUpdate {
+  /** @minLength 1 */
+  name?: string;
+  /** @nullable */
+  description?: string | null;
+}
+
+export interface CollectionList {
+  collections: Collection[];
+}
+
+export interface CollectionDetail {
+  collection: Collection;
+  videos: Video[];
+}
+
+export interface ShareSettingsInput {
+  enabled: boolean;
+  /**
+     * Set a password, or null to remove the existing one. Omit to leave unchanged.
+     * @nullable
+     */
+  password?: string | null;
+}
+
+export interface ShareSettings {
+  shareEnabled: boolean;
+  /** @nullable */
+  shareToken?: string | null;
+  hasSharePassword: boolean;
+}
+
+export interface SharePublic {
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  thumbnailUrl?: string | null;
+  requiresPassword: boolean;
+  /** @nullable */
+  streamUid?: string | null;
+  /** @nullable */
+  videoUrl?: string | null;
+}
+
+export interface ShareUnlockInput {
+  password: string;
 }
 
 export interface VideoList {
@@ -331,6 +416,15 @@ export const ListUsersSort = {
 
 export type ListVideosParams = {
 userId?: number;
+/**
+ * When true, returns the authenticated user's own videos (including private).
+ */
+mine?: boolean;
+/**
+ * Filter by collection id, or "none" for uncategorized videos. Only with mine=true.
+ */
+collectionId?: string;
+category?: VideoCategory;
 search?: string;
 tags?: string;
 sort?: ListVideosSort;

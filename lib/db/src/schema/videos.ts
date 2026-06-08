@@ -2,6 +2,7 @@ import { pgTable, text, serial, integer, timestamp, boolean } from "drizzle-orm/
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { usersTable } from "./users";
+import { collectionsTable } from "./collections";
 
 export const videosTable = pgTable("videos", {
   id: serial("id").primaryKey(),
@@ -13,6 +14,11 @@ export const videosTable = pgTable("videos", {
   streamUid: text("stream_uid"),
   streamStatus: text("stream_status").notNull().default("pending"),
   privacy: text("privacy").notNull().default("public"),
+  category: text("category").notNull().default("other"),
+  collectionId: integer("collection_id").references(() => collectionsTable.id, { onDelete: "set null" }),
+  shareEnabled: boolean("share_enabled").notNull().default(false),
+  shareToken: text("share_token").unique(),
+  sharePasswordHash: text("share_password_hash"),
   tags: text("tags").array().notNull().default([]),
   credits: text("credits"),
   viewCount: integer("view_count").notNull().default(0),

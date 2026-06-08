@@ -56,9 +56,12 @@ router.get("/feed", requireAuth, async (req, res): Promise<void> => {
         .from(usersTable)
         .where(eq(usersTable.id, v.userId))
         .limit(1);
+      const { sharePasswordHash, shareToken: _t, ...rest } = v;
       return {
-        ...v,
+        ...rest,
         tags: v.tags ?? [],
+        shareToken: null,
+        hasSharePassword: !!sharePasswordHash,
         isLiked: false,
         user: videoUser
           ? {

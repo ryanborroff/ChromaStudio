@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { User } from './user';
+import type { VideoCategory } from './videoCategory';
 import type { VideoPrivacy } from './videoPrivacy';
 
 export interface Video {
@@ -23,6 +24,13 @@ export interface Video {
   /** @nullable */
   streamStatus?: string | null;
   privacy: VideoPrivacy;
+  category?: VideoCategory;
+  /** @nullable */
+  collectionId?: number | null;
+  shareEnabled?: boolean;
+  /** @nullable */
+  shareToken?: string | null;
+  hasSharePassword?: boolean;
   tags?: string[];
   /** @nullable */
   credits?: string | null;

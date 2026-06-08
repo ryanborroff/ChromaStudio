@@ -5,6 +5,7 @@
  * Chroma - Professional Filmmaker Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { VideoCategory } from './videoCategory';
 import type { VideoUpdatePrivacy } from './videoUpdatePrivacy';
 
 export interface VideoUpdate {
@@ -13,6 +14,9 @@ export interface VideoUpdate {
   videoUrl?: string;
   thumbnailUrl?: string;
   privacy?: VideoUpdatePrivacy;
+  category?: VideoCategory;
+  /** @nullable */
+  collectionId?: number | null;
   tags?: string[];
   credits?: string;
 }

@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, sql, desc, asc, ilike, or, and } from "drizzle-orm";
-import { db, videosTable, usersTable, videoLikesTable, commentsTable, streamUploadTicketsTable } from "@workspace/db";
+import { db, videosTable, usersTable, videoLikesTable, commentsTable, streamUploadTicketsTable, collectionsTable } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import {
   CreateVideoBody,
@@ -45,9 +45,12 @@ async function buildVideoResponse(
     isLiked = likeRow.length > 0;
   }
 
+  const { sharePasswordHash, shareToken, ...rest } = video;
   return {
-    ...video,
+    ...rest,
     tags: video.tags ?? [],
+    shareToken: currentUserId === video.userId ? shareToken ?? null : null,
+    hasSharePassword: !!sharePasswordHash,
     isLiked,
     user: user
       ? (() => {
@@ -68,20 +71,41 @@ async function buildVideoResponse(
 
 // GET /videos
 router.get("/videos", async (req, res): Promise<void> => {
-  const { userId, search, tags, sort = "newest", limit = "20", offset = "0" } = req.query as Record<string, string>;
+  const { userId, mine, collectionId, category, search, tags, sort = "newest", limit = "20", offset = "0" } =
+    req.query as Record<string, string>;
 
-  const conditions: any[] = [eq(videosTable.privacy, "public")];
-  if (userId) conditions.push(eq(videosTable.userId, parseInt(userId)));
+  const conditions: any[] = [];
+
+  // "mine" returns the authenticated user's own library (incl. private videos);
+  // otherwise only public videos are listed.
+  let ownerId: number | undefined;
+  if (mine === "true" && req.isAuthenticated?.()) {
+    const user = await getCurrentUser(req);
+    ownerId = user.id;
+    conditions.push(eq(videosTable.userId, ownerId));
+  } else {
+    conditions.push(eq(videosTable.privacy, "public"));
+    if (userId) conditions.push(eq(videosTable.userId, parseInt(userId)));
+  }
+
+  if (collectionId === "none") {
+    conditions.push(sql`${videosTable.collectionId} IS NULL`);
+  } else if (collectionId) {
+    conditions.push(eq(videosTable.collectionId, parseInt(collectionId)));
+  }
+  if (category) conditions.push(eq(videosTable.category, category));
   if (search) {
     conditions.push(
       or(ilike(videosTable.title, `%${search}%`), ilike(videosTable.description, `%${search}%`))!,
     );
   }
 
+  const whereClause = and(...conditions);
+
   const videos = await db
     .select()
     .from(videosTable)
-    .where(sql`${conditions.map((c) => c).join(" AND ")}`)
+    .where(whereClause)
     .orderBy(
       sort === "most_viewed"
         ? desc(videosTable.viewCount)
@@ -92,23 +116,14 @@ router.get("/videos", async (req, res): Promise<void> => {
             : desc(videosTable.createdAt),
     )
     .limit(parseInt(limit))
-    .offset(parseInt(offset))
-    .catch(() =>
-      db
-        .select()
-        .from(videosTable)
-        .where(eq(videosTable.privacy, "public"))
-        .orderBy(desc(videosTable.createdAt))
-        .limit(parseInt(limit))
-        .offset(parseInt(offset)),
-    );
+    .offset(parseInt(offset));
 
   const [countRow] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(videosTable)
-    .where(eq(videosTable.privacy, "public"));
+    .where(whereClause);
 
-  const enriched = await Promise.all(videos.map((v) => buildVideoResponse(v)));
+  const enriched = await Promise.all(videos.map((v) => buildVideoResponse(v, ownerId)));
   res.json(ListVideosResponse.parse({ videos: enriched, total: countRow?.count ?? 0 }));
 });
 
@@ -219,6 +234,17 @@ router.patch("/videos/:id", requireAuth, async (req, res): Promise<void> => {
     return;
   }
   const user = await getCurrentUser(req);
+  if (typeof parsed.data.collectionId === "number") {
+    const [owned] = await db
+      .select({ id: collectionsTable.id })
+      .from(collectionsTable)
+      .where(and(eq(collectionsTable.id, parsed.data.collectionId), eq(collectionsTable.userId, user.id)))
+      .limit(1);
+    if (!owned) {
+      res.status(400).json({ error: "Collection not found" });
+      return;
+    }
+  }
   const [video] = await db
     .update(videosTable)
     .set(parsed.data as Partial<typeof videosTable.$inferInsert>)

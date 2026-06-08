@@ -213,6 +213,11 @@ export const GetUserByUsernameResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
+  "category": zod.enum(['reel', 'showreel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
+  "shareEnabled": zod.boolean().optional(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "viewCount": zod.number(),
@@ -249,6 +254,9 @@ export const GetUserByUsernameResponse = zod.object({
  */
 export const ListVideosQueryParams = zod.object({
   "userId": zod.coerce.number().optional(),
+  "mine": zod.coerce.boolean().optional().describe('When true, returns the authenticated user\'s own videos (including private).'),
+  "collectionId": zod.coerce.string().optional().describe('Filter by collection id, or \"none\" for uncategorized videos. Only with mine=true.'),
+  "category": zod.enum(['reel', 'showreel', 'rushes', 'other']).optional(),
   "search": zod.coerce.string().optional(),
   "tags": zod.coerce.string().optional(),
   "sort": zod.enum(['newest', 'most_viewed', 'featured', 'community_rated', 'community_rated_asc']).optional(),
@@ -267,6 +275,11 @@ export const ListVideosResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
+  "category": zod.enum(['reel', 'showreel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
+  "shareEnabled": zod.boolean().optional(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "viewCount": zod.number(),
@@ -342,6 +355,11 @@ export const GetVideoResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
+  "category": zod.enum(['reel', 'showreel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
+  "shareEnabled": zod.boolean().optional(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "viewCount": zod.number(),
@@ -384,6 +402,8 @@ export const UpdateVideoBody = zod.object({
   "videoUrl": zod.string().optional(),
   "thumbnailUrl": zod.string().optional(),
   "privacy": zod.enum(['public', 'private', 'password_protected']).optional(),
+  "category": zod.enum(['reel', 'showreel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().optional()
 })
@@ -398,6 +418,11 @@ export const UpdateVideoResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
+  "category": zod.enum(['reel', 'showreel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
+  "shareEnabled": zod.boolean().optional(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "viewCount": zod.number(),
@@ -502,6 +527,184 @@ export const CreateCommentBody = zod.object({
 
 
 /**
+ * @summary List the current user's collections
+ */
+export const ListCollectionsResponse = zod.object({
+  "collections": zod.array(zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "videoCount": zod.number(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Create a collection
+ */
+
+
+
+export const CreateCollectionBody = zod.object({
+  "name": zod.string().min(1),
+  "description": zod.string().optional()
+})
+
+
+/**
+ * @summary Get a collection and its videos
+ */
+export const GetCollectionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetCollectionResponse = zod.object({
+  "collection": zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "videoCount": zod.number(),
+  "createdAt": zod.coerce.date()
+}),
+  "videos": zod.array(zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "streamStatus": zod.string().nullish(),
+  "privacy": zod.enum(['public', 'private', 'password_protected']),
+  "category": zod.enum(['reel', 'showreel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
+  "shareEnabled": zod.boolean().optional(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean().optional(),
+  "tags": zod.array(zod.string()).optional(),
+  "credits": zod.string().nullish(),
+  "viewCount": zod.number(),
+  "likeCount": zod.number(),
+  "isLiked": zod.boolean().optional(),
+  "user": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "name": zod.string(),
+  "profession": zod.string(),
+  "location": zod.string().nullish(),
+  "bio": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "skills": zod.array(zod.string()).optional(),
+  "socialLinks": zod.object({
+
+}).passthrough().nullish(),
+  "isFollowing": zod.boolean().optional(),
+  "followerCount": zod.number().optional(),
+  "followingCount": zod.number().optional(),
+  "videoCount": zod.number().optional(),
+  "createdAt": zod.coerce.date()
+}).optional(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Update a collection
+ */
+export const UpdateCollectionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateCollectionBody = zod.object({
+  "name": zod.string().min(1).optional(),
+  "description": zod.string().nullish()
+})
+
+export const UpdateCollectionResponse = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "videoCount": zod.number(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Delete a collection
+ */
+export const DeleteCollectionParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Enable, disable, or password-protect a video's share link
+ */
+export const UpdateVideoShareParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const UpdateVideoShareBody = zod.object({
+  "enabled": zod.boolean(),
+  "password": zod.string().nullish().describe('Set a password, or null to remove the existing one. Omit to leave unchanged.')
+})
+
+export const UpdateVideoShareResponse = zod.object({
+  "shareEnabled": zod.boolean(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean()
+})
+
+
+/**
+ * @summary Get a shared video by token (public)
+ */
+export const GetSharedVideoParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const GetSharedVideoResponse = zod.object({
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "requiresPassword": zod.boolean(),
+  "streamUid": zod.string().nullish(),
+  "videoUrl": zod.string().nullish()
+})
+
+
+/**
+ * @summary Unlock a password-protected shared video (public)
+ */
+export const UnlockSharedVideoParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const UnlockSharedVideoBody = zod.object({
+  "password": zod.string()
+})
+
+export const UnlockSharedVideoResponse = zod.object({
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "requiresPassword": zod.boolean(),
+  "streamUid": zod.string().nullish(),
+  "videoUrl": zod.string().nullish()
+})
+
+
+/**
  * @summary Follow or unfollow a user
  */
 export const FollowUserParams = zod.object({
@@ -597,6 +800,11 @@ export const GetFeedResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
+  "category": zod.enum(['reel', 'showreel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
+  "shareEnabled": zod.boolean().optional(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "viewCount": zod.number(),
@@ -922,6 +1130,11 @@ export const GetFeaturedContentResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
+  "category": zod.enum(['reel', 'showreel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
+  "shareEnabled": zod.boolean().optional(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "viewCount": zod.number(),
