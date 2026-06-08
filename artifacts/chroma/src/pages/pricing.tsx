@@ -25,7 +25,7 @@ const TIERS: Tier[] = [
       "Public profile & portfolio",
       "Community access",
     ],
-    cta: "Get started",
+    cta: "Choose Free Plan",
     ctaHref: "/sign-up",
   },
   {
@@ -41,7 +41,7 @@ const TIERS: Tier[] = [
       "Embeddable players",
       "Basic analytics",
     ],
-    cta: "Start Creator",
+    cta: "Choose Creator Plan",
     ctaHref: "/sign-up",
     featured: true,
   },
@@ -58,7 +58,7 @@ const TIERS: Tier[] = [
       "Advanced analytics",
       "Priority support",
     ],
-    cta: "Start Studio",
+    cta: "Choose Studio Plan",
     ctaHref: "/sign-up",
   },
   {
@@ -73,7 +73,7 @@ const TIERS: Tier[] = [
       "Custom SLA & onboarding",
       "Team seats & roles",
     ],
-    cta: "Contact sales",
+    cta: "Contact Sales",
     ctaHref: "/sign-up",
   },
 ];
