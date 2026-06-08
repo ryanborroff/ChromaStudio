@@ -97,13 +97,13 @@ export function VideoDetail() {
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="aspect-video bg-black rounded-xl overflow-hidden mb-8 border border-border/50 shadow-xl shadow-black/50">
         {video.videoUrl ? (
-          <iframe 
-            src={video.videoUrl.includes('youtube.com') || video.videoUrl.includes('vimeo.com') ? video.videoUrl : ''} 
+          <video
+            src={video.videoUrl}
+            poster={video.thumbnailUrl || undefined}
             className="w-full h-full"
-            frameBorder="0" 
-            allow="autoplay; fullscreen; picture-in-picture" 
-            allowFullScreen
-          ></iframe>
+            controls
+            playsInline
+          />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-card">
             <span className="text-muted-foreground font-medium">Video playback not available</span>
