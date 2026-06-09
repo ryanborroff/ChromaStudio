@@ -1,1 +1,1 @@
-- [Video serializer sensitive-field policy](video-serializer-policy.md) — sensitive/denormalized Video columns (shareToken, sharePasswordHash, ratingSum) must be stripped in EVERY serializer (feed/stats/users/collections), not just buildVideoResponse; rating write path must be transactional.
+- [Paid-tier gating](paid-tier-gating.md) — `users.plan` model; gate paid features server-side; why User.plan is optional; `/api/dev/plan/:plan` preview toggle.

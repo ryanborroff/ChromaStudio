@@ -88,6 +88,7 @@ export const GetMeResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -128,6 +129,7 @@ export const UpdateMeResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -165,6 +167,7 @@ export const ListUsersResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -197,6 +200,7 @@ export const GetUserByUsernameResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -241,6 +245,7 @@ export const GetUserByUsernameResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -307,6 +312,7 @@ export const ListVideosResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -392,6 +398,7 @@ export const GetVideoResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -460,6 +467,7 @@ export const UpdateVideoResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -540,6 +548,7 @@ export const ListCommentsResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -647,6 +656,7 @@ export const GetCollectionResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -783,6 +793,7 @@ export const ListFollowersResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -815,6 +826,7 @@ export const ListFollowingResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -872,6 +884,7 @@ export const GetFeedResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -904,6 +917,7 @@ export const ListConversationsResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -987,6 +1001,7 @@ export const ListProjectsResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -1047,6 +1062,7 @@ export const GetProjectResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -1097,6 +1113,7 @@ export const UpdateProjectResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -1162,6 +1179,7 @@ export const GetFeaturedContentResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
@@ -1206,6 +1224,7 @@ export const GetFeaturedContentResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),

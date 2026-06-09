@@ -35,6 +35,15 @@ router.put("/videos/:id/share", requireAuth, async (req, res): Promise<void> => 
   }
   const user = await getCurrentUser(req);
 
+  // Sharing & external embedding are paid-only features. Free users can't enable them.
+  const isPaid = (user.plan ?? "free") !== "free";
+  if (parsed.data.enabled && !isPaid) {
+    res.status(403).json({
+      error: "Sharing and embedding are available on paid plans. Upgrade to unlock them.",
+    });
+    return;
+  }
+
   const [video] = await db
     .select()
     .from(videosTable)

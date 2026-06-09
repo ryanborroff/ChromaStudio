@@ -12,7 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
-import { Copy, Link2, Code2, Loader2 } from "lucide-react";
+import { useAuth } from "@/lib/useAuth";
+import { Link } from "wouter";
+import { Copy, Link2, Code2, Loader2, Lock, Sparkles } from "lucide-react";
 
 interface ShareDialogProps {
   open: boolean;
@@ -25,6 +27,8 @@ const base = import.meta.env.BASE_URL; // ends with "/"
 
 export function ShareDialog({ open, onOpenChange, video, onChanged }: ShareDialogProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const isPaid = (user?.plan ?? "free") !== "free";
   const [settings, setSettings] = useState({
     shareEnabled: video.shareEnabled,
     shareToken: video.shareToken,
@@ -69,6 +73,25 @@ export function ShareDialog({ open, onOpenChange, video, onChanged }: ShareDialo
           <DialogDescription className="truncate">{video.title}</DialogDescription>
         </DialogHeader>
 
+        {!isPaid ? (
+          <div className="space-y-4 rounded-lg border border-primary/30 bg-primary/5 p-5 text-center">
+            <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-primary/15">
+              <Lock className="h-5 w-5 text-primary" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-semibold text-white">Sharing & embedding are a paid feature</p>
+              <p className="text-xs text-muted-foreground">
+                Upgrade your plan to create shareable links and embed your videos on external
+                websites.
+              </p>
+            </div>
+            <Button asChild className="w-full" onClick={() => onOpenChange(false)}>
+              <Link href={`${base}pricing`}>
+                <Sparkles className="mr-2 h-4 w-4" /> View plans
+              </Link>
+            </Button>
+          </div>
+        ) : (
         <div className="space-y-5">
           <div className="flex items-center justify-between">
             <div>
@@ -150,6 +173,7 @@ export function ShareDialog({ open, onOpenChange, video, onChanged }: ShareDialo
             </>
           )}
         </div>
+        )}
       </DialogContent>
     </Dialog>
   );

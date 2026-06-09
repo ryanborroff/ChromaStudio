@@ -81,6 +81,23 @@ devAuthToggleRouter.get("/login", async (req, res, next) => {
   }
 });
 
+// Dev-only: flip the current account's plan so you can preview the free vs. paid
+// experience (e.g. paid-only sharing/embedding). /api/dev/plan/creator to go paid,
+// /api/dev/plan/free to drop back to free.
+devAuthToggleRouter.get("/plan/:plan", async (req, res, next) => {
+  try {
+    const raw = Array.isArray(req.params.plan) ? req.params.plan[0] : req.params.plan;
+    const allowed = ["free", "creator", "studio"];
+    const plan = allowed.includes(raw) ? raw : "free";
+    const userId = (req.user as { id?: number } | undefined)?.id ?? DEMO_USER_ID;
+    await db.update(usersTable).set({ plan }).where(eq(usersTable.id, userId));
+    logger.warn({ userId, plan }, "dev: updated plan");
+    res.redirect("/");
+  } catch (err) {
+    next(err as Error);
+  }
+});
+
 devAuthToggleRouter.get("/logout", (req, res, next) => {
   const finish = () => res.redirect("/");
   req.logout((err) => {

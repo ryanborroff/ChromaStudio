@@ -356,9 +356,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
                     <p className="text-xs leading-none text-muted-foreground">
                       @{user?.username}
                     </p>
-                    <span className="mt-0.5 inline-flex w-fit items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
-                      Creator
-                    </span>
+                    {(user?.plan ?? "free") !== "free" ? (
+                      <span className="mt-0.5 inline-flex w-fit items-center rounded-full bg-primary/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                        {user?.plan}
+                      </span>
+                    ) : (
+                      <span className="mt-0.5 inline-flex w-fit items-center rounded-full bg-white/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                        Free
+                      </span>
+                    )}
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className="bg-border" />

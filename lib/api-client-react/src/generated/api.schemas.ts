@@ -62,6 +62,8 @@ export interface User {
   skills?: string[];
   /** @nullable */
   socialLinks?: UserSocialLinks;
+  /** Subscription tier ("free" or a paid plan such as "creator"/"studio"). */
+  plan?: string;
   isFollowing?: boolean;
   followerCount?: number;
   followingCount?: number;

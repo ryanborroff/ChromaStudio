@@ -18,6 +18,9 @@ export const usersTable = pgTable("users", {
   coverUrl: text("cover_url"),
   skills: text("skills").array().notNull().default([]),
   socialLinks: json("social_links"),
+  // Subscription tier. "free" = no paid features; anything else (e.g. "creator",
+  // "studio") unlocks paid-only features like video sharing & external embedding.
+  plan: text("plan").notNull().default("free"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
