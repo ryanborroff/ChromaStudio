@@ -7,7 +7,7 @@ import { pool } from "@workspace/db";
 import passport, { configurePassport } from "./lib/passport";
 import router from "./routes";
 import { logger } from "./lib/logger";
-import { devAuthToggleRouter } from "./lib/devAuth";
+import { devAuthToggleRouter, devAutoLogin } from "./lib/devAuth";
 
 const app: Express = express();
 
@@ -86,13 +86,13 @@ configurePassport();
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Development-only: the app starts signed OUT so the public, pre-login
-// experience loads by default. Visit /api/dev/login to explore the full
-// signed-in experience as a demo user, and /api/dev/logout to leave it.
-// Never enabled in production.
+// Development-only: auto-sign-in as a demo user so the full signed-in app loads
+// by default in the preview. Visit /api/dev/logout to see the public, pre-login
+// experience, and /api/dev/login to jump back in. Never enabled in production.
 if (process.env.NODE_ENV === "development") {
   app.use("/api/dev", devAuthToggleRouter);
-  logger.warn("dev auth helpers enabled — app starts signed out (use /api/dev/login)");
+  app.use(devAutoLogin);
+  logger.warn("dev auth helpers enabled — auto-login as demo user (use /api/dev/logout to sign out)");
 }
 
 app.use("/api", router);
