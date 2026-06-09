@@ -133,17 +133,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </Link>
                 )}
 
-                {isSignedIn && (
-                  <Link
-                    href={NAV_LIBRARY.href}
-                    onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-0.5 ${location.startsWith(NAV_LIBRARY.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
-                    data-testid="mobile-link-library"
-                  >
-                    <Clapperboard className={`w-4 h-4 ${location.startsWith(NAV_LIBRARY.href) ? "text-primary" : ""}`} />
-                    {NAV_LIBRARY.label}
-                  </Link>
-                )}
+                <Link
+                  href={NAV_LIBRARY.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-0.5 ${location.startsWith(NAV_LIBRARY.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                  data-testid="mobile-link-library"
+                >
+                  <Clapperboard className={`w-4 h-4 ${location.startsWith(NAV_LIBRARY.href) ? "text-primary" : ""}`} />
+                  {NAV_LIBRARY.label}
+                </Link>
 
                 {[NAV_VIEW, ...NAV_TAIL].map(item => {
                   const Icon = item.icon;
@@ -268,15 +266,13 @@ export function Layout({ children }: { children: React.ReactNode }) {
               {NAV_VIEW.label}
             </Link>
 
-            {isSignedIn && (
-              <Link
-                href={NAV_LIBRARY.href}
-                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${location.startsWith(NAV_LIBRARY.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
-                data-testid="link-library"
-              >
-                {NAV_LIBRARY.label}
-              </Link>
-            )}
+            <Link
+              href={NAV_LIBRARY.href}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${location.startsWith(NAV_LIBRARY.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+              data-testid="link-library"
+            >
+              {NAV_LIBRARY.label}
+            </Link>
 
             {NAV_GROUPS.map(group => {
               if (group.signedInOnly && !isSignedIn) return null;
