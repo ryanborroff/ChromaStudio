@@ -28,7 +28,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 type NavItem = { href: string; label: string; icon: LucideIcon; desc?: string };
 type NavGroup = { label: string; signedInOnly?: boolean; items: NavItem[] };
 
-const NAV_VIEW: NavItem = { href: "/explore", label: "View", icon: Grid3X3 };
+const NAV_VIEW: NavItem = { href: "/explore", label: "Watch", icon: Grid3X3 };
 const NAV_LIBRARY: NavItem = { href: "/studio/storage", label: "Library", icon: Clapperboard };
 
 const NAV_GROUPS: NavGroup[] = [
