@@ -29,6 +29,7 @@ type NavItem = { href: string; label: string; icon: LucideIcon; desc?: string };
 type NavGroup = { label: string; signedInOnly?: boolean; items: NavItem[] };
 
 const NAV_VIEW: NavItem = { href: "/explore", label: "View", icon: Grid3X3 };
+const NAV_LIBRARY: NavItem = { href: "/studio/storage", label: "Library", icon: Clapperboard };
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -129,6 +130,18 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   >
                     <Rss className={`w-4 h-4 ${location === "/feed" ? "text-primary" : ""}`} />
                     Feed
+                  </Link>
+                )}
+
+                {isSignedIn && (
+                  <Link
+                    href={NAV_LIBRARY.href}
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-0.5 ${location.startsWith(NAV_LIBRARY.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                    data-testid="mobile-link-library"
+                  >
+                    <Clapperboard className={`w-4 h-4 ${location.startsWith(NAV_LIBRARY.href) ? "text-primary" : ""}`} />
+                    {NAV_LIBRARY.label}
                   </Link>
                 )}
 
@@ -254,6 +267,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               {NAV_VIEW.label}
             </Link>
+
+            {isSignedIn && (
+              <Link
+                href={NAV_LIBRARY.href}
+                className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${location.startsWith(NAV_LIBRARY.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                data-testid="link-library"
+              >
+                {NAV_LIBRARY.label}
+              </Link>
+            )}
 
             {NAV_GROUPS.map(group => {
               if (group.signedInOnly && !isSignedIn) return null;
