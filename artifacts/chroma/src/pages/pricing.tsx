@@ -102,7 +102,7 @@ export function Pricing() {
               className="text-transparent bg-clip-text"
               style={{ backgroundImage: "linear-gradient(135deg, hsl(0 80% 65%) 0%, hsl(20 90% 65%) 100%)" }}
             >
-              footage
+              need
             </span>
           </h1>
           <p className="text-lg text-white/50 font-medium leading-relaxed">
