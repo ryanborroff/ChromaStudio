@@ -94,7 +94,7 @@ export function Pricing() {
         />
         <div className="relative z-10 max-w-3xl mx-auto px-6 text-center">
           <h1
-            className="text-4xl md:text-5xl font-black tracking-tight mb-5 text-white leading-tight"
+            className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-5 text-white leading-tight whitespace-nowrap"
             style={{ letterSpacing: "-0.03em" }}
           >
             Pricing that scales with your{" "}
