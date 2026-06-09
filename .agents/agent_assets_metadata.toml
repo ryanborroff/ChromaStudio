@@ -6,3 +6,9 @@ id = "7P-FcPL-lmxdHMxJU9_gC"
 uri = "file://attached_assets/chroma-qr.png"
 type = "image"
 title = "Chroma — Scan to open"
+
+[[outputs]]
+id = "2zL2P11yN4-uiqCpUSYZq"
+uri = "file://screenshots/chroma-landing.jpg"
+type = "image"
+title = "Chroma — Pre-login Landing Page"
