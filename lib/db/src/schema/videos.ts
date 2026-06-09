@@ -21,6 +21,7 @@ export const videosTable = pgTable("videos", {
   sharePasswordHash: text("share_password_hash"),
   tags: text("tags").array().notNull().default([]),
   credits: text("credits"),
+  downloadFormats: text("download_formats").array().notNull().default([]),
   viewCount: integer("view_count").notNull().default(0),
   likeCount: integer("like_count").notNull().default(0),
   ratingSum: integer("rating_sum").notNull().default(0),

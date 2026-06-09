@@ -17,4 +17,5 @@ export interface VideoInput {
   privacy?: VideoInputPrivacy;
   tags?: string[];
   credits?: string;
+  downloadFormats?: string[];
 }

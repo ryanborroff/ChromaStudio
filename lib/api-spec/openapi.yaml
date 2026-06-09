@@ -1115,6 +1115,10 @@ components:
             type: string
         credits:
           type: ["string", "null"]
+        downloadFormats:
+          type: array
+          items:
+            type: string
         viewCount:
           type: integer
         likeCount:
@@ -1157,6 +1161,10 @@ components:
             type: string
         credits:
           type: string
+        downloadFormats:
+          type: array
+          items:
+            type: string
 
     StreamUploadTicket:
       type: object
@@ -1191,6 +1199,10 @@ components:
             type: string
         credits:
           type: string
+        downloadFormats:
+          type: array
+          items:
+            type: string
 
     VideoCategory:
       type: string

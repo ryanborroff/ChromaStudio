@@ -220,6 +220,7 @@ export const GetUserByUsernameResponse = zod.object({
   "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -285,6 +286,7 @@ export const ListVideosResponse = zod.object({
   "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -331,7 +333,8 @@ export const CreateVideoBody = zod.object({
   "streamUid": zod.string().optional(),
   "privacy": zod.enum(['public', 'private', 'password_protected']).optional(),
   "tags": zod.array(zod.string()).optional(),
-  "credits": zod.string().optional()
+  "credits": zod.string().optional(),
+  "downloadFormats": zod.array(zod.string()).optional()
 })
 
 
@@ -368,6 +371,7 @@ export const GetVideoResponse = zod.object({
   "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -414,7 +418,8 @@ export const UpdateVideoBody = zod.object({
   "category": zod.enum(['reel', 'showreel', 'rushes', 'other']).optional(),
   "collectionId": zod.number().nullish(),
   "tags": zod.array(zod.string()).optional(),
-  "credits": zod.string().optional()
+  "credits": zod.string().optional(),
+  "downloadFormats": zod.array(zod.string()).optional()
 })
 
 export const UpdateVideoResponse = zod.object({
@@ -434,6 +439,7 @@ export const UpdateVideoResponse = zod.object({
   "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -620,6 +626,7 @@ export const GetCollectionResponse = zod.object({
   "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -844,6 +851,7 @@ export const GetFeedResponse = zod.object({
   "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -1177,6 +1185,7 @@ export const GetFeaturedContentResponse = zod.object({
   "hasSharePassword": zod.boolean().optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),

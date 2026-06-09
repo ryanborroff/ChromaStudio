@@ -113,6 +113,7 @@ export interface Video {
   tags?: string[];
   /** @nullable */
   credits?: string | null;
+  downloadFormats?: string[];
   viewCount: number;
   likeCount: number;
   isLiked?: boolean;
@@ -169,6 +170,7 @@ export interface VideoInput {
   privacy?: VideoInputPrivacy;
   tags?: string[];
   credits?: string;
+  downloadFormats?: string[];
 }
 
 export interface StreamUploadTicket {
@@ -196,6 +198,7 @@ export interface VideoUpdate {
   collectionId?: number | null;
   tags?: string[];
   credits?: string;
+  downloadFormats?: string[];
 }
 
 export interface Collection {

@@ -27,12 +27,14 @@ import { Progress } from "@/components/ui/progress";
 import { ImageUploader } from "@/components/ImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { DOWNLOAD_FORMATS } from "@/lib/downloadFormats";
 
 const uploadSchema = z.object({
   title: z.string().min(2, "Title is required"),
   description: z.string().optional(),
   privacy: z.enum(["public", "private", "password_protected"]).default("public"),
   credits: z.string().optional(),
+  downloadFormats: z.array(z.string()).default(["1080p", "720p"]),
 });
 
 type UploadFormValues = z.infer<typeof uploadSchema>;
@@ -75,6 +77,7 @@ export function VideoUpload() {
       description: "",
       privacy: "public",
       credits: "",
+      downloadFormats: ["1080p", "720p"],
     },
   });
 
@@ -266,6 +269,49 @@ export function VideoUpload() {
                     />
                   </FormControl>
                   <FormDescription>List the key crew members who worked on this piece.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="downloadFormats"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Download formats</FormLabel>
+                  <FormDescription>
+                    Choose which resolutions viewers can download. Leave all off to disable downloads.
+                  </FormDescription>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+                    {DOWNLOAD_FORMATS.map((fmt) => {
+                      const checked = field.value?.includes(fmt.value) ?? false;
+                      return (
+                        <button
+                          type="button"
+                          key={fmt.value}
+                          onClick={() => {
+                            const set = new Set(field.value ?? []);
+                            if (set.has(fmt.value)) set.delete(fmt.value);
+                            else set.add(fmt.value);
+                            field.onChange(
+                              DOWNLOAD_FORMATS.filter((f) => set.has(f.value)).map((f) => f.value),
+                            );
+                          }}
+                          className={`flex flex-col items-start rounded-lg border px-3 py-2 text-left transition-colors ${
+                            checked
+                              ? "border-primary bg-primary/10"
+                              : "border-border bg-input hover:border-primary/50"
+                          }`}
+                          data-testid={`toggle-format-${fmt.value}`}
+                          aria-pressed={checked}
+                        >
+                          <span className="text-sm font-semibold text-white">{fmt.label}</span>
+                          <span className="text-xs text-muted-foreground">{fmt.hint}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}

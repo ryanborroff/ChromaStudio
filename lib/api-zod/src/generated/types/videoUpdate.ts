@@ -19,4 +19,5 @@ export interface VideoUpdate {
   collectionId?: number | null;
   tags?: string[];
   credits?: string;
+  downloadFormats?: string[];
 }

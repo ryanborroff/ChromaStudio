@@ -177,7 +177,7 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
   try {
     [video] = await db
       .insert(videosTable)
-      .values({ ...parsed.data, userId: user.id, privacy: parsed.data.privacy ?? "public", tags: parsed.data.tags ?? [] })
+      .values({ ...parsed.data, userId: user.id, privacy: parsed.data.privacy ?? "public", tags: parsed.data.tags ?? [], downloadFormats: parsed.data.downloadFormats ?? [] })
       .returning();
   } catch (err) {
     // Persisting the record failed after the asset was uploaded — clean up the

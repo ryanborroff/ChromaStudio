@@ -5,10 +5,19 @@ import {
   useListComments, getListCommentsQueryKey,
   useCreateComment
 } from "@workspace/api-client-react";
-import { Loader2, Heart, Share2, Eye, UserPlus, Clock } from "lucide-react";
+import { Loader2, Heart, Share2, Eye, UserPlus, Clock, Download } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { StarRating } from "@/components/star-rating";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { DOWNLOAD_FORMAT_LABELS } from "@/lib/downloadFormats";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { queryClient } from "@/lib/queryClient";
@@ -187,6 +196,40 @@ export function VideoDetail() {
                 }}>
                   <Share2 className="w-5 h-5" />
                 </Button>
+
+                {video.streamUid && video.downloadFormats && video.downloadFormats.length > 0 && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="secondary" className="rounded-full font-semibold" data-testid="btn-download">
+                        <Download className="w-5 h-5 mr-2" />
+                        Download
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuLabel>Download formats</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      {video.downloadFormats.map((fmt) => {
+                        const meta = DOWNLOAD_FORMAT_LABELS[fmt];
+                        const safeTitle = video.title.replace(/[^\w.-]+/g, "_");
+                        return (
+                          <DropdownMenuItem key={fmt} asChild>
+                            <a
+                              href={`https://videodelivery.net/${video.streamUid}/downloads/default.mp4`}
+                              download={`${safeTitle}-${fmt}.mp4`}
+                              data-testid={`download-${fmt}`}
+                              className="flex items-center justify-between gap-3 cursor-pointer"
+                            >
+                              <span className="font-medium">{meta?.label ?? fmt}</span>
+                              {meta?.hint && (
+                                <span className="text-xs text-muted-foreground">{meta.hint}</span>
+                              )}
+                            </a>
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
             
