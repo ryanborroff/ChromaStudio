@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 
+export * from './addDeliveryFileInput';
 export * from './application';
 export * from './applicationInput';
 export * from './collection';
@@ -18,6 +19,11 @@ export * from './commentInput';
 export * from './commentList';
 export * from './conversation';
 export * from './conversationList';
+export * from './createDeliveryInput';
+export * from './delivery';
+export * from './deliveryDetail';
+export * from './deliveryFile';
+export * from './deliveryList';
 export * from './errorEnvelope';
 export * from './featuredContent';
 export * from './followResult';
@@ -38,6 +44,7 @@ export * from './project';
 export * from './projectInput';
 export * from './projectList';
 export * from './projectUpdate';
+export * from './publicDelivery';
 export * from './rateInput';
 export * from './rateResult';
 export * from './sharePublic';
@@ -45,6 +52,8 @@ export * from './shareSettings';
 export * from './shareSettingsInput';
 export * from './shareUnlockInput';
 export * from './streamUploadTicket';
+export * from './unlockDeliveryInput';
+export * from './updateDeliveryInput';
 export * from './uploadUrlRequest';
 export * from './uploadUrlResponse';
 export * from './user';

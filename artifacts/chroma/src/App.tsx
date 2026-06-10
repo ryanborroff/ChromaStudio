@@ -25,10 +25,13 @@ import { Library } from "@/pages/library";
 import { Pricing } from "@/pages/pricing";
 import { SharePage } from "@/pages/share-page";
 import { EmbedPlayer } from "@/pages/embed-player";
+import { Deliveries } from "@/pages/deliveries";
+import { DeliveryManage } from "@/pages/delivery-manage";
+import { DeliveryPage } from "@/pages/delivery-page";
 import { SignInPage, SignUpPage } from "@/pages/auth";
 import { ComingSoon } from "@/pages/coming-soon";
 import {
-  Radio, Clapperboard, History, FolderOpen, Cloud, Send,
+  Radio, Clapperboard, History, FolderOpen,
   Code2, BarChart3, ShoppingBag, ShieldCheck, KeyRound,
 } from "lucide-react";
 
@@ -73,6 +76,7 @@ function AppRoutes() {
         <ProtectedRoute path="/videos/upload" component={VideoUpload} />
         <Route path="/videos/:id" component={VideoDetail} />
         <Route path="/watch/:token" component={SharePage} />
+        <Route path="/deliver/:token" component={DeliveryPage} />
 
         {/* Live & cinema events */}
         <Route path="/live">
@@ -110,14 +114,8 @@ function AppRoutes() {
           />
         )} />
         <ProtectedRoute path="/studio/storage" component={Library} />
-        <ProtectedRoute path="/studio/delivery" component={() => (
-          <ComingSoon
-            icon={Send}
-            title="Client Delivery Portal"
-            description="Send branded deliveries and collect approvals and feedback in one place."
-            features={["Branded delivery pages", "Approvals & timestamped feedback", "Download permissions"]}
-          />
-        )} />
+        <ProtectedRoute path="/studio/delivery" component={Deliveries} />
+        <ProtectedRoute path="/studio/delivery/:id" component={DeliveryManage} />
         <ProtectedRoute path="/studio/embeds" component={() => (
           <ComingSoon
             icon={Code2}

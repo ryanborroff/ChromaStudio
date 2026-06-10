@@ -62,6 +62,7 @@ A premium, cinematic professional filmmaker platform for video hosting, networki
 - **Video Detail** — embed player, likes, comments
 - **Media Library** (`/studio/storage`) — Dropbox-style manager: collections (folders) + categories (reel/showreel/rushes/other), move videos, filter by collection/category/uncategorized
 - **Share & embed** — per-video share links (`/watch/:token`) with optional password protection; embeddable player (`/embed/:token`) for external sites (rendered outside the app Layout). **Paid-only**: only users on a paid plan (`users.plan !== "free"`) can enable share/embed links; free users see an upgrade prompt in the Share dialog
+- **Client Delivery** (`/studio/delivery`) — upload any files (cuts, stills, docs, ZIPs ≤50 MB each via `request-file-url`) into a delivery and send a client a private download link (`/deliver/:token`), optionally password-protected. `deliveries` table (token, optional bcrypt `passwordHash`) + `delivery_files` (internal `objectPath`, never exposed to clients). Public `GET /deliveries/shared/:token` omits files when locked; `POST .../unlock` verifies the password and returns a stateless signed `downloadKey` (HMAC of token+expiry, 24h); `GET .../files/:fileId/download` requires a valid key for protected deliveries, then streams the file with `Content-Disposition: attachment` + `nosniff`. Not paid-gated
 - **Plans** — `users.plan` column (`free` default; `creator`/`studio` = paid) gates paid features. Account badge in the user menu reflects the live plan
 
 ## User preferences

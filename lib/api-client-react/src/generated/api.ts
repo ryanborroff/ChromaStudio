@@ -20,6 +20,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  AddDeliveryFileInput,
   Application,
   ApplicationInput,
   Collection,
@@ -31,6 +32,9 @@ import type {
   CommentInput,
   CommentList,
   ConversationList,
+  CreateDeliveryInput,
+  DeliveryDetail,
+  DeliveryList,
   ErrorEnvelope,
   FeaturedContent,
   FollowResult,
@@ -48,6 +52,7 @@ import type {
   ProjectInput,
   ProjectList,
   ProjectUpdate,
+  PublicDelivery,
   RateInput,
   RateResult,
   SharePublic,
@@ -55,6 +60,8 @@ import type {
   ShareSettingsInput,
   ShareUnlockInput,
   StreamUploadTicket,
+  UnlockDeliveryInput,
+  UpdateDeliveryInput,
   UploadUrlRequest,
   UploadUrlResponse,
   User,
@@ -3230,4 +3237,664 @@ export function useGetFeaturedContent<TData = Awaited<ReturnType<typeof getFeatu
 
 
 
+
+export const getListDeliveriesUrl = () => {
+
+
+
+
+  return `/api/deliveries`
+}
+
+/**
+ * @summary List the current user's deliveries
+ */
+export const listDeliveries = async ( options?: RequestInit): Promise<DeliveryList> => {
+
+  return customFetch<DeliveryList>(getListDeliveriesUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListDeliveriesQueryKey = () => {
+    return [
+    `/api/deliveries`
+    ] as const;
+    }
+
+
+export const getListDeliveriesQueryOptions = <TData = Awaited<ReturnType<typeof listDeliveries>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDeliveries>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListDeliveriesQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listDeliveries>>> = ({ signal }) => listDeliveries({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listDeliveries>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListDeliveriesQueryResult = NonNullable<Awaited<ReturnType<typeof listDeliveries>>>
+export type ListDeliveriesQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List the current user's deliveries
+ */
+
+export function useListDeliveries<TData = Awaited<ReturnType<typeof listDeliveries>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listDeliveries>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListDeliveriesQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateDeliveryUrl = () => {
+
+
+
+
+  return `/api/deliveries`
+}
+
+/**
+ * @summary Create a client delivery
+ */
+export const createDelivery = async (createDeliveryInput: CreateDeliveryInput, options?: RequestInit): Promise<DeliveryDetail> => {
+
+  return customFetch<DeliveryDetail>(getCreateDeliveryUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createDeliveryInput,)
+  }
+);}
+
+
+
+
+export const getCreateDeliveryMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDelivery>>, TError,{data: BodyType<CreateDeliveryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createDelivery>>, TError,{data: BodyType<CreateDeliveryInput>}, TContext> => {
+
+const mutationKey = ['createDelivery'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createDelivery>>, {data: BodyType<CreateDeliveryInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createDelivery(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateDeliveryMutationResult = NonNullable<Awaited<ReturnType<typeof createDelivery>>>
+    export type CreateDeliveryMutationBody = BodyType<CreateDeliveryInput>
+    export type CreateDeliveryMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a client delivery
+ */
+export const useCreateDelivery = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createDelivery>>, TError,{data: BodyType<CreateDeliveryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createDelivery>>,
+        TError,
+        {data: BodyType<CreateDeliveryInput>},
+        TContext
+      > => {
+      return useMutation(getCreateDeliveryMutationOptions(options));
+    }
+
+export const getGetDeliveryUrl = (id: number,) => {
+
+
+
+
+  return `/api/deliveries/${id}`
+}
+
+/**
+ * @summary Get one of the current user's deliveries with its files
+ */
+export const getDelivery = async (id: number, options?: RequestInit): Promise<DeliveryDetail> => {
+
+  return customFetch<DeliveryDetail>(getGetDeliveryUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetDeliveryQueryKey = (id: number,) => {
+    return [
+    `/api/deliveries/${id}`
+    ] as const;
+    }
+
+
+export const getGetDeliveryQueryOptions = <TData = Awaited<ReturnType<typeof getDelivery>>, TError = ErrorType<ErrorEnvelope>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDelivery>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetDeliveryQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getDelivery>>> = ({ signal }) => getDelivery(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getDelivery>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetDeliveryQueryResult = NonNullable<Awaited<ReturnType<typeof getDelivery>>>
+export type GetDeliveryQueryError = ErrorType<ErrorEnvelope>
+
+
+/**
+ * @summary Get one of the current user's deliveries with its files
+ */
+
+export function useGetDelivery<TData = Awaited<ReturnType<typeof getDelivery>>, TError = ErrorType<ErrorEnvelope>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getDelivery>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetDeliveryQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateDeliveryUrl = (id: number,) => {
+
+
+
+
+  return `/api/deliveries/${id}`
+}
+
+/**
+ * @summary Update delivery title, message or password
+ */
+export const updateDelivery = async (id: number,
+    updateDeliveryInput: UpdateDeliveryInput, options?: RequestInit): Promise<DeliveryDetail> => {
+
+  return customFetch<DeliveryDetail>(getUpdateDeliveryUrl(id),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      updateDeliveryInput,)
+  }
+);}
+
+
+
+
+export const getUpdateDeliveryMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDelivery>>, TError,{id: number;data: BodyType<UpdateDeliveryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateDelivery>>, TError,{id: number;data: BodyType<UpdateDeliveryInput>}, TContext> => {
+
+const mutationKey = ['updateDelivery'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateDelivery>>, {id: number;data: BodyType<UpdateDeliveryInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateDelivery(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateDeliveryMutationResult = NonNullable<Awaited<ReturnType<typeof updateDelivery>>>
+    export type UpdateDeliveryMutationBody = BodyType<UpdateDeliveryInput>
+    export type UpdateDeliveryMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update delivery title, message or password
+ */
+export const useUpdateDelivery = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateDelivery>>, TError,{id: number;data: BodyType<UpdateDeliveryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateDelivery>>,
+        TError,
+        {id: number;data: BodyType<UpdateDeliveryInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateDeliveryMutationOptions(options));
+    }
+
+export const getDeleteDeliveryUrl = (id: number,) => {
+
+
+
+
+  return `/api/deliveries/${id}`
+}
+
+/**
+ * @summary Delete a delivery and its files
+ */
+export const deleteDelivery = async (id: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteDeliveryUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteDeliveryMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDelivery>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteDelivery>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteDelivery'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDelivery>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteDelivery(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteDeliveryMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDelivery>>>
+
+    export type DeleteDeliveryMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete a delivery and its files
+ */
+export const useDeleteDelivery = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDelivery>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteDelivery>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteDeliveryMutationOptions(options));
+    }
+
+export const getAddDeliveryFileUrl = (id: number,) => {
+
+
+
+
+  return `/api/deliveries/${id}/files`
+}
+
+/**
+ * @summary Attach an uploaded file to a delivery
+ */
+export const addDeliveryFile = async (id: number,
+    addDeliveryFileInput: AddDeliveryFileInput, options?: RequestInit): Promise<DeliveryDetail> => {
+
+  return customFetch<DeliveryDetail>(getAddDeliveryFileUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      addDeliveryFileInput,)
+  }
+);}
+
+
+
+
+export const getAddDeliveryFileMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addDeliveryFile>>, TError,{id: number;data: BodyType<AddDeliveryFileInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof addDeliveryFile>>, TError,{id: number;data: BodyType<AddDeliveryFileInput>}, TContext> => {
+
+const mutationKey = ['addDeliveryFile'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof addDeliveryFile>>, {id: number;data: BodyType<AddDeliveryFileInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  addDeliveryFile(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AddDeliveryFileMutationResult = NonNullable<Awaited<ReturnType<typeof addDeliveryFile>>>
+    export type AddDeliveryFileMutationBody = BodyType<AddDeliveryFileInput>
+    export type AddDeliveryFileMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Attach an uploaded file to a delivery
+ */
+export const useAddDeliveryFile = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof addDeliveryFile>>, TError,{id: number;data: BodyType<AddDeliveryFileInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof addDeliveryFile>>,
+        TError,
+        {id: number;data: BodyType<AddDeliveryFileInput>},
+        TContext
+      > => {
+      return useMutation(getAddDeliveryFileMutationOptions(options));
+    }
+
+export const getDeleteDeliveryFileUrl = (id: number,
+    fileId: number,) => {
+
+
+
+
+  return `/api/deliveries/${id}/files/${fileId}`
+}
+
+/**
+ * @summary Remove a file from a delivery
+ */
+export const deleteDeliveryFile = async (id: number,
+    fileId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteDeliveryFileUrl(id,fileId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteDeliveryFileMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDeliveryFile>>, TError,{id: number;fileId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteDeliveryFile>>, TError,{id: number;fileId: number}, TContext> => {
+
+const mutationKey = ['deleteDeliveryFile'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDeliveryFile>>, {id: number;fileId: number}> = (props) => {
+          const {id,fileId} = props ?? {};
+
+          return  deleteDeliveryFile(id,fileId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteDeliveryFileMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDeliveryFile>>>
+
+    export type DeleteDeliveryFileMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove a file from a delivery
+ */
+export const useDeleteDeliveryFile = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDeliveryFile>>, TError,{id: number;fileId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteDeliveryFile>>,
+        TError,
+        {id: number;fileId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteDeliveryFileMutationOptions(options));
+    }
+
+export const getGetSharedDeliveryUrl = (token: string,) => {
+
+
+
+
+  return `/api/deliveries/shared/${token}`
+}
+
+/**
+ * @summary Public delivery metadata (files omitted until unlocked)
+ */
+export const getSharedDelivery = async (token: string, options?: RequestInit): Promise<PublicDelivery> => {
+
+  return customFetch<PublicDelivery>(getGetSharedDeliveryUrl(token),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetSharedDeliveryQueryKey = (token: string,) => {
+    return [
+    `/api/deliveries/shared/${token}`
+    ] as const;
+    }
+
+
+export const getGetSharedDeliveryQueryOptions = <TData = Awaited<ReturnType<typeof getSharedDelivery>>, TError = ErrorType<ErrorEnvelope>>(token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSharedDelivery>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetSharedDeliveryQueryKey(token);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getSharedDelivery>>> = ({ signal }) => getSharedDelivery(token, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(token), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getSharedDelivery>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetSharedDeliveryQueryResult = NonNullable<Awaited<ReturnType<typeof getSharedDelivery>>>
+export type GetSharedDeliveryQueryError = ErrorType<ErrorEnvelope>
+
+
+/**
+ * @summary Public delivery metadata (files omitted until unlocked)
+ */
+
+export function useGetSharedDelivery<TData = Awaited<ReturnType<typeof getSharedDelivery>>, TError = ErrorType<ErrorEnvelope>>(
+ token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getSharedDelivery>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetSharedDeliveryQueryOptions(token,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUnlockSharedDeliveryUrl = (token: string,) => {
+
+
+
+
+  return `/api/deliveries/shared/${token}/unlock`
+}
+
+/**
+ * @summary Verify the delivery password and return its files
+ */
+export const unlockSharedDelivery = async (token: string,
+    unlockDeliveryInput: UnlockDeliveryInput, options?: RequestInit): Promise<PublicDelivery> => {
+
+  return customFetch<PublicDelivery>(getUnlockSharedDeliveryUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      unlockDeliveryInput,)
+  }
+);}
+
+
+
+
+export const getUnlockSharedDeliveryMutationOptions = <TError = ErrorType<ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unlockSharedDelivery>>, TError,{token: string;data: BodyType<UnlockDeliveryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof unlockSharedDelivery>>, TError,{token: string;data: BodyType<UnlockDeliveryInput>}, TContext> => {
+
+const mutationKey = ['unlockSharedDelivery'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof unlockSharedDelivery>>, {token: string;data: BodyType<UnlockDeliveryInput>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  unlockSharedDelivery(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UnlockSharedDeliveryMutationResult = NonNullable<Awaited<ReturnType<typeof unlockSharedDelivery>>>
+    export type UnlockSharedDeliveryMutationBody = BodyType<UnlockDeliveryInput>
+    export type UnlockSharedDeliveryMutationError = ErrorType<ErrorEnvelope>
+
+    /**
+ * @summary Verify the delivery password and return its files
+ */
+export const useUnlockSharedDelivery = <TError = ErrorType<ErrorEnvelope>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unlockSharedDelivery>>, TError,{token: string;data: BodyType<UnlockDeliveryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof unlockSharedDelivery>>,
+        TError,
+        {token: string;data: BodyType<UnlockDeliveryInput>},
+        TContext
+      > => {
+      return useMutation(getUnlockSharedDeliveryMutationOptions(options));
+    }
 

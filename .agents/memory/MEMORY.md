@@ -1,1 +1,1 @@
-- [Paid-tier gating](paid-tier-gating.md) — `users.plan` model; gate paid features server-side; why User.plan is optional; `/api/dev/plan/:plan` preview toggle.
+- [Gated downloads for shared files](gated-file-downloads.md) — when a public/password-protected resource must stream files, gate with a stateless HMAC key (not a public /objects URL); keep objectPath server-internal.

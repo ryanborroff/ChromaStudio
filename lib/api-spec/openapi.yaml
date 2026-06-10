@@ -970,6 +970,199 @@ paths:
               schema:
                 $ref: "#/components/schemas/FeaturedContent"
 
+  # ── Client delivery ───────────────────────────────────────────────────────────
+  /deliveries:
+    get:
+      operationId: listDeliveries
+      tags: [deliveries]
+      summary: List the current user's deliveries
+      responses:
+        "200":
+          description: Deliveries
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryList"
+    post:
+      operationId: createDelivery
+      tags: [deliveries]
+      summary: Create a client delivery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateDeliveryInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryDetail"
+
+  /deliveries/{id}:
+    get:
+      operationId: getDelivery
+      tags: [deliveries]
+      summary: Get one of the current user's deliveries with its files
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Delivery detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryDetail"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+    put:
+      operationId: updateDelivery
+      tags: [deliveries]
+      summary: Update delivery title, message or password
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateDeliveryInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryDetail"
+    delete:
+      operationId: deleteDelivery
+      tags: [deliveries]
+      summary: Delete a delivery and its files
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /deliveries/{id}/files:
+    post:
+      operationId: addDeliveryFile
+      tags: [deliveries]
+      summary: Attach an uploaded file to a delivery
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddDeliveryFileInput"
+      responses:
+        "201":
+          description: File added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryDetail"
+
+  /deliveries/{id}/files/{fileId}:
+    delete:
+      operationId: deleteDeliveryFile
+      tags: [deliveries]
+      summary: Remove a file from a delivery
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fileId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /deliveries/shared/{token}:
+    get:
+      operationId: getSharedDelivery
+      tags: [deliveries]
+      summary: Public delivery metadata (files omitted until unlocked)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Public delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicDelivery"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
+  /deliveries/shared/{token}/unlock:
+    post:
+      operationId: unlockSharedDelivery
+      tags: [deliveries]
+      summary: Verify the delivery password and return its files
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnlockDeliveryInput"
+      responses:
+        "200":
+          description: Unlocked delivery
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicDelivery"
+        "401":
+          description: Incorrect password
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+
 components:
   schemas:
     HealthStatus:
@@ -1512,6 +1705,137 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Message"
+
+    # ── Client delivery schemas ───────────────────────────────────────────────
+    DeliveryFile:
+      type: object
+      required: [id, name, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        contentType:
+          type: ["string", "null"]
+        size:
+          type: ["integer", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    Delivery:
+      type: object
+      required: [id, token, title, hasPassword, fileCount, createdAt]
+      properties:
+        id:
+          type: integer
+        token:
+          type: string
+        title:
+          type: string
+        message:
+          type: ["string", "null"]
+        hasPassword:
+          type: boolean
+        fileCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    DeliveryDetail:
+      type: object
+      required: [id, token, title, hasPassword, createdAt, files]
+      properties:
+        id:
+          type: integer
+        token:
+          type: string
+        title:
+          type: string
+        message:
+          type: ["string", "null"]
+        hasPassword:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/DeliveryFile"
+
+    DeliveryList:
+      type: object
+      required: [deliveries]
+      properties:
+        deliveries:
+          type: array
+          items:
+            $ref: "#/components/schemas/Delivery"
+
+    CreateDeliveryInput:
+      type: object
+      required: [title]
+      properties:
+        title:
+          type: string
+          minLength: 1
+        message:
+          type: string
+        password:
+          type: string
+
+    UpdateDeliveryInput:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+        message:
+          type: ["string", "null"]
+        password:
+          type: ["string", "null"]
+
+    AddDeliveryFileInput:
+      type: object
+      required: [objectPath, name]
+      properties:
+        objectPath:
+          type: string
+        name:
+          type: string
+        contentType:
+          type: string
+        size:
+          type: integer
+
+    PublicDelivery:
+      type: object
+      required: [title, requiresPassword, unlocked, files]
+      properties:
+        title:
+          type: string
+        message:
+          type: ["string", "null"]
+        requiresPassword:
+          type: boolean
+        unlocked:
+          type: boolean
+        downloadKey:
+          type: ["string", "null"]
+          description: Signed key required to download files when the delivery is password-protected.
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/DeliveryFile"
+
+    UnlockDeliveryInput:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
 
     # ── Project schemas ───────────────────────────────────────────────────────
     Project:

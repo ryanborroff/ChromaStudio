@@ -369,6 +369,83 @@ export interface MessageList {
   messages: Message[];
 }
 
+export interface DeliveryFile {
+  id: number;
+  name: string;
+  /** @nullable */
+  contentType?: string | null;
+  /** @nullable */
+  size?: number | null;
+  createdAt: string;
+}
+
+export interface Delivery {
+  id: number;
+  token: string;
+  title: string;
+  /** @nullable */
+  message?: string | null;
+  hasPassword: boolean;
+  fileCount: number;
+  createdAt: string;
+}
+
+export interface DeliveryDetail {
+  id: number;
+  token: string;
+  title: string;
+  /** @nullable */
+  message?: string | null;
+  hasPassword: boolean;
+  createdAt: string;
+  files: DeliveryFile[];
+}
+
+export interface DeliveryList {
+  deliveries: Delivery[];
+}
+
+export interface CreateDeliveryInput {
+  /** @minLength 1 */
+  title: string;
+  message?: string;
+  password?: string;
+}
+
+export interface UpdateDeliveryInput {
+  /** @minLength 1 */
+  title?: string;
+  /** @nullable */
+  message?: string | null;
+  /** @nullable */
+  password?: string | null;
+}
+
+export interface AddDeliveryFileInput {
+  objectPath: string;
+  name: string;
+  contentType?: string;
+  size?: number;
+}
+
+export interface PublicDelivery {
+  title: string;
+  /** @nullable */
+  message?: string | null;
+  requiresPassword: boolean;
+  unlocked: boolean;
+  /**
+     * Signed key required to download files when the delivery is password-protected.
+     * @nullable
+     */
+  downloadKey?: string | null;
+  files: DeliveryFile[];
+}
+
+export interface UnlockDeliveryInput {
+  password: string;
+}
+
 export interface Project {
   id: number;
   userId: number;

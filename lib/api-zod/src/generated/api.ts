@@ -1275,3 +1275,171 @@ export const GetFeaturedContentResponse = zod.object({
 })
 
 
+/**
+ * @summary List the current user's deliveries
+ */
+export const ListDeliveriesResponse = zod.object({
+  "deliveries": zod.array(zod.object({
+  "id": zod.number(),
+  "token": zod.string(),
+  "title": zod.string(),
+  "message": zod.string().nullish(),
+  "hasPassword": zod.boolean(),
+  "fileCount": zod.number(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Create a client delivery
+ */
+
+
+
+export const CreateDeliveryBody = zod.object({
+  "title": zod.string().min(1),
+  "message": zod.string().optional(),
+  "password": zod.string().optional()
+})
+
+
+/**
+ * @summary Get one of the current user's deliveries with its files
+ */
+export const GetDeliveryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetDeliveryResponse = zod.object({
+  "id": zod.number(),
+  "token": zod.string(),
+  "title": zod.string(),
+  "message": zod.string().nullish(),
+  "hasPassword": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "files": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "contentType": zod.string().nullish(),
+  "size": zod.number().nullish(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Update delivery title, message or password
+ */
+export const UpdateDeliveryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+
+
+export const UpdateDeliveryBody = zod.object({
+  "title": zod.string().min(1).optional(),
+  "message": zod.string().nullish(),
+  "password": zod.string().nullish()
+})
+
+export const UpdateDeliveryResponse = zod.object({
+  "id": zod.number(),
+  "token": zod.string(),
+  "title": zod.string(),
+  "message": zod.string().nullish(),
+  "hasPassword": zod.boolean(),
+  "createdAt": zod.coerce.date(),
+  "files": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "contentType": zod.string().nullish(),
+  "size": zod.number().nullish(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Delete a delivery and its files
+ */
+export const DeleteDeliveryParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Attach an uploaded file to a delivery
+ */
+export const AddDeliveryFileParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const AddDeliveryFileBody = zod.object({
+  "objectPath": zod.string(),
+  "name": zod.string(),
+  "contentType": zod.string().optional(),
+  "size": zod.number().optional()
+})
+
+
+/**
+ * @summary Remove a file from a delivery
+ */
+export const DeleteDeliveryFileParams = zod.object({
+  "id": zod.coerce.number(),
+  "fileId": zod.coerce.number()
+})
+
+
+/**
+ * @summary Public delivery metadata (files omitted until unlocked)
+ */
+export const GetSharedDeliveryParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const GetSharedDeliveryResponse = zod.object({
+  "title": zod.string(),
+  "message": zod.string().nullish(),
+  "requiresPassword": zod.boolean(),
+  "unlocked": zod.boolean(),
+  "downloadKey": zod.string().nullish().describe('Signed key required to download files when the delivery is password-protected.'),
+  "files": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "contentType": zod.string().nullish(),
+  "size": zod.number().nullish(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Verify the delivery password and return its files
+ */
+export const UnlockSharedDeliveryParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const UnlockSharedDeliveryBody = zod.object({
+  "password": zod.string()
+})
+
+export const UnlockSharedDeliveryResponse = zod.object({
+  "title": zod.string(),
+  "message": zod.string().nullish(),
+  "requiresPassword": zod.boolean(),
+  "unlocked": zod.boolean(),
+  "downloadKey": zod.string().nullish().describe('Signed key required to download files when the delivery is password-protected.'),
+  "files": zod.array(zod.object({
+  "id": zod.number(),
+  "name": zod.string(),
+  "contentType": zod.string().nullish(),
+  "size": zod.number().nullish(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+

@@ -11,6 +11,7 @@ import messagesRouter from "./messages";
 import projectsRouter from "./projects";
 import statsRouter from "./stats";
 import storageRouter from "./storage";
+import deliveriesRouter from "./deliveries";
 
 const router: IRouter = Router();
 
@@ -26,5 +27,6 @@ router.use(messagesRouter);
 router.use(projectsRouter);
 router.use(statsRouter);
 router.use(storageRouter);
+router.use(deliveriesRouter);
 
 export default router;
