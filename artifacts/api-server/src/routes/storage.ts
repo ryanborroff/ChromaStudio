@@ -55,6 +55,44 @@ router.post("/storage/uploads/request-url", requireAuth, async (req: Request, re
 });
 
 /**
+ * POST /storage/uploads/request-file-url
+ *
+ * Like request-url but for general file attachments (any type, larger limit).
+ * Used for direct-message file attachments.
+ */
+router.post("/storage/uploads/request-file-url", requireAuth, async (req: Request, res: Response) => {
+  const parsed = RequestUploadUrlBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Missing or invalid required fields" });
+    return;
+  }
+
+  const { name, size, contentType } = parsed.data;
+
+  const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 MB
+  if (size > MAX_FILE_BYTES) {
+    res.status(400).json({ error: "File must be 50 MB or smaller" });
+    return;
+  }
+
+  try {
+    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+    const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
+
+    res.json(
+      RequestUploadUrlResponse.parse({
+        uploadURL,
+        objectPath,
+        metadata: { name, size, contentType },
+      }),
+    );
+  } catch (error) {
+    req.log.error({ err: error }, "Error generating file upload URL");
+    res.status(500).json({ error: "Failed to generate upload URL" });
+  }
+});
+
+/**
  * GET /storage/public-objects/*
  *
  * Serve public assets from PUBLIC_OBJECT_SEARCH_PATHS.
@@ -121,6 +159,23 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
 
     res.status(response.status);
     response.headers.forEach((value, key) => res.setHeader(key, value));
+
+    // Harden against active content served from the app origin: never let the
+    // browser sniff a different type, and force scriptable types to download
+    // rather than execute inline.
+    res.setHeader("X-Content-Type-Options", "nosniff");
+    const contentType = (response.headers.get("content-type") ?? "").toLowerCase();
+    const SCRIPTABLE = [
+      "text/html",
+      "application/xhtml+xml",
+      "image/svg+xml",
+      "application/javascript",
+      "text/javascript",
+      "application/xml",
+    ];
+    if (SCRIPTABLE.some((t) => contentType.includes(t))) {
+      res.setHeader("Content-Disposition", "attachment");
+    }
 
     if (response.body) {
       const nodeStream = Readable.fromWeb(response.body as ReadableStream<Uint8Array>);

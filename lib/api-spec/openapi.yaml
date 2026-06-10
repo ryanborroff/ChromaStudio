@@ -63,6 +63,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+  /storage/uploads/request-file-url:
+    post:
+      tags: [Storage]
+      operationId: requestFileUploadUrl
+      summary: Request a presigned URL for a general file attachment upload
+      description: |
+        Like request-url but for direct-message file attachments: accepts any
+        content type up to a larger size limit. Returns a presigned GCS URL for
+        direct upload.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadUrlRequest'
+      responses:
+        '200':
+          description: Presigned upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadUrlResponse'
+        '400':
+          description: Missing/invalid fields or file too large.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Failed to generate upload URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /storage/public-objects/{filePath}:
     get:
       tags: [Storage]
@@ -1440,17 +1474,35 @@ components:
           type: string
         read:
           type: boolean
+        attachmentUrl:
+          type: ["string", "null"]
+          description: Serving URL of an attached file, if any.
+        attachmentName:
+          type: ["string", "null"]
+          description: Original filename of the attachment.
+        attachmentType:
+          type: ["string", "null"]
+          description: MIME type of the attachment.
+        attachmentSize:
+          type: ["integer", "null"]
+          description: Size of the attachment in bytes.
         createdAt:
           type: string
           format: date-time
 
     MessageInput:
       type: object
-      required: [body]
       properties:
         body:
           type: string
-          minLength: 1
+        attachmentUrl:
+          type: string
+        attachmentName:
+          type: string
+        attachmentType:
+          type: string
+        attachmentSize:
+          type: integer
 
     MessageList:
       type: object

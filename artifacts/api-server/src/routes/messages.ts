@@ -61,7 +61,12 @@ router.get("/messages", requireAuth, async (req, res): Promise<void> => {
               isFollowing: false,
             }
           : null,
-        lastMessage: lastMsg?.body ?? "",
+        lastMessage:
+          lastMsg?.body?.trim()
+            ? lastMsg.body
+            : lastMsg?.attachmentName
+              ? `📎 ${lastMsg.attachmentName}`
+              : "",
         unreadCount: unreadRow?.count ?? 0,
         updatedAt: lastMsg?.createdAt ?? new Date(),
       };
@@ -105,10 +110,29 @@ router.post("/messages/:userId", requireAuth, async (req, res): Promise<void> =>
     res.status(400).json({ error: parsed.error.message });
     return;
   }
+  const body = parsed.data.body ?? "";
+  const attachmentUrl = parsed.data.attachmentUrl ?? null;
+  if (attachmentUrl && !/^\/api\/storage\/objects\//.test(attachmentUrl)) {
+    res.status(400).json({ error: "Invalid attachment URL" });
+    return;
+  }
+  const hasAttachment = !!attachmentUrl;
+  if (!body.trim() && !hasAttachment) {
+    res.status(400).json({ error: "A message must have text or a file attachment" });
+    return;
+  }
   const user = await getCurrentUser(req);
   const [message] = await db
     .insert(messagesTable)
-    .values({ senderId: user.id, recipientId, body: parsed.data.body })
+    .values({
+      senderId: user.id,
+      recipientId,
+      body,
+      attachmentUrl,
+      attachmentName: parsed.data.attachmentName ?? null,
+      attachmentType: parsed.data.attachmentType ?? null,
+      attachmentSize: parsed.data.attachmentSize ?? null,
+    })
     .returning();
   res.status(201).json(message);
 });

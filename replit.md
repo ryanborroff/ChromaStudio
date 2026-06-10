@@ -58,7 +58,7 @@ A premium, cinematic professional filmmaker platform for video hosting, networki
 - **Crew** — discover and follow professional filmmakers by profession
 - **Projects** — post and apply to crew opportunity listings
 - **Profile** — filmmaker profiles with cover image, portfolio videos, and follow system
-- **Messages** — direct messaging between filmmakers
+- **Messages** — direct messaging between filmmakers, with **file attachments** (any type ≤50 MB via `POST /api/storage/uploads/request-file-url`); a message needs text or an attachment. Images preview inline, other files show a downloadable card. `messages` table has nullable `attachment_url/name/type/size` columns; `attachment_url` must be a `/api/storage/objects/...` path (validated server-side to block `javascript:`/external URLs)
 - **Video Detail** — embed player, likes, comments
 - **Media Library** (`/studio/storage`) — Dropbox-style manager: collections (folders) + categories (reel/showreel/rushes/other), move videos, filter by collection/category/uncategorized
 - **Share & embed** — per-video share links (`/watch/:token`) with optional password protection; embeddable player (`/embed/:token`) for external sites (rendered outside the app Layout). **Paid-only**: only users on a paid plan (`users.plan !== "free"`) can enable share/embed links; free users see an upgrade prompt in the Share dialog
@@ -79,7 +79,7 @@ _Populate as you build — explicit user instructions worth remembering across s
 - Google/Apple sign-in require OAuth secrets; without them those routes return 503 but email/password still works
 - **Dev auth (development only)**: the app starts **signed out** by default so the public, pre-login experience (landing/Explore) loads. Visit `/api/dev/login` to enter a demo account (user id 1) and explore the full signed-in app; `/api/dev/logout` to leave it. `clearDevSessions()` runs on boot (`DELETE FROM user_sessions`) so every restart begins signed out. These `/api/dev/*` helpers are gated on `NODE_ENV === "development"` and never exist in production. To preview the paid vs free experience (e.g. paid-only sharing/embedding), hit `/api/dev/plan/creator` to go paid or `/api/dev/plan/free` to drop back (whitelist: free/creator/studio)
 - **Video serializers**: `buildVideoResponse` (videos.ts) is the canonical sanitizer, but `feed.ts`, `stats.ts`, `users.ts` and `collections.ts` serialize videos independently. Any sensitive `videosTable` column (e.g. `shareToken`, `sharePasswordHash`) must be stripped in **all** of them — non-owner contexts set `shareToken: null` + `hasSharePassword: !!sharePasswordHash`
-- Image uploads use **Replit Object Storage** (not Cloudflare R2). All uploads are public-by-design (avatars/covers/thumbnails); `/api/storage/objects/*` serves them with no ACL. Store the serving URL `/api/storage{objectPath}` in DB. Upload endpoint requires auth + enforces image-only, ≤10 MB
+- Image uploads use **Replit Object Storage** (not Cloudflare R2). All uploads are public-by-design (avatars/covers/thumbnails); `/api/storage/objects/*` serves them with no ACL. Store the serving URL `/api/storage{objectPath}` in DB. `request-url` endpoint = image-only ≤10 MB; `request-file-url` = any type ≤50 MB (DM attachments). Both require auth. The `/objects/*` serve route sets `X-Content-Type-Options: nosniff` and forces `Content-Disposition: attachment` for scriptable types (html/svg/js/xml) to prevent stored-XSS from arbitrary uploads
 
 ## Pointers
 

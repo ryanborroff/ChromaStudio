@@ -42,6 +42,40 @@ export const RequestUploadUrlResponse = zod.object({
 
 
 /**
+ * Like request-url but for direct-message file attachments: accepts any
+content type up to a larger size limit. Returns a presigned GCS URL for
+direct upload.
+
+ * @summary Request a presigned URL for a general file attachment upload
+ */
+
+
+
+
+
+export const RequestFileUploadUrlBody = zod.object({
+  "name": zod.string().min(1).describe('Original file name.'),
+  "size": zod.number().min(1).describe('File size in bytes.'),
+  "contentType": zod.string().min(1).describe('MIME type of the file (e.g. `image\/jpeg`).')
+})
+
+
+
+
+
+
+export const RequestFileUploadUrlResponse = zod.object({
+  "uploadURL": zod.string().url().describe('Presigned GCS URL for PUT upload.'),
+  "objectPath": zod.string().describe('Normalized object path (e.g. `\/objects\/uploads\/uuid`). Store this in your database.'),
+  "metadata": zod.object({
+  "name": zod.string().min(1).describe('Original file name.'),
+  "size": zod.number().min(1).describe('File size in bytes.'),
+  "contentType": zod.string().min(1).describe('MIME type of the file (e.g. `image\/jpeg`).')
+}).optional()
+})
+
+
+/**
  * Unconditionally public — no authentication or ACL checks.
 Searches PUBLIC_OBJECT_SEARCH_PATHS for the given file path.
 
@@ -945,6 +979,10 @@ export const GetConversationResponse = zod.object({
   "recipientId": zod.number(),
   "body": zod.string(),
   "read": zod.boolean(),
+  "attachmentUrl": zod.string().nullish().describe('Serving URL of an attached file, if any.'),
+  "attachmentName": zod.string().nullish().describe('Original filename of the attachment.'),
+  "attachmentType": zod.string().nullish().describe('MIME type of the attachment.'),
+  "attachmentSize": zod.number().nullish().describe('Size of the attachment in bytes.'),
   "createdAt": zod.coerce.date()
 }))
 })
@@ -957,11 +995,12 @@ export const SendMessageParams = zod.object({
   "userId": zod.coerce.number()
 })
 
-
-
-
 export const SendMessageBody = zod.object({
-  "body": zod.string().min(1)
+  "body": zod.string().optional(),
+  "attachmentUrl": zod.string().optional(),
+  "attachmentName": zod.string().optional(),
+  "attachmentType": zod.string().optional(),
+  "attachmentSize": zod.number().optional()
 })
 
 

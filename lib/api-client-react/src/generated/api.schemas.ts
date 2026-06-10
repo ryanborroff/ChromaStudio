@@ -334,12 +334,35 @@ export interface Message {
   recipientId: number;
   body: string;
   read: boolean;
+  /**
+     * Serving URL of an attached file, if any.
+     * @nullable
+     */
+  attachmentUrl?: string | null;
+  /**
+     * Original filename of the attachment.
+     * @nullable
+     */
+  attachmentName?: string | null;
+  /**
+     * MIME type of the attachment.
+     * @nullable
+     */
+  attachmentType?: string | null;
+  /**
+     * Size of the attachment in bytes.
+     * @nullable
+     */
+  attachmentSize?: number | null;
   createdAt: string;
 }
 
 export interface MessageInput {
-  /** @minLength 1 */
-  body: string;
+  body?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  attachmentType?: string;
+  attachmentSize?: number;
 }
 
 export interface MessageList {

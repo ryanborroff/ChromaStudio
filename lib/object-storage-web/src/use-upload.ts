@@ -16,6 +16,8 @@ interface UploadResponse {
 interface UseUploadOptions {
   /** Base path where object storage routes are mounted (default: "/api/storage") */
   basePath?: string;
+  /** Request endpoint suffix for the presigned URL (default: "/uploads/request-url") */
+  uploadPath?: string;
   onSuccess?: (response: UploadResponse) => void;
   onError?: (error: Error) => void;
 }
@@ -55,13 +57,14 @@ interface UseUploadOptions {
  */
 export function useUpload(options: UseUploadOptions = {}) {
   const basePath = options.basePath ?? "/api/storage";
+  const uploadPath = options.uploadPath ?? "/uploads/request-url";
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [progress, setProgress] = useState(0);
 
   const requestUploadUrl = useCallback(
     async (file: File): Promise<UploadResponse> => {
-      const response = await fetch(`${basePath}/uploads/request-url`, {
+      const response = await fetch(`${basePath}${uploadPath}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -80,7 +83,7 @@ export function useUpload(options: UseUploadOptions = {}) {
 
       return response.json();
     },
-    []
+    [basePath, uploadPath]
   );
 
   const uploadToPresignedUrl = useCallback(
@@ -136,7 +139,7 @@ export function useUpload(options: UseUploadOptions = {}) {
       url: string;
       headers?: Record<string, string>;
     }> => {
-      const response = await fetch(`${basePath}/uploads/request-url`, {
+      const response = await fetch(`${basePath}${uploadPath}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -159,7 +162,7 @@ export function useUpload(options: UseUploadOptions = {}) {
         headers: { "Content-Type": file.type || "application/octet-stream" },
       };
     },
-    []
+    [basePath, uploadPath]
   );
 
   return {

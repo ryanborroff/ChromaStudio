@@ -7,6 +7,9 @@
  */
 
 export interface MessageInput {
-  /** @minLength 1 */
-  body: string;
+  body?: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  attachmentType?: string;
+  attachmentSize?: number;
 }

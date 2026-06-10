@@ -7,7 +7,12 @@ export const messagesTable = pgTable("messages", {
   id: serial("id").primaryKey(),
   senderId: integer("sender_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
   recipientId: integer("recipient_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
-  body: text("body").notNull(),
+  body: text("body").notNull().default(""),
+  // Optional file attachment (any file type). attachmentUrl is the API serving URL.
+  attachmentUrl: text("attachment_url"),
+  attachmentName: text("attachment_name"),
+  attachmentType: text("attachment_type"),
+  attachmentSize: integer("attachment_size"),
   read: boolean("read").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });

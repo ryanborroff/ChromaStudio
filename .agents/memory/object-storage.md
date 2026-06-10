@@ -20,7 +20,12 @@ Chroma uses **Replit Object Storage** (not Cloudflare R2) for avatars, cover ima
 - **Caveat:** this couples persisted URLs to the `/api/storage` gateway path; moving media to a CDN later would require a migration of stored URLs.
 
 ## Server-side upload policy
-- The signed-URL endpoint enforces `contentType` starts with `image/` and `size <= 10 MB` server-side (client checks alone are bypassable).
+- Image endpoint (`request-url`): `contentType` starts with `image/`, `size <= 10 MB`. General-file endpoint (`request-file-url`, used for DM attachments): any type, `size <= 50 MB`. Both enforced server-side (client checks alone are bypassable).
+
+## Arbitrary-file attachments → two non-obvious security requirements
+- **Validate any client-supplied serving URL server-side before persisting/rendering.** DM attachment URLs come from the client and end up in `<a href>` / `<img src>`; a `javascript:` or external URL is a stored-XSS/phishing vector. Reject anything not matching `^/api/storage/objects/`.
+- **The shared `/storage/objects/*` serve route must neutralize active content** once non-image uploads are allowed: set `X-Content-Type-Options: nosniff` and force `Content-Disposition: attachment` for scriptable types (text/html, application/xhtml+xml, image/svg+xml, application/javascript, text/javascript, application/xml). Cannot blanket-force download because the same route serves avatars/covers/thumbnails inline.
+- **Why:** files are served same-origin under `/api`, so an executable upload (HTML/SVG-with-script) would run in the app origin. **How to apply:** any feature that lets users upload non-image files through this storage must keep both guards.
 
 ## Gotchas hit during setup
 - The copied `objectStorage.ts` template needs a cast on `response.json()` (TS sees it as `unknown`) for the signed-url response.
