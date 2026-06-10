@@ -82,7 +82,7 @@ function AppRoutes() {
         <Route path="/live">
           <ComingSoon
             icon={Radio}
-            title="Live Streaming"
+            title="Streaming"
             description="Broadcast premieres, Q&As and ticketed events to your audience in real time."
             features={["Ticketed live events", "Pay-per-view & free streams", "Automatic replays after the broadcast"]}
           />

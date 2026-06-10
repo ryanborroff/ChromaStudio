@@ -35,7 +35,7 @@ const NAV_GROUPS: NavGroup[] = [
   {
     label: "Live",
     items: [
-      { href: "/live", label: "Live Streaming", icon: Radio, desc: "Broadcast ticketed events" },
+      { href: "/live", label: "Streaming", icon: Radio, desc: "Broadcast ticketed events" },
       { href: "/cinema", label: "Cinema Events", icon: Clapperboard, desc: "Scheduled screenings & premieres" },
       { href: "/live/replays", label: "Replays", icon: History, desc: "Watch past streams on demand" },
     ],
