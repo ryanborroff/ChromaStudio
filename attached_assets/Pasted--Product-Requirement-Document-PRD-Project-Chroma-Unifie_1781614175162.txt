@@ -1,0 +1,157 @@
+# Product Requirement Document (PRD)
+
+## Project Chroma: Unified Filmmaker Workspace & Distribution Platform
+
+---
+
+## 1. Executive Summary & Problem Statement
+
+### 1.1 Executive Summary
+
+**Chroma** is an all-in-one cloud storage, collaboration, and distribution ecosystem built specifically for independent filmmakers, production houses, and content creators. By consolidating the industry-standard functionalities of file management, frame-accurate review and approval, and professional white-labeled video hosting into a single platform, Chroma eliminates the need for expensive, fragmented multi-service subscriptions.
+
+### 1.2 The Problem
+
+Modern filmmaking workflows are highly fragmented, forced to split operations across three distinct, costly tooling tiers:
+
+1. **Raw Storage & File Transfer (e.g., Google Drive, Dropbox):** Poor handling of heavy video assets, restrictive automated zip file architectures (e.g., split 500MB caps) that destroy critical nested production folder structures, and sluggish web upload speeds.
+2. **Review & Approval Collaborative Tools (e.g., Frame.io):** High per-user costs exclusively optimized for time-stamped visual feedback during active editing blocks, yet lacking downstream presentation or customer analytics features.
+3. **Distribution & Client Presentation (e.g., Vimeo):** Over-complicated interfaces, buried security features, and aggressive pricing structures for simple white-labeled background video embeds and basic Video-On-Demand (VOD) monetizations.
+
+### 1.3 The Solution
+
+Chroma acts as the definitive central production hub, smoothly supporting the three core lifecycles of video content:
+
+* **Pre-Production & Production:** Lightning-fast app-based file management preserving exact directory hierarchies.
+* **Post-Production:** Native, frame-accurate, time-coded feedback streams directly attached to master files.
+* **Distribution:** Clean, unbranded video embedding, flexible SVOD/TVOD paywalls, custom social analytics syncing, and a dedicated platform community layer for discoverability.
+
+---
+
+## 2. Product Vision & Value Proposition
+
+> **Vision Statement:** "A filmmaker-first platform with community at its heart, providing the precise tools needed to create, collaborate, and distribute work without the bloat."
+
+* **Consolidated Efficiency:** One monthly subscription replacing three disjointed tools (Drive + Frame.io + Vimeo).
+* **Workflow Integrity:** Absolute parity between physical local hard drive file layouts and cloud-synchronized directories.
+* **True White-Label Control:** Clean domain-restricted video players offering non-branded background performance and seamless custom loops.
+
+---
+
+## 3. User Personas
+
+### Persona A: "Chris" (The Established Independent Filmmaker & Producer)
+
+* **Needs:** Flawless long-distance file sharing for international co-productions (e.g., UK-Canada), robust transmission of heavy broadcast-ready master files (DCP folders), zero-latency reviewing setups with broadcast commissioners (e.g., BBC), and unbranded high-resolution background video hosting for digital portfolios.
+* **Frustrations:** Multi-platform bill bloat ($15-$30/month per utility); broken folder structures when downloading bulk folders from Google Drive; confusing, buried options in legacy platforms.
+
+### Persona B: "The Emerging Digital Creator & Indie Comedian"
+
+* **Needs:** Simple avenues to monetize back-catalog archives, alternative monetization channels independent of traditional broadcast networks, easy monetization hooks (paywalls) directly for TikTok/Instagram audiences, and high visibility through native community curated tabs (e.g., Staff Picks equivalents).
+* **Frustrations:** High platform barriers to enter premium VOD spaces; zero algorithmic help on clean, ad-free platforms.
+
+---
+
+## 4. Functional Requirements & Feature Specifications
+
+### 4.1 Core Storage & Smart File Architecture (The "Drive" Layer)
+
+* **App-Driven Ingestion Protocol:** Desktop applications optimized for multi-threaded upload operations, bypassing standard browser-based network chokepoints to ensure blazingly fast transmission speeds.
+* **Hierarchical Folder Parity:** Zero manipulation of internal file/folder architecture. Downloads must completely maintain directory logic without enforcing automatic size caps or arbitrary multi-part zip splitting.
+* **High-Capacity Operations:** Built-in infrastructure support for large structural assets, specifically containing high-resolution 2K/4K masters and comprehensive Cinema Digital Cinema Package (DCP) folders.
+
+### 4.2 Professional Transcoding Engine & Player Infrastructure
+
+* **Dynamic Resolution Adaptive Streaming:** Every video uploaded natively triggers background generation of multi-tier proxies:
+
+$$2160\text{p (4K)}, 1440\text{p}, 1080\text{p}, 720\text{p}, 480\text{p}, 360\text{p}, 240\text{p}$$
+
+
+* **Network-Aware Playback Adjustments:** Player automatically downgrades or upgrades streaming streams in real-time based on the user's immediate bandwidth constraints.
+* **Storage Allotment Policy:** Transcoded proxy versions created automatically for streaming playback optimization **must not** count against the user's primary billing storage limits (the tier storage calculation evaluates raw source material only).
+
+### 4.3 Frame-Accurate Collaborative Review (The "Frame" Layer)
+
+* **Time-Stamped Feedback Loops:** Viewers can pause video playheads and drop precision feedback linked to distinct frames.
+* **Threaded Production Messaging:** Centralized communication columns directly inside production asset interfaces to handle direct interactions with clients, external editors, and network executives.
+* **Version Stacking Control:** Easy drag-and-drop mechanics to overlay successive edit passes into single clean asset blocks while retaining archived historical feedback layers.
+
+| Feature Component | Review Module Capability |
+| --- | --- |
+| **Feedback Capture** | Real-time, frame-specific interactive text entry |
+| **Access Mechanics** | Controlled via secure, custom review links |
+| **Workflow Tracking** | Toggleable indicators (e.g., Approved, Changes Requested, Draft) |
+
+### 4.4 Advanced Presentation & Premium Player Customization (The "Vimeo" Layer)
+
+* **Granular Video Configuration Controls:** Individual master switches to control downstream user permissions: Toggle Downloads, Allow Comments, and Enable Public Collection Additions.
+* **White-Label Custom Embed Generator:** Stripped, unbranded presentation layers for third-party hosting layout modules. Zero brand watermarks, zero post-video promotional grids, custom endless loop controls, auto-play, and audio mutes.
+* **Domain Lock Protection:** Advanced privacy filters restricting embed code functionality exclusively to specific authorized website domains defined by the asset owner.
+
+```
+[User Asset Ingestion] 
+       │
+       ├──► Transcode Engine ──► Proxy Multi-Render (240p - 4K)
+       │
+       ├──► Production Environment ──► Time-Stamps / Notes / Version Stack
+       │
+       └──► Distribution Engine
+                   │
+                   ├──► Custom Paywalls (SVOD / TVOD Tokenization)
+                   └──► Domain Locked Embeds (Clean Loop / No-Branding)
+
+```
+
+### 4.5 Monetization, VOD, & Platform Distribution
+
+* **Self-Serve Transaction Architecture:** Transaction structures enabling filmmakers to self-determine access strategies: completely open, gated behind access codes, or locked via financial access walls.
+* **Flexible Financial Modeling:** Direct platform configurations to deploy automated Video-on-Demand rental structures (TVOD) or continuous streaming access passes (SVOD).
+* **Comprehensive Financial Back-End Management:** Built-in platform processing mechanics to securely handle international multi-currency processing, direct financial settlements, and consumer invoice distributions.
+
+### 4.6 Native Ecosystem Engagement (The Community Layer)
+
+* **Editorial Curation Channels ("Chroma Staff Picks"):** Dedicated high-visibility discovery rows highlighting high-production music videos, independent film runs, and cinematic short subjects.
+* **Audience Feedback Systems:** Filter options built across high-level platform index categories: Top-Rated, Most Viewed, Fresh Additions, and Curated Collections.
+* **Social Graph Extensions:** Simple cross-posting mechanics to connect assets directly to external social feeds (TikTok, YouTube, Meta Meta-Accounts) for rapid asset discovery.
+
+---
+
+## 5. Non-Functional Requirements (NFRs)
+
+### 5.1 Performance & Storage Metrics
+
+* **App Ingestion Efficiency:** Desktop application pipelines must leverage continuous parallel uploads, keeping transport failure rates below **0.1%** on erratic network connections.
+* **Playback Startup Time:** Target a playback initiation delay of under **1.5 seconds** when initializing streaming adaptive proxies across stable standard network topologies.
+
+### 5.2 Security & Access Controls
+
+* **Asset-Level Security Shielding:** Support multiple conditional access policies: explicit password restrictions, hidden unlisted URLs, or strictly isolated private profiles.
+* **Secure Financial Processing:** Financial processing segments must completely adhere to industry standard regulations (PCI-DSS compliance) for all payment and transaction networks.
+
+### 5.3 UX & UI Principles
+
+* **Interface Simplicity:** Streamlined workflows that surface deep video management adjustments, share setup link toggles, and embed code generators within **no more than two sub-menus** from the primary dashboard view.
+
+---
+
+## 6. Release & Phase-1 MVP Scope
+
+To launch the project quickly, development is prioritized across three rollout phases to establish a functional foundation before introducing deeper community features:
+
+### Phase 1: MVP Core (Target Release: Q4 2026)
+
+* Launch of the native desktop file uploader supporting full nested directory tree integrity.
+* Core multi-tier transcoding pipeline implementation (up to 4K resolution processing).
+* Basic clean unbranded embed player setup featuring simple domain restrictions.
+* Core security controls (password protection, unlisted share parameters).
+
+### Phase 2: Collaboration Integration (Target Release: Q2 2027)
+
+* Deep time-stamped feedback and contextual frame-accurate note mechanics.
+* Internal version tracking modules for easy project revision stacking.
+
+### Phase 3: Commercialization & Scaling (Target Release: Q4 2027)
+
+* Full TVOD/SVOD self-serve paywall and checkout integrations.
+* Discovery community landing systems ("Chroma Staff Picks" and filter tabs).
+* Multi-platform analytics aggregations mapping external social network performance metrics back to central customer dashboards.
