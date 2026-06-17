@@ -5,6 +5,7 @@ import {
   loginWithGoogle,
   loginWithApple,
   loginWithEmail,
+  loginWithDevPassword,
   registerWithEmail,
 } from "@/lib/useAuth";
 import { Button } from "@/components/ui/button";
@@ -50,6 +51,25 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const [showDev, setShowDev] = useState(false);
+  const [devPassword, setDevPassword] = useState("");
+  const [devError, setDevError] = useState<string | null>(null);
+  const [devSubmitting, setDevSubmitting] = useState(false);
+
+  async function handleDevLogin(e: FormEvent) {
+    e.preventDefault();
+    setDevError(null);
+    setDevSubmitting(true);
+    try {
+      await loginWithDevPassword(devPassword);
+      setLocation("/feed");
+    } catch (err) {
+      setDevError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setDevSubmitting(false);
+    }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -165,6 +185,46 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
             By continuing you agree to Chroma&apos;s Terms and Privacy Policy.
           </p>
+
+          <div className="mt-6 w-full border-t border-white/10 pt-4">
+            {!showDev ? (
+              <button
+                type="button"
+                onClick={() => setShowDev(true)}
+                className="text-xs text-muted-foreground hover:text-white transition-colors"
+                data-testid="btn-dev-login-toggle"
+              >
+                Dev login
+              </button>
+            ) : (
+              <form onSubmit={handleDevLogin} className="flex flex-col gap-2 text-left">
+                <Input
+                  type="password"
+                  placeholder="Dev password"
+                  autoComplete="off"
+                  autoFocus
+                  value={devPassword}
+                  onChange={(e) => setDevPassword(e.target.value)}
+                  data-testid="input-dev-password"
+                />
+                {devError && (
+                  <p className="text-sm text-red-400" data-testid="text-dev-error">
+                    {devError}
+                  </p>
+                )}
+                <Button
+                  type="submit"
+                  variant="secondary"
+                  disabled={devSubmitting}
+                  className="h-10"
+                  data-testid="btn-dev-login"
+                >
+                  {devSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  Enter
+                </Button>
+              </form>
+            )}
+          </div>
         </div>
       </div>
     </div>

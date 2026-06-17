@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { z } from "zod/v4";
 import { db, usersTable } from "@workspace/db";
@@ -144,6 +145,107 @@ router.post("/auth/login", async (req, res, next) => {
     if (err) return next(err);
     res.json(publicUser(user));
   });
+});
+
+/* ------------------------------- Dev login --------------------------------- */
+
+// A password-gated shortcut that signs into a shared demo account. Unlike the
+// NODE_ENV-gated /api/dev/* helpers, this works in production too, so it is
+// protected by the DEV_LOGIN_PASSWORD secret, rate-limited per IP, and compared
+// in constant time. Lets the owner skip OAuth setup and walk the signed-in app.
+const DEMO_EMAIL = "demo@chroma.app";
+
+async function ensureDemoUser() {
+  const [existing] = await db
+    .select()
+    .from(usersTable)
+    .where(eq(usersTable.email, DEMO_EMAIL))
+    .limit(1);
+  if (existing) return existing;
+
+  const username = await generateUsername("demo");
+  const [user] = await db
+    .insert(usersTable)
+    .values({
+      email: DEMO_EMAIL,
+      username,
+      name: "Demo Filmmaker",
+      profession: "Other",
+    })
+    .returning();
+  return user;
+}
+
+const DEV_LOGIN_MAX_ATTEMPTS = 5;
+const DEV_LOGIN_WINDOW_MS = 15 * 60 * 1000;
+const devLoginAttempts = new Map<string, { count: number; resetAt: number }>();
+
+function devLoginAllowed(ip: string): boolean {
+  const now = Date.now();
+  const entry = devLoginAttempts.get(ip);
+  if (!entry || now > entry.resetAt) return true;
+  return entry.count < DEV_LOGIN_MAX_ATTEMPTS;
+}
+
+function recordDevLoginFailure(ip: string): void {
+  const now = Date.now();
+  const entry = devLoginAttempts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    devLoginAttempts.set(ip, { count: 1, resetAt: now + DEV_LOGIN_WINDOW_MS });
+  } else {
+    entry.count += 1;
+  }
+}
+
+// Hash both inputs to a fixed length first so the comparison is constant-time
+// regardless of input length (a raw length check would short-circuit and leak
+// the secret length as a timing side-channel).
+function timingSafeEqual(a: string, b: string): boolean {
+  const ab = crypto.createHash("sha256").update(a).digest();
+  const bb = crypto.createHash("sha256").update(b).digest();
+  return crypto.timingSafeEqual(ab, bb);
+}
+
+const devLoginSchema = z.object({ password: z.string().min(1).max(200) });
+
+router.post("/auth/dev-login", async (req, res, next) => {
+  const expected = process.env.DEV_LOGIN_PASSWORD;
+  if (!expected) {
+    res.status(503).json({ error: "Dev login is not configured" });
+    return;
+  }
+
+  const ip = req.ip ?? "unknown";
+  if (!devLoginAllowed(ip)) {
+    res.status(429).json({ error: "Too many attempts. Please try again later." });
+    return;
+  }
+
+  const parsed = devLoginSchema.safeParse(req.body);
+  if (!parsed.success) {
+    recordDevLoginFailure(ip);
+    res.status(400).json({ error: "Password is required" });
+    return;
+  }
+
+  if (!timingSafeEqual(parsed.data.password, expected)) {
+    recordDevLoginFailure(ip);
+    req.log.warn({ ip }, "dev-login: incorrect password");
+    res.status(401).json({ error: "Incorrect password" });
+    return;
+  }
+
+  devLoginAttempts.delete(ip);
+
+  try {
+    const user = await ensureDemoUser();
+    req.login(user, (err) => {
+      if (err) return next(err);
+      res.json(publicUser(user));
+    });
+  } catch (err) {
+    next(err as Error);
+  }
 });
 
 /* ---------------------------------- Logout --------------------------------- */

@@ -1,1 +1,1 @@
-- [Gated downloads for shared files](gated-file-downloads.md) — when a public/password-protected resource must stream files, gate with a stateless HMAC key (not a public /objects URL); keep objectPath server-internal.
+- [Prod vs dev demo user](prod-demo-user.md) — production deploy has a separate DB, so demo/seed users from dev (e.g. id 1) won't exist; find-or-create by a stable identifier.

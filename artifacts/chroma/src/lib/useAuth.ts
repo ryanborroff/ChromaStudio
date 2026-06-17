@@ -78,6 +78,10 @@ export function loginWithEmail(input: {
   return postAuth("/auth/login", input);
 }
 
+export function loginWithDevPassword(password: string): Promise<void> {
+  return postAuth("/auth/dev-login", { password });
+}
+
 export async function logout(): Promise<void> {
   try {
     await fetch(`${apiBase}/auth/logout`, {
