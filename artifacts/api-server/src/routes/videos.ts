@@ -23,6 +23,7 @@ import {
   CreateVideoUploadUrlResponse,
 } from "@workspace/api-zod";
 import { createDirectUpload, getStreamConfig, deleteStreamVideo } from "../lib/cloudflare";
+import { ObjectStorageService } from "../lib/objectStorage";
 
 const router: IRouter = Router();
 
@@ -173,11 +174,23 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
     }
   }
 
+  // When a plain videoUrl is supplied (Object Storage fallback) with no streamUid,
+  // the video is already stored and ready to play — mark it as such.
+  const streamStatus =
+    parsed.data.videoUrl && !streamUid ? "ready" : undefined;
+
   let video: typeof videosTable.$inferSelect;
   try {
     [video] = await db
       .insert(videosTable)
-      .values({ ...parsed.data, userId: user.id, privacy: parsed.data.privacy ?? "public", tags: parsed.data.tags ?? [], downloadFormats: parsed.data.downloadFormats ?? [] })
+      .values({
+        ...parsed.data,
+        userId: user.id,
+        privacy: parsed.data.privacy ?? "public",
+        tags: parsed.data.tags ?? [],
+        downloadFormats: parsed.data.downloadFormats ?? [],
+        ...(streamStatus ? { streamStatus } : {}),
+      })
       .returning();
   } catch (err) {
     // Persisting the record failed after the asset was uploaded — clean up the
@@ -202,7 +215,17 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
 // POST /videos/upload-url
 router.post("/videos/upload-url", requireAuth, async (req, res): Promise<void> => {
   if (!getStreamConfig()) {
-    res.status(503).json({ error: "Video uploads are not configured yet" });
+    // Cloudflare Stream not configured — fall back to Replit Object Storage.
+    // Returns a presigned PUT URL; the client should PUT the file (not FormData POST).
+    try {
+      const svc = new ObjectStorageService();
+      const uploadURL = await svc.getObjectEntityUploadURL();
+      const objectPath = svc.normalizeObjectEntityPath(uploadURL);
+      res.json(CreateVideoUploadUrlResponse.parse({ uploadURL, uid: objectPath, uploadMethod: "put" }));
+    } catch (err) {
+      req.log.error({ err }, "Failed to create Object Storage video upload URL");
+      res.status(502).json({ error: "Could not start upload" });
+    }
     return;
   }
   try {
@@ -211,7 +234,7 @@ router.post("/videos/upload-url", requireAuth, async (req, res): Promise<void> =
     await db
       .insert(streamUploadTicketsTable)
       .values({ uid: ticket.uid, userId: user.id });
-    res.json(CreateVideoUploadUrlResponse.parse(ticket));
+    res.json(CreateVideoUploadUrlResponse.parse({ ...ticket, uploadMethod: "post" }));
   } catch (err) {
     req.log.error({ err }, "Failed to create Cloudflare Stream upload URL");
     res.status(502).json({ error: "Could not start upload" });

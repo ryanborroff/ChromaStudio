@@ -5,8 +5,10 @@
  * Chroma - Professional Filmmaker Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { StreamUploadTicketUploadMethod } from './streamUploadTicketUploadMethod';
 
 export interface StreamUploadTicket {
   uploadURL: string;
   uid: string;
+  uploadMethod?: StreamUploadTicketUploadMethod;
 }

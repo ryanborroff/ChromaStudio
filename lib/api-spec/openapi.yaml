@@ -1404,6 +1404,9 @@ components:
           type: string
         uid:
           type: string
+        uploadMethod:
+          type: string
+          enum: [post, put]
 
     VideoUpdate:
       type: object

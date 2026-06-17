@@ -52,6 +52,7 @@ export * from './shareSettings';
 export * from './shareSettingsInput';
 export * from './shareUnlockInput';
 export * from './streamUploadTicket';
+export * from './streamUploadTicketUploadMethod';
 export * from './unlockDeliveryInput';
 export * from './updateDeliveryInput';
 export * from './uploadUrlRequest';

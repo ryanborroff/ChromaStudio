@@ -175,9 +175,18 @@ export interface VideoInput {
   downloadFormats?: string[];
 }
 
+export type StreamUploadTicketUploadMethod = typeof StreamUploadTicketUploadMethod[keyof typeof StreamUploadTicketUploadMethod];
+
+
+export const StreamUploadTicketUploadMethod = {
+  post: 'post',
+  put: 'put',
+} as const;
+
 export interface StreamUploadTicket {
   uploadURL: string;
   uid: string;
+  uploadMethod?: StreamUploadTicketUploadMethod;
 }
 
 export type VideoUpdatePrivacy = typeof VideoUpdatePrivacy[keyof typeof VideoUpdatePrivacy];

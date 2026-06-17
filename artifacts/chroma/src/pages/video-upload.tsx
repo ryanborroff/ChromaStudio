@@ -39,7 +39,7 @@ const uploadSchema = z.object({
 
 type UploadFormValues = z.infer<typeof uploadSchema>;
 
-function uploadFileToStream(
+function uploadViaPost(
   uploadURL: string,
   file: File,
   onProgress: (pct: number) => void,
@@ -58,6 +58,27 @@ function uploadFileToStream(
     };
     xhr.onerror = () => reject(new Error("Network error during upload"));
     xhr.send(formData);
+  });
+}
+
+function uploadViaPut(
+  uploadURL: string,
+  file: File,
+  onProgress: (pct: number) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", uploadURL, true);
+    xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(new Error(`Upload failed (${xhr.status})`));
+    };
+    xhr.onerror = () => reject(new Error("Network error during upload"));
+    xhr.send(file);
   });
 }
 
@@ -106,17 +127,25 @@ export function VideoUpload() {
       setPhase("uploading");
       setProgress(0);
       const ticket = await uploadUrlMutation.mutateAsync();
-      await uploadFileToStream(ticket.uploadURL, file, setProgress);
+
+      const isObjectStorage = ticket.uploadMethod === "put";
+      if (isObjectStorage) {
+        await uploadViaPut(ticket.uploadURL, file, setProgress);
+      } else {
+        await uploadViaPost(ticket.uploadURL, file, setProgress);
+      }
 
       setPhase("saving");
       const video = await createMutation.mutateAsync({
         data: {
           ...data,
-          streamUid: ticket.uid,
+          ...(isObjectStorage
+            ? { videoUrl: `/api/storage${ticket.uid}` }
+            : { streamUid: ticket.uid }),
           ...(thumbnailUrl ? { thumbnailUrl } : {}),
         },
       });
-      toast({ title: "Video uploaded — now processing" });
+      toast({ title: isObjectStorage ? "Video uploaded" : "Video uploaded — now processing" });
       setLocation(`/videos/${video.id}`);
     } catch (err) {
       toast({
