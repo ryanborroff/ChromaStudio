@@ -228,7 +228,7 @@ router.post("/auth/dev-login", async (req, res, next) => {
     return;
   }
 
-  if (!timingSafeEqual(parsed.data.password, expected)) {
+  if (!timingSafeEqual(parsed.data.password.trim(), expected.trim())) {
     recordDevLoginFailure(ip);
     req.log.warn({ ip }, "dev-login: incorrect password");
     res.status(401).json({ error: "Incorrect password" });
