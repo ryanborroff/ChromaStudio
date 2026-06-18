@@ -1,5 +1,5 @@
 import { useGetMe, getGetMeQueryKey, useUpdateMe } from "@workspace/api-client-react";
-import { Loader2, Instagram, Linkedin, Twitter, Film, Clapperboard } from "lucide-react";
+import { Loader2, Instagram, Linkedin, Twitter, Film, Clapperboard, Plus, Trash2 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -25,6 +25,8 @@ import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 import { ImageUploader } from "@/components/ImageUploader";
 import { useEffect, useRef, useState } from "react";
+
+type CreditItem = { title: string; role: string; year: string };
 
 const PROFESSIONS = [
   "Director",
@@ -80,6 +82,8 @@ export function ProfileEdit() {
   const initRef = useRef(false);
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [coverUrl, setCoverUrl] = useState<string>("");
+  const [credits, setCredits] = useState<CreditItem[]>([]);
+  const [newCredit, setNewCredit] = useState<CreditItem>({ title: "", role: "", year: "" });
 
   useEffect(() => {
     if (user && !initRef.current) {
@@ -98,9 +102,27 @@ export function ProfileEdit() {
       });
       setAvatarUrl(user.avatarUrl || "");
       setCoverUrl(user.coverUrl || "");
+      const rawCredits = user.credits;
+      if (Array.isArray(rawCredits)) {
+        setCredits(rawCredits.map((c: any) => ({
+          title: c.title || "",
+          role: c.role || "",
+          year: c.year || "",
+        })));
+      }
       initRef.current = true;
     }
   }, [user, form]);
+
+  function addCredit() {
+    if (!newCredit.title.trim() || !newCredit.role.trim()) return;
+    setCredits(prev => [...prev, { ...newCredit }]);
+    setNewCredit({ title: "", role: "", year: "" });
+  }
+
+  function removeCredit(index: number) {
+    setCredits(prev => prev.filter((_, i) => i !== index));
+  }
 
   const updateMutation = useUpdateMe({
     mutation: {
@@ -124,7 +146,13 @@ export function ProfileEdit() {
     if (imdb) socialLinks.imdb = imdb;
 
     updateMutation.mutate({
-      data: { ...rest, avatarUrl, coverUrl, socialLinks },
+      data: {
+        ...rest,
+        avatarUrl,
+        coverUrl,
+        socialLinks,
+        credits: credits.map(c => ({ title: c.title, role: c.role, ...(c.year ? { year: c.year } : {}) })),
+      },
     });
   }
 
@@ -327,6 +355,73 @@ export function ProfileEdit() {
                   </FormItem>
                 )}
               />
+            </div>
+          </div>
+
+          {/* Credits */}
+          <div className="bg-card border border-border/50 rounded-xl p-6 space-y-5">
+            <div>
+              <h2 className="text-sm font-semibold text-white/40 uppercase tracking-widest">Film Credits</h2>
+              <p className="text-xs text-white/30 mt-1">Add productions you've worked on — they appear on your public profile.</p>
+            </div>
+
+            {/* Existing credits list */}
+            {credits.length > 0 && (
+              <div className="space-y-2">
+                {credits.map((c, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-background/50 border border-border/30">
+                    <Clapperboard className="w-4 h-4 text-primary/50 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white text-sm font-medium truncate">{c.title}</p>
+                      <p className="text-white/40 text-xs">{c.role}{c.year ? ` · ${c.year}` : ""}</p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 text-white/30 hover:text-red-400 shrink-0"
+                      onClick={() => removeCredit(i)}
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add new credit */}
+            <div className="space-y-3 pt-1">
+              <p className="text-xs font-semibold text-white/40 uppercase tracking-wider">Add a credit</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Input
+                  placeholder="Project / film title"
+                  value={newCredit.title}
+                  onChange={e => setNewCredit(p => ({ ...p, title: e.target.value }))}
+                  className="bg-input border-border text-white sm:col-span-1"
+                />
+                <Input
+                  placeholder="Your role"
+                  value={newCredit.role}
+                  onChange={e => setNewCredit(p => ({ ...p, role: e.target.value }))}
+                  className="bg-input border-border text-white"
+                />
+                <Input
+                  placeholder="Year (optional)"
+                  value={newCredit.year}
+                  onChange={e => setNewCredit(p => ({ ...p, year: e.target.value }))}
+                  className="bg-input border-border text-white"
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="gap-2 border-border/50"
+                disabled={!newCredit.title.trim() || !newCredit.role.trim()}
+                onClick={addCredit}
+              >
+                <Plus className="w-4 h-4" /> Add Credit
+              </Button>
             </div>
           </div>
 
