@@ -5,6 +5,7 @@
  * Chroma - Professional Filmmaker Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { UserCredit } from './userCredit';
 import type { UserSocialLinks } from './userSocialLinks';
 
 export interface User {
@@ -25,9 +26,12 @@ export interface User {
   skills?: string[];
   /** @nullable */
   socialLinks?: UserSocialLinks;
+  credits?: UserCredit[];
+  isAdmin?: boolean;
   /** Subscription tier ("free" or a paid plan such as "creator"/"studio"). */
   plan?: string;
   isFollowing?: boolean;
+  endorsementCount?: number;
   followerCount?: number;
   followingCount?: number;
   videoCount?: number;

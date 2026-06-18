@@ -281,6 +281,136 @@ paths:
         "404":
           description: Not found
 
+  /users/{userId}/endorsements:
+    get:
+      operationId: listEndorsements
+      tags: [users]
+      summary: List endorsements for a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Endorsements list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/EndorsementList"
+    post:
+      operationId: createEndorsement
+      tags: [users]
+      summary: Write an endorsement for a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateEndorsement"
+      responses:
+        "201":
+          description: Created endorsement
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Endorsement"
+        "401":
+          description: Unauthorized
+    delete:
+      operationId: deleteEndorsement
+      tags: [users]
+      summary: Remove my endorsement for a user
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+
+  # ── Admin ────────────────────────────────────────────────────────────────────
+  /admin/users:
+    get:
+      operationId: adminListUsers
+      tags: [admin]
+      summary: List all users (admin only)
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+        - name: offset
+          in: query
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Admin user list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserList"
+        "403":
+          description: Forbidden
+
+  /admin/users/{userId}:
+    delete:
+      operationId: adminDeleteUser
+      tags: [admin]
+      summary: Delete a user (admin only)
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: OK
+        "403":
+          description: Forbidden
+
+  /admin/videos/{videoId}/featured:
+    patch:
+      operationId: adminToggleFeatured
+      tags: [admin]
+      summary: Toggle featured status of a video (admin only)
+      parameters:
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminFeaturedToggle"
+      responses:
+        "200":
+          description: Updated video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Video"
+        "403":
+          description: Forbidden
+
   # ── Videos ─────────────────────────────────────────────────────────────────
   /videos:
     get:
@@ -1238,11 +1368,19 @@ components:
             type: string
         socialLinks:
           type: ["object", "null"]
+        credits:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserCredit"
+        isAdmin:
+          type: boolean
         plan:
           type: string
           description: Subscription tier ("free" or a paid plan such as "creator"/"studio").
         isFollowing:
           type: boolean
+        endorsementCount:
+          type: integer
         followerCount:
           type: integer
         followingCount:
@@ -1293,6 +1431,10 @@ components:
             type: string
         socialLinks:
           type: object
+        credits:
+          type: array
+          items:
+            $ref: "#/components/schemas/UserCredit"
 
     UserList:
       type: object
@@ -1349,6 +1491,8 @@ components:
           type: array
           items:
             type: string
+        isFeatured:
+          type: boolean
         viewCount:
           type: integer
         likeCount:
@@ -1979,3 +2123,62 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Video"
+
+    # ── Credit & Endorsement schemas ───────────────────────────────────────────
+    UserCredit:
+      type: object
+      required: [title, role]
+      properties:
+        title:
+          type: string
+          description: Film or project title
+        role:
+          type: string
+          description: Role on the project (e.g. Director, Editor)
+        year:
+          type: string
+          description: Year of the project
+
+    Endorsement:
+      type: object
+      required: [id, fromUser, text, createdAt]
+      properties:
+        id:
+          type: integer
+        fromUser:
+          $ref: "#/components/schemas/User"
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    EndorsementList:
+      type: object
+      required: [endorsements, total]
+      properties:
+        endorsements:
+          type: array
+          items:
+            $ref: "#/components/schemas/Endorsement"
+        total:
+          type: integer
+        myEndorsement:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/Endorsement"
+
+    CreateEndorsement:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+          maxLength: 500
+
+    AdminFeaturedToggle:
+      type: object
+      required: [featured]
+      properties:
+        featured:
+          type: boolean

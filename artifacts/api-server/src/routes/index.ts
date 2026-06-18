@@ -12,6 +12,8 @@ import projectsRouter from "./projects";
 import statsRouter from "./stats";
 import storageRouter from "./storage";
 import deliveriesRouter from "./deliveries";
+import endorsementsRouter from "./endorsements";
+import adminRouter from "./admin";
 
 const router: IRouter = Router();
 
@@ -28,5 +30,7 @@ router.use(projectsRouter);
 router.use(statsRouter);
 router.use(storageRouter);
 router.use(deliveriesRouter);
+router.use(endorsementsRouter);
+router.use(adminRouter);
 
 export default router;

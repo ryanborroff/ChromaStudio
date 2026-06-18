@@ -21,6 +21,8 @@ import type {
 
 import type {
   AddDeliveryFileInput,
+  AdminFeaturedToggle,
+  AdminListUsersParams,
   Application,
   ApplicationInput,
   Collection,
@@ -33,8 +35,11 @@ import type {
   CommentList,
   ConversationList,
   CreateDeliveryInput,
+  CreateEndorsement,
   DeliveryDetail,
   DeliveryList,
+  Endorsement,
+  EndorsementList,
   ErrorEnvelope,
   FeaturedContent,
   FollowResult,
@@ -780,6 +785,451 @@ export function useGetUserByUsername<TData = Awaited<ReturnType<typeof getUserBy
 
 
 
+
+export const getListEndorsementsUrl = (userId: number,) => {
+
+
+
+
+  return `/api/users/${userId}/endorsements`
+}
+
+/**
+ * @summary List endorsements for a user
+ */
+export const listEndorsements = async (userId: number, options?: RequestInit): Promise<EndorsementList> => {
+
+  return customFetch<EndorsementList>(getListEndorsementsUrl(userId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListEndorsementsQueryKey = (userId: number,) => {
+    return [
+    `/api/users/${userId}/endorsements`
+    ] as const;
+    }
+
+
+export const getListEndorsementsQueryOptions = <TData = Awaited<ReturnType<typeof listEndorsements>>, TError = ErrorType<unknown>>(userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEndorsements>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListEndorsementsQueryKey(userId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listEndorsements>>> = ({ signal }) => listEndorsements(userId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(userId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEndorsements>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListEndorsementsQueryResult = NonNullable<Awaited<ReturnType<typeof listEndorsements>>>
+export type ListEndorsementsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List endorsements for a user
+ */
+
+export function useListEndorsements<TData = Awaited<ReturnType<typeof listEndorsements>>, TError = ErrorType<unknown>>(
+ userId: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEndorsements>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListEndorsementsQueryOptions(userId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getCreateEndorsementUrl = (userId: number,) => {
+
+
+
+
+  return `/api/users/${userId}/endorsements`
+}
+
+/**
+ * @summary Write an endorsement for a user
+ */
+export const createEndorsement = async (userId: number,
+    createEndorsement: CreateEndorsement, options?: RequestInit): Promise<Endorsement> => {
+
+  return customFetch<Endorsement>(getCreateEndorsementUrl(userId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      createEndorsement,)
+  }
+);}
+
+
+
+
+export const getCreateEndorsementMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEndorsement>>, TError,{userId: number;data: BodyType<CreateEndorsement>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createEndorsement>>, TError,{userId: number;data: BodyType<CreateEndorsement>}, TContext> => {
+
+const mutationKey = ['createEndorsement'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEndorsement>>, {userId: number;data: BodyType<CreateEndorsement>}> = (props) => {
+          const {userId,data} = props ?? {};
+
+          return  createEndorsement(userId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateEndorsementMutationResult = NonNullable<Awaited<ReturnType<typeof createEndorsement>>>
+    export type CreateEndorsementMutationBody = BodyType<CreateEndorsement>
+    export type CreateEndorsementMutationError = ErrorType<void>
+
+    /**
+ * @summary Write an endorsement for a user
+ */
+export const useCreateEndorsement = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEndorsement>>, TError,{userId: number;data: BodyType<CreateEndorsement>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createEndorsement>>,
+        TError,
+        {userId: number;data: BodyType<CreateEndorsement>},
+        TContext
+      > => {
+      return useMutation(getCreateEndorsementMutationOptions(options));
+    }
+
+export const getDeleteEndorsementUrl = (userId: number,) => {
+
+
+
+
+  return `/api/users/${userId}/endorsements`
+}
+
+/**
+ * @summary Remove my endorsement for a user
+ */
+export const deleteEndorsement = async (userId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteEndorsementUrl(userId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteEndorsementMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEndorsement>>, TError,{userId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteEndorsement>>, TError,{userId: number}, TContext> => {
+
+const mutationKey = ['deleteEndorsement'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteEndorsement>>, {userId: number}> = (props) => {
+          const {userId} = props ?? {};
+
+          return  deleteEndorsement(userId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteEndorsementMutationResult = NonNullable<Awaited<ReturnType<typeof deleteEndorsement>>>
+
+    export type DeleteEndorsementMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Remove my endorsement for a user
+ */
+export const useDeleteEndorsement = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEndorsement>>, TError,{userId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteEndorsement>>,
+        TError,
+        {userId: number},
+        TContext
+      > => {
+      return useMutation(getDeleteEndorsementMutationOptions(options));
+    }
+
+export const getAdminListUsersUrl = (params?: AdminListUsersParams,) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : value.toString())
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/admin/users?${stringifiedParams}` : `/api/admin/users`
+}
+
+/**
+ * @summary List all users (admin only)
+ */
+export const adminListUsers = async (params?: AdminListUsersParams, options?: RequestInit): Promise<UserList> => {
+
+  return customFetch<UserList>(getAdminListUsersUrl(params),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getAdminListUsersQueryKey = (params?: AdminListUsersParams,) => {
+    return [
+    `/api/admin/users`, ...(params ? [params] : [])
+    ] as const;
+    }
+
+
+export const getAdminListUsersQueryOptions = <TData = Awaited<ReturnType<typeof adminListUsers>>, TError = ErrorType<void>>(params?: AdminListUsersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminListUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getAdminListUsersQueryKey(params);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof adminListUsers>>> = ({ signal }) => adminListUsers(params, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof adminListUsers>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type AdminListUsersQueryResult = NonNullable<Awaited<ReturnType<typeof adminListUsers>>>
+export type AdminListUsersQueryError = ErrorType<void>
+
+
+/**
+ * @summary List all users (admin only)
+ */
+
+export function useAdminListUsers<TData = Awaited<ReturnType<typeof adminListUsers>>, TError = ErrorType<void>>(
+ params?: AdminListUsersParams, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof adminListUsers>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getAdminListUsersQueryOptions(params,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getAdminDeleteUserUrl = (userId: number,) => {
+
+
+
+
+  return `/api/admin/users/${userId}`
+}
+
+/**
+ * @summary Delete a user (admin only)
+ */
+export const adminDeleteUser = async (userId: number, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getAdminDeleteUserUrl(userId),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getAdminDeleteUserMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminDeleteUser>>, TError,{userId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof adminDeleteUser>>, TError,{userId: number}, TContext> => {
+
+const mutationKey = ['adminDeleteUser'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminDeleteUser>>, {userId: number}> = (props) => {
+          const {userId} = props ?? {};
+
+          return  adminDeleteUser(userId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AdminDeleteUserMutationResult = NonNullable<Awaited<ReturnType<typeof adminDeleteUser>>>
+
+    export type AdminDeleteUserMutationError = ErrorType<void>
+
+    /**
+ * @summary Delete a user (admin only)
+ */
+export const useAdminDeleteUser = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminDeleteUser>>, TError,{userId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof adminDeleteUser>>,
+        TError,
+        {userId: number},
+        TContext
+      > => {
+      return useMutation(getAdminDeleteUserMutationOptions(options));
+    }
+
+export const getAdminToggleFeaturedUrl = (videoId: number,) => {
+
+
+
+
+  return `/api/admin/videos/${videoId}/featured`
+}
+
+/**
+ * @summary Toggle featured status of a video (admin only)
+ */
+export const adminToggleFeatured = async (videoId: number,
+    adminFeaturedToggle: AdminFeaturedToggle, options?: RequestInit): Promise<Video> => {
+
+  return customFetch<Video>(getAdminToggleFeaturedUrl(videoId),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      adminFeaturedToggle,)
+  }
+);}
+
+
+
+
+export const getAdminToggleFeaturedMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminToggleFeatured>>, TError,{videoId: number;data: BodyType<AdminFeaturedToggle>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof adminToggleFeatured>>, TError,{videoId: number;data: BodyType<AdminFeaturedToggle>}, TContext> => {
+
+const mutationKey = ['adminToggleFeatured'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof adminToggleFeatured>>, {videoId: number;data: BodyType<AdminFeaturedToggle>}> = (props) => {
+          const {videoId,data} = props ?? {};
+
+          return  adminToggleFeatured(videoId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type AdminToggleFeaturedMutationResult = NonNullable<Awaited<ReturnType<typeof adminToggleFeatured>>>
+    export type AdminToggleFeaturedMutationBody = BodyType<AdminFeaturedToggle>
+    export type AdminToggleFeaturedMutationError = ErrorType<void>
+
+    /**
+ * @summary Toggle featured status of a video (admin only)
+ */
+export const useAdminToggleFeatured = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof adminToggleFeatured>>, TError,{videoId: number;data: BodyType<AdminFeaturedToggle>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof adminToggleFeatured>>,
+        TError,
+        {videoId: number;data: BodyType<AdminFeaturedToggle>},
+        TContext
+      > => {
+      return useMutation(getAdminToggleFeaturedMutationOptions(options));
+    }
 
 export const getListVideosUrl = (params?: ListVideosParams,) => {
   const normalizedParams = new URLSearchParams();

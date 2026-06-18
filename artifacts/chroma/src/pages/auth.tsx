@@ -78,10 +78,11 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
     try {
       if (isSignUp) {
         await registerWithEmail({ email, password, name: name.trim() || undefined });
+        setLocation("/onboarding");
       } else {
         await loginWithEmail({ email, password });
+        setLocation("/feed");
       }
-      setLocation("/feed");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {

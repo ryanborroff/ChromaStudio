@@ -5,6 +5,7 @@
  * Chroma - Professional Filmmaker Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { UserCredit } from './userCredit';
 import type { UserUpdateSocialLinks } from './userUpdateSocialLinks';
 
 export interface UserUpdate {
@@ -18,4 +19,5 @@ export interface UserUpdate {
   coverUrl?: string;
   skills?: string[];
   socialLinks?: UserUpdateSocialLinks;
+  credits?: UserCredit[];
 }

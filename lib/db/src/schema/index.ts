@@ -5,3 +5,4 @@ export * from "./follows";
 export * from "./messages";
 export * from "./projects";
 export * from "./deliveries";
+export * from "./endorsements";

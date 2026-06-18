@@ -29,7 +29,9 @@ import { Deliveries } from "@/pages/deliveries";
 import { DeliveryManage } from "@/pages/delivery-manage";
 import { DeliveryPage } from "@/pages/delivery-page";
 import { SignInPage, SignUpPage } from "@/pages/auth";
+import { Onboarding } from "@/pages/onboarding";
 import { ComingSoon } from "@/pages/coming-soon";
+import { AdminDashboard } from "@/pages/admin";
 import {
   Radio, Clapperboard, History, FolderOpen,
   Code2, BarChart3, ShoppingBag, ShieldCheck, KeyRound,
@@ -62,6 +64,7 @@ function AppRoutes() {
         <Route path="/" component={HomeRedirect} />
         <Route path="/sign-in" component={SignInPage} />
         <Route path="/sign-up" component={SignUpPage} />
+        <ProtectedRoute path="/onboarding" component={Onboarding} />
         <ProtectedRoute path="/feed" component={Feed} />
         <Route path="/explore" component={Explore} />
         <Route path="/pricing" component={Pricing} />
@@ -144,14 +147,7 @@ function AppRoutes() {
         </Route>
 
         {/* Admin */}
-        <ProtectedRoute path="/admin" component={() => (
-          <ComingSoon
-            icon={ShieldCheck}
-            title="Admin Dashboard"
-            description="Manage users, moderate content and review reports across the platform."
-            features={["User & role management", "Content moderation", "Reports & platform insights"]}
-          />
-        )} />
+        <ProtectedRoute path="/admin" component={AdminDashboard} />
 
         {/* Account security */}
         <ProtectedRoute path="/account/security" component={() => (

@@ -1,5 +1,74 @@
 import { Link } from "wouter";
-import { Play, Users, Briefcase, Clapperboard } from "lucide-react";
+import { Play, Users, Briefcase, ChevronDown, ChevronUp, Quote } from "lucide-react";
+import { useState } from "react";
+
+const TESTIMONIALS = [
+  {
+    quote: "Chroma replaced my Vimeo Pro account and my LinkedIn profile in one shot. My reel has never looked better, and I've already landed two jobs through the project board.",
+    name: "Maya Osei",
+    role: "Cinematographer",
+    location: "London, UK",
+  },
+  {
+    quote: "As a director, finding the right editor used to take weeks of cold emails. Now I post on the project board and have three qualified replies by morning. It's a proper industry tool.",
+    name: "Andrés Fuentes",
+    role: "Director",
+    location: "Madrid, Spain",
+  },
+  {
+    quote: "The portfolio presentation is just clean. No ads, no algorithm garbage pushing cat videos after my showreel. It feels like it was built for professionals — because it was.",
+    name: "Saoirse Brennan",
+    role: "Editor",
+    location: "Dublin, Ireland",
+  },
+];
+
+const FAQS = [
+  {
+    q: "Is Chroma free to use?",
+    a: "Yes. The Reel plan is completely free and lets you upload videos, build your profile, and access the community. Creator and Studio plans unlock advanced features like embed links, client delivery, and higher storage limits.",
+  },
+  {
+    q: "What video formats does Chroma support?",
+    a: "Chroma supports MP4, MOV, and MKV uploads. Videos are stored and streamed in high quality with no re-encoding artefacts.",
+  },
+  {
+    q: "Can I keep videos private?",
+    a: "Absolutely. Every video can be set to public, private, or password-protected. You're always in control of who sees your work.",
+  },
+  {
+    q: "How does the project board work?",
+    a: "Any member can post a crew opportunity — a short description, budget range, location, and required roles. Other members can apply directly through Chroma. No email chains needed.",
+  },
+  {
+    q: "Is my work protected from being copied?",
+    a: "Videos are served directly from Chroma's infrastructure and are never publicly downloadable. Password protection and private links give you an extra layer of control.",
+  },
+  {
+    q: "Who is Chroma for?",
+    a: "Chroma is built for working film professionals — directors, cinematographers, editors, producers, composers, sound designers, colourists, and students. If you make films, Chroma is your home.",
+  },
+];
+
+function FAQItem({ q, a }: { q: string; a: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div
+      className="border-b border-white/[0.07] py-5 cursor-pointer"
+      onClick={() => setOpen(v => !v)}
+    >
+      <div className="flex items-center justify-between gap-4">
+        <p className="text-white font-medium text-sm md:text-base">{q}</p>
+        {open
+          ? <ChevronUp className="w-4 h-4 text-white/40 shrink-0" />
+          : <ChevronDown className="w-4 h-4 text-white/40 shrink-0" />}
+      </div>
+      {open && (
+        <p className="mt-3 text-sm text-white/50 leading-relaxed">{a}</p>
+      )}
+    </div>
+  );
+}
 
 export function Home() {
   return (
@@ -40,7 +109,7 @@ export function Home() {
               style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
               data-testid="hero-explore-btn"
             >
-              Explore Chroma
+              Explore filmmakers
             </Link>
           </div>
 
@@ -90,6 +159,104 @@ export function Home() {
               <p className="text-sm text-white/45 leading-relaxed">{f.desc}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-24 px-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-14">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/30 mb-3">From the community</p>
+            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">What filmmakers are saying</h2>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {TESTIMONIALS.map(t => (
+              <div
+                key={t.name}
+                className="p-7 rounded-2xl flex flex-col gap-5"
+                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}
+              >
+                <Quote className="w-6 h-6 text-primary/60 shrink-0" />
+                <p className="text-sm text-white/70 leading-relaxed flex-1">"{t.quote}"</p>
+                <div>
+                  <p className="text-white font-semibold text-sm">{t.name}</p>
+                  <p className="text-white/35 text-xs mt-0.5">{t.role} · {t.location}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing CTA */}
+      <section className="py-16 px-6" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", background: "rgba(255,255,255,0.015)" }}>
+        <div className="max-w-2xl mx-auto text-center">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/30 mb-3">Plans</p>
+          <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-4">Start free. Scale as you grow.</h2>
+          <p className="text-white/45 mb-8 leading-relaxed">The Reel plan is free forever. Upgrade when you're ready for advanced hosting, client delivery, and embed links.</p>
+          <Link
+            href="/pricing"
+            className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white transition-all"
+            style={{
+              background: "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)",
+              boxShadow: "0 4px 24px rgba(229,62,62,0.25)",
+            }}
+          >
+            View pricing
+          </Link>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-24 px-6">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-12">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/30 mb-3">Questions</p>
+            <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">Frequently asked</h2>
+          </div>
+
+          <div>
+            {FAQS.map(item => (
+              <FAQItem key={item.q} q={item.q} a={item.a} />
+            ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <p className="text-white/35 text-sm">Still have questions?{" "}
+              <Link href="/sign-up" className="text-primary hover:underline">Join Chroma</Link>{" "}
+              and get in touch with the team.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Final CTA */}
+      <section className="py-24 px-6 text-center" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div className="max-w-2xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
+            Your work deserves<br />a professional home.
+          </h2>
+          <p className="text-white/45 mb-8 text-lg">Join thousands of filmmakers already on Chroma.</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              href="/sign-up"
+              className="inline-flex items-center gap-2 h-12 px-8 rounded-xl text-base font-semibold text-white transition-all"
+              style={{
+                background: "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)",
+                boxShadow: "0 4px 24px rgba(229,62,62,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
+              }}
+            >
+              Join Chroma — it's free
+            </Link>
+            <Link
+              href="/crew"
+              className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white/80 hover:text-white transition-all"
+              style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
+            >
+              Explore filmmakers
+            </Link>
+          </div>
         </div>
       </section>
     </div>

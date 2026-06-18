@@ -35,6 +35,7 @@ export interface Video {
   /** @nullable */
   credits?: string | null;
   downloadFormats?: string[];
+  isFeatured?: boolean;
   viewCount: number;
   likeCount: number;
   isLiked?: boolean;

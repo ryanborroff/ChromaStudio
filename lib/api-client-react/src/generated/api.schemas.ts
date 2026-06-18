@@ -44,6 +44,15 @@ export interface ErrorEnvelope {
  */
 export type UserSocialLinks = { [key: string]: unknown } | null;
 
+export interface UserCredit {
+  /** Film or project title */
+  title: string;
+  /** Role on the project (e.g. Director, Editor) */
+  role: string;
+  /** Year of the project */
+  year?: string;
+}
+
 export interface User {
   id: number;
   username: string;
@@ -62,9 +71,12 @@ export interface User {
   skills?: string[];
   /** @nullable */
   socialLinks?: UserSocialLinks;
+  credits?: UserCredit[];
+  isAdmin?: boolean;
   /** Subscription tier ("free" or a paid plan such as "creator"/"studio"). */
   plan?: string;
   isFollowing?: boolean;
+  endorsementCount?: number;
   followerCount?: number;
   followingCount?: number;
   videoCount?: number;
@@ -116,6 +128,7 @@ export interface Video {
   /** @nullable */
   credits?: string | null;
   downloadFormats?: string[];
+  isFeatured?: boolean;
   viewCount: number;
   likeCount: number;
   isLiked?: boolean;
@@ -146,6 +159,7 @@ export interface UserUpdate {
   coverUrl?: string;
   skills?: string[];
   socialLinks?: UserUpdateSocialLinks;
+  credits?: UserCredit[];
 }
 
 export interface UserList {
@@ -527,6 +541,28 @@ export interface FeaturedContent {
   videos: Video[];
 }
 
+export interface Endorsement {
+  id: number;
+  fromUser: User;
+  text: string;
+  createdAt: string;
+}
+
+export interface EndorsementList {
+  endorsements: Endorsement[];
+  total: number;
+  myEndorsement?: Endorsement | null;
+}
+
+export interface CreateEndorsement {
+  /** @maxLength 500 */
+  text: string;
+}
+
+export interface AdminFeaturedToggle {
+  featured: boolean;
+}
+
 export type ListUsersParams = {
 profession?: string;
 country?: string;
@@ -546,6 +582,12 @@ export const ListUsersSort = {
   newest: 'newest',
   most_viewed: 'most_viewed',
 } as const;
+
+export type AdminListUsersParams = {
+search?: string;
+limit?: number;
+offset?: number;
+};
 
 export type ListVideosParams = {
 userId?: number;

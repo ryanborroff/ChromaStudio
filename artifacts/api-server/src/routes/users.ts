@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, ilike, or, sql } from "drizzle-orm";
-import { db, usersTable, videosTable, followsTable } from "@workspace/db";
+import { db, usersTable, videosTable, followsTable, endorsementsTable } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import {
   GetMeResponse,
@@ -28,6 +28,11 @@ async function buildUserResponse(user: typeof usersTable.$inferSelect, currentUs
     .from(videosTable)
     .where(eq(videosTable.userId, user.id));
 
+  const [endorsementCountRow] = await db
+    .select({ count: sql<number>`count(*)::int` })
+    .from(endorsementsTable)
+    .where(eq(endorsementsTable.toUserId, user.id));
+
   let isFollowing = false;
   if (currentUserId && currentUserId !== user.id) {
     const followRow = await db
@@ -45,9 +50,12 @@ async function buildUserResponse(user: typeof usersTable.$inferSelect, currentUs
     followerCount: followerCountRow?.count ?? 0,
     followingCount: followingCountRow?.count ?? 0,
     videoCount: videoCountRow?.count ?? 0,
+    endorsementCount: endorsementCountRow?.count ?? 0,
     isFollowing,
     skills: user.skills ?? [],
     socialLinks: user.socialLinks ?? null,
+    credits: (user.credits as unknown[] | null) ?? [],
+    isAdmin: user.isAdmin,
   };
 }
 

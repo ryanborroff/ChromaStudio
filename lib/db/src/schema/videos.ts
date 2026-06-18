@@ -22,6 +22,7 @@ export const videosTable = pgTable("videos", {
   tags: text("tags").array().notNull().default([]),
   credits: text("credits"),
   downloadFormats: text("download_formats").array().notNull().default([]),
+  isFeatured: boolean("is_featured").notNull().default(false),
   viewCount: integer("view_count").notNull().default(0),
   likeCount: integer("like_count").notNull().default(0),
   ratingSum: integer("rating_sum").notNull().default(0),

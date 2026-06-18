@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, json } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, json, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -18,6 +18,8 @@ export const usersTable = pgTable("users", {
   coverUrl: text("cover_url"),
   skills: text("skills").array().notNull().default([]),
   socialLinks: json("social_links"),
+  credits: json("credits"),
+  isAdmin: boolean("is_admin").notNull().default(false),
   // Subscription tier. "free" = no paid features; anything else (e.g. "creator",
   // "studio") unlocks paid-only features like video sharing & external embedding.
   plan: text("plan").notNull().default("free"),

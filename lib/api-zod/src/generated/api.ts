@@ -122,8 +122,15 @@ export const GetMeResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -146,7 +153,12 @@ export const UpdateMeBody = zod.object({
   "skills": zod.array(zod.string()).optional(),
   "socialLinks": zod.object({
 
-}).passthrough().optional()
+}).passthrough().optional(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional()
 })
 
 export const UpdateMeResponse = zod.object({
@@ -163,8 +175,15 @@ export const UpdateMeResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -201,8 +220,15 @@ export const ListUsersResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -234,8 +260,15 @@ export const GetUserByUsernameResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -259,6 +292,7 @@ export const GetUserByUsernameResponse = zod.object({
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
+  "isFeatured": zod.boolean().optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -279,8 +313,15 @@ export const GetUserByUsernameResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -289,6 +330,226 @@ export const GetUserByUsernameResponse = zod.object({
   "createdAt": zod.coerce.date()
 })),
   "credits": zod.array(zod.string()).optional()
+})
+
+
+/**
+ * @summary List endorsements for a user
+ */
+export const ListEndorsementsParams = zod.object({
+  "userId": zod.coerce.number()
+})
+
+export const ListEndorsementsResponse = zod.object({
+  "endorsements": zod.array(zod.object({
+  "id": zod.number(),
+  "fromUser": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "name": zod.string(),
+  "profession": zod.string(),
+  "location": zod.string().nullish(),
+  "bio": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "skills": zod.array(zod.string()).optional(),
+  "socialLinks": zod.object({
+
+}).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
+  "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
+  "followerCount": zod.number().optional(),
+  "followingCount": zod.number().optional(),
+  "videoCount": zod.number().optional(),
+  "createdAt": zod.coerce.date()
+}),
+  "text": zod.string(),
+  "createdAt": zod.coerce.date()
+})),
+  "total": zod.number(),
+  "myEndorsement": zod.object({
+  "id": zod.number(),
+  "fromUser": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "name": zod.string(),
+  "profession": zod.string(),
+  "location": zod.string().nullish(),
+  "bio": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "skills": zod.array(zod.string()).optional(),
+  "socialLinks": zod.object({
+
+}).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
+  "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
+  "followerCount": zod.number().optional(),
+  "followingCount": zod.number().optional(),
+  "videoCount": zod.number().optional(),
+  "createdAt": zod.coerce.date()
+}),
+  "text": zod.string(),
+  "createdAt": zod.coerce.date()
+}).nullish()
+})
+
+
+/**
+ * @summary Write an endorsement for a user
+ */
+export const CreateEndorsementParams = zod.object({
+  "userId": zod.coerce.number()
+})
+
+export const createEndorsementBodyTextMax = 500;
+
+
+
+export const CreateEndorsementBody = zod.object({
+  "text": zod.string().max(createEndorsementBodyTextMax)
+})
+
+
+/**
+ * @summary Remove my endorsement for a user
+ */
+export const DeleteEndorsementParams = zod.object({
+  "userId": zod.coerce.number()
+})
+
+
+/**
+ * @summary List all users (admin only)
+ */
+export const AdminListUsersQueryParams = zod.object({
+  "search": zod.coerce.string().optional(),
+  "limit": zod.coerce.number().optional(),
+  "offset": zod.coerce.number().optional()
+})
+
+export const AdminListUsersResponse = zod.object({
+  "users": zod.array(zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "name": zod.string(),
+  "profession": zod.string(),
+  "location": zod.string().nullish(),
+  "bio": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "skills": zod.array(zod.string()).optional(),
+  "socialLinks": zod.object({
+
+}).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
+  "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
+  "followerCount": zod.number().optional(),
+  "followingCount": zod.number().optional(),
+  "videoCount": zod.number().optional(),
+  "createdAt": zod.coerce.date()
+})),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Delete a user (admin only)
+ */
+export const AdminDeleteUserParams = zod.object({
+  "userId": zod.coerce.number()
+})
+
+
+/**
+ * @summary Toggle featured status of a video (admin only)
+ */
+export const AdminToggleFeaturedParams = zod.object({
+  "videoId": zod.coerce.number()
+})
+
+export const AdminToggleFeaturedBody = zod.object({
+  "featured": zod.boolean()
+})
+
+export const AdminToggleFeaturedResponse = zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "streamStatus": zod.string().nullish(),
+  "privacy": zod.enum(['public', 'private', 'password_protected']),
+  "category": zod.enum(['reel', 'showreel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
+  "shareEnabled": zod.boolean().optional(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean().optional(),
+  "tags": zod.array(zod.string()).optional(),
+  "credits": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
+  "isFeatured": zod.boolean().optional(),
+  "viewCount": zod.number(),
+  "likeCount": zod.number(),
+  "isLiked": zod.boolean().optional(),
+  "ratingAvg": zod.number().optional(),
+  "ratingCount": zod.number().optional(),
+  "userRating": zod.number().nullish(),
+  "user": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "name": zod.string(),
+  "profession": zod.string(),
+  "location": zod.string().nullish(),
+  "bio": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "skills": zod.array(zod.string()).optional(),
+  "socialLinks": zod.object({
+
+}).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
+  "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
+  "followerCount": zod.number().optional(),
+  "followingCount": zod.number().optional(),
+  "videoCount": zod.number().optional(),
+  "createdAt": zod.coerce.date()
+}).optional(),
+  "createdAt": zod.coerce.date()
 })
 
 
@@ -326,6 +587,7 @@ export const ListVideosResponse = zod.object({
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
+  "isFeatured": zod.boolean().optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -346,8 +608,15 @@ export const ListVideosResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -413,6 +682,7 @@ export const GetVideoResponse = zod.object({
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
+  "isFeatured": zod.boolean().optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -433,8 +703,15 @@ export const GetVideoResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -482,6 +759,7 @@ export const UpdateVideoResponse = zod.object({
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
+  "isFeatured": zod.boolean().optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -502,8 +780,15 @@ export const UpdateVideoResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -583,8 +868,15 @@ export const ListCommentsResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -671,6 +963,7 @@ export const GetCollectionResponse = zod.object({
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
+  "isFeatured": zod.boolean().optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -691,8 +984,15 @@ export const GetCollectionResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -828,8 +1128,15 @@ export const ListFollowersResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -861,8 +1168,15 @@ export const ListFollowingResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -899,6 +1213,7 @@ export const GetFeedResponse = zod.object({
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
+  "isFeatured": zod.boolean().optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -919,8 +1234,15 @@ export const GetFeedResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -952,8 +1274,15 @@ export const ListConversationsResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -1041,8 +1370,15 @@ export const ListProjectsResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -1102,8 +1438,15 @@ export const GetProjectResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -1153,8 +1496,15 @@ export const UpdateProjectResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -1219,8 +1569,15 @@ export const GetFeaturedContentResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
@@ -1244,6 +1601,7 @@ export const GetFeaturedContentResponse = zod.object({
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
+  "isFeatured": zod.boolean().optional(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -1264,8 +1622,15 @@ export const GetFeaturedContentResponse = zod.object({
   "socialLinks": zod.object({
 
 }).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
   "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
   "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
   "followerCount": zod.number().optional(),
   "followingCount": zod.number().optional(),
   "videoCount": zod.number().optional(),
