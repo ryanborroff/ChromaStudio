@@ -1,0 +1,460 @@
+Chroma build  Product specification:
+
+Chroma Developer Brief
+
+Build Specification for Replit Vibe Coding
+
+Product Name
+
+Chroma
+
+Tagline
+
+The professional filmmaker platform.
+
+Vision
+
+Build a premium web platform that combines professional video hosting, monetisation, and filmmaker networking into a single ecosystem.
+
+Chroma should become the professional identity platform for filmmakers, replacing fragmented tools such as Vimeo, LinkedIn, YouTube portfolios, Facebook groups, production forums, and screener services.
+
+The platform must feel premium, creative, cinematic, and industry-focused rather than social-media-focused.
+
+⸻
+
+Core User Types
+
+Directors
+
+Upload work, showcase portfolios, find crew, hire collaborators.
+
+Cinematographers
+
+Display reels, discover projects, receive endorsements.
+
+Editors
+
+Showcase edits, collaborate with filmmakers.
+
+Producers
+
+Manage projects, recruit talent.
+
+Composers & Sound Designers
+
+Present work and connect with productions.
+
+Film Students
+
+Build profiles, learn, receive feedback, discover opportunities.
+
+Production Companies
+
+Host work professionally and recruit talent.
+
+Film Schools
+
+Manage student showcases and communities.
+
+⸻
+
+MVP Goal
+
+Launch a functioning platform that proves three core pillars:
+
+1. Professional Video Hosting
+2. Professional Networking
+3. Career Discovery
+
+Monetisation, DRM, advanced streaming, and NLE integrations can be phased in later.
+
+⸻
+
+Product Architecture
+
+Public Website
+
+Landing Page
+
+Sections:
+
+* Hero section
+* Feature overview
+* Community benefits
+* Hosting benefits
+* Professional testimonials
+* Pricing
+* FAQ
+* Call to action
+
+Primary CTA:
+
+“Join Chroma”
+
+Secondary CTA:
+
+“Explore filmmakers”
+
+⸻
+
+Authentication
+
+Support:
+
+* Email signup
+* Google login
+* Apple login
+
+User onboarding should ask:
+
+* Name
+* Profile photo
+* Profession
+* Location
+* Bio
+* Website
+* Social links
+
+Profession options:
+
+* Director
+* Cinematographer
+* Editor
+* Producer
+* Writer
+* Composer
+* Sound Designer
+* Colourist
+* Production Designer
+* Student
+* Other
+
+⸻
+
+User Profiles
+
+Every user receives a professional profile.
+
+Sections:
+
+Header
+
+* Profile photo
+* Cover image
+* Name
+* Professional role
+* Location
+* Website
+
+About
+
+Long-form biography.
+
+Portfolio
+
+Video showcase grid.
+
+Credits
+
+Projects worked on.
+
+Skills
+
+Tags and specialties.
+
+Endorsements
+
+Peer recommendations.
+
+Contact
+
+Direct messaging button.
+
+⸻
+
+Video Hosting
+
+Users can upload:
+
+* MP4
+* MOV
+* MKV
+
+Features:
+
+* Video player
+* HD streaming
+* Privacy settings
+* Public/private videos
+* Password-protected videos
+* Embed support
+
+Each video includes:
+
+* Title
+* Description
+* Tags
+* Credits
+* Thumbnail
+
+Video pages should support:
+
+* Comments
+* Likes
+* Sharing
+* Save to collection
+
+⸻
+
+Community Layer
+
+Activity Feed
+
+Users see:
+
+* New uploads
+* Featured work
+* Industry announcements
+* Community highlights
+
+Feed should prioritise quality over popularity.
+
+⸻
+
+Following System
+
+Users can:
+
+* Follow creators
+* Receive updates
+* Build professional networks
+
+⸻
+
+Messaging
+
+Direct messages between members.
+
+Requirements:
+
+* Inbox
+* Conversation threads
+* Read status
+
+⸻
+
+Crew Discovery
+
+Dedicated searchable talent directory.
+
+Filters:
+
+* Role
+* Country
+* City
+* Skills
+* Availability
+
+Users can:
+
+* Contact talent
+* Save talent
+* Share profiles
+
+⸻
+
+Project Board
+
+Users can post opportunities.
+
+Examples:
+
+* Looking for editor
+* Looking for cinematographer
+* Documentary crew needed
+* Composer required
+
+Project fields:
+
+* Title
+* Description
+* Location
+* Budget
+* Duration
+* Required roles
+
+Users can apply directly.
+
+⸻
+
+Portfolio Discovery
+
+Search and browse filmmakers.
+
+Filters:
+
+* Profession
+* Genre
+* Country
+* Skills
+
+Sorting:
+
+* Featured
+* Newest
+* Most viewed
+
+⸻
+
+Admin Dashboard
+
+Admin capabilities:
+
+* User management
+* Video moderation
+* Featured content selection
+* Community management
+* Analytics dashboard
+
+⸻
+
+Future Features
+
+These should be planned but not built initially.
+
+Phase 2
+
+* Stripe subscriptions
+* Pay-per-view videos
+* Rental system
+* Premium memberships
+
+Phase 3
+
+* AI transcription
+* AI subtitles
+* AI translation
+* Video analytics
+* Heatmaps
+
+Phase 4
+
+* Adobe Premiere integration
+* Final Cut integration
+* DaVinci Resolve integration
+
+Phase 5
+
+* DRM protection
+* Watermarking
+* Festival screener tools
+
+⸻
+
+Design Requirements
+
+Visual Style
+
+Premium cinematic aesthetic.
+
+Inspiration:
+
+* Vimeo (classic era)
+* Apple
+* A24
+* Frame.io
+* Behance
+
+Avoid:
+
+* TikTok-style design
+* Bright influencer aesthetics
+* Gaming aesthetics
+
+⸻
+
+Colour Palette
+
+Primary:
+#0B0B0B
+
+Secondary:
+#181818
+
+Accent:
+#6B5BFF
+
+Text:
+#FFFFFF
+
+Muted:
+#B0B0B0
+
+Success:
+#3EB489
+
+⸻
+
+Typography
+
+Primary:
+Inter
+
+Headings:
+Large, bold, cinematic.
+
+Generous spacing throughout.
+
+⸻
+
+Technical Stack
+
+Frontend:
+
+* Next.js
+* React
+* Tailwind CSS
+
+Backend:
+
+* Supabase
+
+Authentication:
+
+* Supabase Auth
+
+Database:
+
+* PostgreSQL
+
+Storage:
+
+* Supabase Storage
+
+Video:
+
+* Mux or Cloudflare Stream
+
+Payments:
+
+* Stripe
+
+Hosting:
+
+* Replit Deployments
+
+⸻
+
+Success Metrics
+
+MVP is successful when:
+
+* Users can create profiles
+* Users can upload videos
+* Users can discover filmmakers
+* Users can follow creators
+* Users can send messages
+* Users can post opportunities
+* Users can apply for projects
+
+Build for quality and simplicity first. Advanced streaming and enterprise features come later.
