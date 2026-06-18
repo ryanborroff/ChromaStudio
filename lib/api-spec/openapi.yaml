@@ -449,6 +449,11 @@ paths:
           schema:
             type: string
             enum: [newest, most_viewed, featured, community_rated, community_rated_asc]
+        - name: featured
+          in: query
+          description: When true, only return featured videos.
+          schema:
+            type: boolean
         - name: limit
           in: query
           schema:

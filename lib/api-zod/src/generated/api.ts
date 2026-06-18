@@ -564,6 +564,7 @@ export const ListVideosQueryParams = zod.object({
   "search": zod.coerce.string().optional(),
   "tags": zod.coerce.string().optional(),
   "sort": zod.enum(['newest', 'most_viewed', 'featured', 'community_rated', 'community_rated_asc']).optional(),
+  "featured": zod.coerce.boolean().optional().describe('When true, only return featured videos.'),
   "limit": zod.coerce.number().optional(),
   "offset": zod.coerce.number().optional()
 })

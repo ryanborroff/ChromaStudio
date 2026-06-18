@@ -87,7 +87,7 @@ async function buildVideoResponse(
 
 // GET /videos
 router.get("/videos", async (req, res): Promise<void> => {
-  const { userId, mine, collectionId, category, search, tags, sort = "newest", limit = "20", offset = "0" } =
+  const { userId, mine, collectionId, category, search, tags, sort = "newest", featured, limit = "20", offset = "0" } =
     req.query as Record<string, string>;
 
   const conditions: any[] = [];
@@ -110,6 +110,7 @@ router.get("/videos", async (req, res): Promise<void> => {
     conditions.push(eq(videosTable.collectionId, parseInt(collectionId)));
   }
   if (category) conditions.push(eq(videosTable.category, category));
+  if (featured === "true") conditions.push(eq(videosTable.isFeatured, true));
   if (search) {
     conditions.push(
       or(ilike(videosTable.title, `%${search}%`), ilike(videosTable.description, `%${search}%`))!,
@@ -129,7 +130,9 @@ router.get("/videos", async (req, res): Promise<void> => {
           ? desc(videosTable.likeCount)
           : sort === "community_rated_asc"
             ? asc(videosTable.likeCount)
-            : desc(videosTable.createdAt),
+            : sort === "featured"
+              ? desc(videosTable.isFeatured)
+              : desc(videosTable.createdAt),
     )
     .limit(parseInt(limit))
     .offset(parseInt(offset));

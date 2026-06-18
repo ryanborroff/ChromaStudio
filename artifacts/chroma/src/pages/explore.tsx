@@ -2,7 +2,7 @@ import { useState, Fragment } from "react";
 import { useListVideos, getListVideosQueryKey } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/video-card";
 import { EmptyState } from "@/components/empty-state";
-import { Loader2, Search, SlidersHorizontal, Grid3X3, List, Check, ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronDown } from "lucide-react";
+import { Loader2, Search, SlidersHorizontal, Grid3X3, List, Check, ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronDown, Star } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
   DropdownMenu,
@@ -25,10 +25,28 @@ export function Explore() {
   const [view, setView] = useState<"grid" | "list">("grid");
   const isCommunity = sort === "community_rated" || sort === "community_rated_asc";
 
+  const showFeaturedStrip = sort === "featured" && !debouncedSearch;
+
+  const { data: featuredData } = useListVideos(
+    { featured: true, limit: 6 },
+    {
+      query: {
+        enabled: showFeaturedStrip,
+        queryKey: getListVideosQueryKey({ featured: true, limit: 6 }),
+      },
+    },
+  );
+
   const { data, isLoading } = useListVideos(
     { search: debouncedSearch || undefined, sort },
     { query: { queryKey: getListVideosQueryKey({ search: debouncedSearch || undefined, sort }) } }
   );
+
+  const featuredVideos = featuredData?.videos ?? [];
+  const featuredIds = new Set(featuredVideos.map(v => v.id));
+  const mainVideos = showFeaturedStrip && featuredVideos.length > 0
+    ? (data?.videos ?? []).filter(v => !featuredIds.has(v.id))
+    : (data?.videos ?? []);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -52,7 +70,6 @@ export function Explore() {
           <div className="hidden sm:flex items-center gap-1 mr-2">
             {SORT_OPTIONS.map(opt => (
               opt.value === "community_rated" ? (
-                /* Community Rated — dropdown with Highest / Lowest */
                 <DropdownMenu key="community_rated">
                   <DropdownMenuTrigger asChild>
                     <button
@@ -172,23 +189,44 @@ export function Explore() {
       </div>
 
       {/* Content */}
-      <div className="p-6 flex-1">
+      <div className="p-6 flex-1 space-y-10">
+        {/* Featured Picks strip — only on Trending tab, no active search */}
+        {showFeaturedStrip && featuredVideos.length > 0 && (
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <Star className="w-4 h-4 text-primary fill-primary" />
+              <h2 className="text-sm font-bold text-white uppercase tracking-widest">Editor's Picks</h2>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {featuredVideos.map(video => (
+                <VideoCard key={video.id} video={video} />
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Main grid */}
         {isLoading ? (
-          <div className="flex items-center justify-center min-h-[50vh]">
+          <div className="flex items-center justify-center min-h-[40vh]">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
-        ) : data?.videos && data.videos.length > 0 ? (
-          <div className={view === "grid" ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4" : "grid grid-cols-1 gap-4 max-w-3xl"}>
-            {data.videos.map(video => (
-              <VideoCard key={video.id} video={video} />
-            ))}
-          </div>
-        ) : (
+        ) : mainVideos.length > 0 ? (
+          <section>
+            {showFeaturedStrip && featuredVideos.length > 0 && (
+              <h2 className="text-sm font-bold text-white/40 uppercase tracking-widest mb-4">All Videos</h2>
+            )}
+            <div className={view === "grid" ? "grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4" : "grid grid-cols-1 gap-4 max-w-3xl"}>
+              {mainVideos.map(video => (
+                <VideoCard key={video.id} video={video} />
+              ))}
+            </div>
+          </section>
+        ) : !showFeaturedStrip || featuredVideos.length === 0 ? (
           <EmptyState
             title="No videos found"
             description="We couldn't find any videos matching your search criteria. Try adjusting your filters."
           />
-        )}
+        ) : null}
       </div>
     </div>
   );

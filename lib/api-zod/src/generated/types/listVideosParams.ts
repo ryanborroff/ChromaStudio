@@ -22,6 +22,10 @@ category?: VideoCategory;
 search?: string;
 tags?: string;
 sort?: ListVideosSort;
+/**
+ * When true, only return featured videos.
+ */
+featured?: boolean;
 limit?: number;
 offset?: number;
 };

@@ -39,12 +39,12 @@ router.get("/feed", requireAuth, async (req, res): Promise<void> => {
           .offset(parseInt(offset)),
       );
   } else {
-    // Show all public videos if not following anyone
+    // No follows yet — show featured first, then most-viewed public videos
     videos = await db
       .select()
       .from(videosTable)
       .where(eq(videosTable.privacy, "public"))
-      .orderBy(desc(videosTable.createdAt))
+      .orderBy(desc(videosTable.isFeatured), desc(videosTable.viewCount))
       .limit(parseInt(limit))
       .offset(parseInt(offset));
   }
