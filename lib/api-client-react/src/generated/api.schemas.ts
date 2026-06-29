@@ -469,61 +469,6 @@ export interface UnlockDeliveryInput {
   password: string;
 }
 
-export interface Project {
-  id: number;
-  userId: number;
-  title: string;
-  description: string;
-  /** @nullable */
-  location?: string | null;
-  /** @nullable */
-  budget?: string | null;
-  /** @nullable */
-  duration?: string | null;
-  rolesNeeded: string[];
-  applicationCount?: number;
-  user?: User;
-  createdAt: string;
-}
-
-export interface ProjectInput {
-  /** @minLength 1 */
-  title: string;
-  /** @minLength 1 */
-  description: string;
-  location?: string;
-  budget?: string;
-  duration?: string;
-  rolesNeeded: string[];
-}
-
-export interface ProjectUpdate {
-  title?: string;
-  description?: string;
-  location?: string;
-  budget?: string;
-  duration?: string;
-  rolesNeeded?: string[];
-}
-
-export interface ProjectList {
-  projects: Project[];
-  total: number;
-}
-
-export interface Application {
-  id: number;
-  projectId: number;
-  userId: number;
-  message: string;
-  createdAt: string;
-}
-
-export interface ApplicationInput {
-  /** @minLength 1 */
-  message: string;
-}
-
 export type PlatformStatsProfessionBreakdownItem = {
   profession: string;
   count: number;
@@ -623,14 +568,6 @@ export const ListVideosSort = {
 } as const;
 
 export type GetFeedParams = {
-limit?: number;
-offset?: number;
-};
-
-export type ListProjectsParams = {
-role?: string;
-country?: string;
-search?: string;
 limit?: number;
 offset?: number;
 };

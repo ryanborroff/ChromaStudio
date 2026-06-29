@@ -6,7 +6,7 @@ import {
   Grid3X3, Users, Clapperboard, Sparkles, Rss,
   Tag, Menu, ChevronDown,
   Radio, History, FolderOpen, Cloud, Send, Code2, BarChart3,
-  ShoppingBag, ShieldCheck, KeyRound, Briefcase, type LucideIcon,
+  ShoppingBag, ShieldCheck, KeyRound, type LucideIcon,
 } from "lucide-react";
 import {
   Sheet,
@@ -49,13 +49,6 @@ const NAV_GROUPS: NavGroup[] = [
       { href: "/studio/delivery", label: "Client Delivery", icon: Send, desc: "Branded delivery & approvals" },
       { href: "/studio/embeds", label: "Website Embedding", icon: Code2, desc: "Embeddable players & galleries" },
       { href: "/studio/analytics", label: "Analytics", icon: BarChart3, desc: "Views, audience & revenue" },
-    ],
-  },
-  {
-    label: "Crew",
-    items: [
-      { href: "/projects", label: "Jobs available", icon: Briefcase, desc: "Browse open crew positions" },
-      { href: "/crew", label: "Crew available", icon: Users, desc: "Discover filmmakers to hire" },
     ],
   },
   {

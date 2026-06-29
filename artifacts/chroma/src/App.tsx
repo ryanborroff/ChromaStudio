@@ -11,10 +11,6 @@ import { useAuth } from "@/lib/useAuth";
 import { Home } from "@/pages/home";
 import { Feed } from "@/pages/feed";
 import { Explore } from "@/pages/explore";
-import { Crew } from "@/pages/crew";
-import { Projects } from "@/pages/projects";
-import { ProjectDetail } from "@/pages/project-detail";
-import { ProjectNew } from "@/pages/project-new";
 import { Messages } from "@/pages/messages";
 import { MessageThread } from "@/pages/message-thread";
 import { Profile } from "@/pages/profile";
@@ -68,10 +64,6 @@ function AppRoutes() {
         <ProtectedRoute path="/feed" component={Feed} />
         <Route path="/explore" component={Explore} />
         <Route path="/pricing" component={Pricing} />
-        <Route path="/crew" component={Crew} />
-        <Route path="/projects" component={Projects} />
-        <ProtectedRoute path="/projects/new" component={ProjectNew} />
-        <ProtectedRoute path="/projects/:id" component={ProjectDetail} />
         <ProtectedRoute path="/messages" component={Messages} />
         <ProtectedRoute path="/messages/:userId" component={MessageThread} />
         <ProtectedRoute path="/profile/me" component={ProfileEdit} />
