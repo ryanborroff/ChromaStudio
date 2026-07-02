@@ -18,3 +18,9 @@ id = "uYhyppKLamDAXgBVzhuyV"
 uri = "file://chroma.zip"
 type = "unspecified"
 title = "Chroma — full source code"
+
+[[outputs]]
+id = "lzHHzNuuVeVx2eNgkCwSQ"
+uri = "file://chroma-src.zip"
+type = "unspecified"
+title = "Chroma — source code"

@@ -1,1 +1,2 @@
 chroma.zip filter=lfs diff=lfs merge=lfs -text
+chroma.tar.gz filter=lfs diff=lfs merge=lfs -text
