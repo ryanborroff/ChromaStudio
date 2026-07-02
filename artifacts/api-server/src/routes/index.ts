@@ -1,4 +1,6 @@
 import { Router, type IRouter } from "express";
+import fs from "fs";
+import path from "path";
 import authRouter from "./auth";
 import healthRouter from "./health";
 import usersRouter from "./users";
@@ -30,5 +32,16 @@ router.use(storageRouter);
 router.use(deliveriesRouter);
 router.use(endorsementsRouter);
 router.use(adminRouter);
+
+router.get("/download-source", (_req, res) => {
+  const zipPath = path.resolve("/home/runner/workspace/chroma-src.zip");
+  if (!fs.existsSync(zipPath)) {
+    res.status(404).json({ error: "File not found" });
+    return;
+  }
+  res.setHeader("Content-Disposition", 'attachment; filename="chroma-src.zip"');
+  res.setHeader("Content-Type", "application/zip");
+  res.sendFile(zipPath);
+});
 
 export default router;
