@@ -12,3 +12,9 @@ id = "2zL2P11yN4-uiqCpUSYZq"
 uri = "file://screenshots/chroma-landing.jpg"
 type = "image"
 title = "Chroma — Pre-login Landing Page"
+
+[[outputs]]
+id = "uYhyppKLamDAXgBVzhuyV"
+uri = "file://chroma.zip"
+type = "unspecified"
+title = "Chroma — full source code"
