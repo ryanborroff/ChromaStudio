@@ -96,7 +96,7 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
         <div className="bg-[#181818] rounded-2xl w-full overflow-hidden p-8 flex flex-col items-center text-center">
           <Clapperboard className="h-10 w-10 text-primary mb-6" strokeWidth={2.5} />
           <h1 className="text-2xl font-bold tracking-tight text-white">
-            {isSignUp ? "Join Chroma" : "Sign in to Chroma"}
+            {isSignUp ? "Join ChromaStudio" : "Sign in to ChromaStudio"}
           </h1>
           <p className="text-muted-foreground mt-2">
             {isSignUp ? "The platform for serious filmmakers" : "Enter the professional ecosystem"}
@@ -173,7 +173,7 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           </form>
 
           <p className="text-sm text-muted-foreground mt-6">
-            {isSignUp ? "Already have an account? " : "New to Chroma? "}
+            {isSignUp ? "Already have an account? " : "New to ChromaStudio? "}
             <a
               href={isSignUp ? "/sign-in" : "/sign-up"}
               className="text-primary hover:underline"
@@ -184,7 +184,7 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           </p>
 
           <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-            By continuing you agree to Chroma&apos;s Terms and Privacy Policy.
+            By continuing you agree to ChromaStudio&apos;s Terms and Privacy Policy.
           </p>
 
           <div className="mt-6 w-full border-t border-white/10 pt-4">

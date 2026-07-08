@@ -26,7 +26,7 @@ export function MacOS() {
           </div>
           <div className="flex items-center gap-1.5">
             <Clapperboard className="w-4 h-4 text-red-400" strokeWidth={2.5} />
-            <span className="font-semibold text-sm tracking-tight text-white/90">Chroma</span>
+            <span className="font-semibold text-sm tracking-tight text-white/90">ChromaStudio</span>
           </div>
           <nav className="flex items-center gap-0.5">
             {navItems.map((item, i) => (
@@ -40,7 +40,7 @@ export function MacOS() {
           <button className="text-sm text-white/50 hover:text-white px-3 py-1 rounded-md hover:bg-white/5 transition-all">Sign In</button>
           <button className="text-sm font-semibold px-4 py-1.5 rounded-lg text-white transition-all"
             style={{ background: 'linear-gradient(135deg, #e53e3e 0%, #c53030 100%)', boxShadow: '0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.15)' }}>
-            Join Chroma
+            Join ChromaStudio
           </button>
         </div>
       </header>

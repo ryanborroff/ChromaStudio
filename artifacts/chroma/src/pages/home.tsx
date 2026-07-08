@@ -4,7 +4,7 @@ import { useState } from "react";
 
 const TESTIMONIALS = [
   {
-    quote: "Chroma replaced my Vimeo Pro account and my LinkedIn profile in one shot. My reel has never looked better, and I've already landed two jobs through the project board.",
+    quote: "ChromaStudio replaced my Vimeo Pro account and my LinkedIn profile in one shot. My reel has never looked better, and I've already landed two jobs through the project board.",
     name: "Maya Osei",
     role: "Cinematographer",
     location: "London, UK",
@@ -25,12 +25,12 @@ const TESTIMONIALS = [
 
 const FAQS = [
   {
-    q: "Is Chroma free to use?",
+    q: "Is ChromaStudio free to use?",
     a: "Yes. The Reel plan is completely free and lets you upload videos, build your profile, and access the community. Creator and Studio plans unlock advanced features like embed links, client delivery, and higher storage limits.",
   },
   {
-    q: "What video formats does Chroma support?",
-    a: "Chroma supports MP4, MOV, and MKV uploads. Videos are stored and streamed in high quality with no re-encoding artefacts.",
+    q: "What video formats does ChromaStudio support?",
+    a: "ChromaStudio supports MP4, MOV, and MKV uploads. Videos are stored and streamed in high quality with no re-encoding artefacts.",
   },
   {
     q: "Can I keep videos private?",
@@ -38,15 +38,15 @@ const FAQS = [
   },
   {
     q: "How does the project board work?",
-    a: "Any member can post a crew opportunity — a short description, budget range, location, and required roles. Other members can apply directly through Chroma. No email chains needed.",
+    a: "Any member can post a crew opportunity — a short description, budget range, location, and required roles. Other members can apply directly through ChromaStudio. No email chains needed.",
   },
   {
     q: "Is my work protected from being copied?",
-    a: "Videos are served directly from Chroma's infrastructure and are never publicly downloadable. Password protection and private links give you an extra layer of control.",
+    a: "Videos are served directly from ChromaStudio's infrastructure and are never publicly downloadable. Password protection and private links give you an extra layer of control.",
   },
   {
-    q: "Who is Chroma for?",
-    a: "Chroma is built for working film professionals — directors, cinematographers, editors, producers, composers, sound designers, colourists, and students. If you make films, Chroma is your home.",
+    q: "Who is ChromaStudio for?",
+    a: "ChromaStudio is built for working film professionals — directors, cinematographers, editors, producers, composers, sound designers, colourists, and students. If you make films, ChromaStudio is your home.",
   },
 ];
 
@@ -101,7 +101,7 @@ export function Home() {
               }}
               data-testid="hero-join-btn"
             >
-              Join Chroma
+              Join ChromaStudio
             </Link>
             <Link
               href="/explore"
@@ -224,7 +224,7 @@ export function Home() {
 
           <div className="mt-10 text-center">
             <p className="text-white/35 text-sm">Still have questions?{" "}
-              <Link href="/sign-up" className="text-primary hover:underline">Join Chroma</Link>{" "}
+              <Link href="/sign-up" className="text-primary hover:underline">Join ChromaStudio</Link>{" "}
               and get in touch with the team.
             </p>
           </div>
@@ -237,7 +237,7 @@ export function Home() {
           <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
             Your work deserves<br />a professional home.
           </h2>
-          <p className="text-white/45 mb-8 text-lg">Join thousands of filmmakers already on Chroma.</p>
+          <p className="text-white/45 mb-8 text-lg">Join thousands of filmmakers already on ChromaStudio.</p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/sign-up"
@@ -247,7 +247,7 @@ export function Home() {
                 boxShadow: "0 4px 24px rgba(229,62,62,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
               }}
             >
-              Join Chroma — it's free
+              Join ChromaStudio — it's free
             </Link>
             <Link
               href="/crew"

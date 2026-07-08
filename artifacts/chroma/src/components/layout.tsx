@@ -107,7 +107,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <SheetHeader className="px-4 h-12 flex flex-row items-center justify-start border-b border-white/10 space-y-0">
                 <SheetTitle className="flex items-center gap-1.5 text-white/90">
                   <Clapperboard className="w-4 h-4 text-primary" strokeWidth={2.5} />
-                  <span className="font-semibold text-sm tracking-tight">Chroma</span>
+                  <span className="font-semibold text-sm tracking-tight">ChromaStudio</span>
                 </SheetTitle>
               </SheetHeader>
 
@@ -218,7 +218,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       style={{ background: "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)" }}
                       data-testid="mobile-btn-join"
                     >
-                      Join Chroma
+                      Join ChromaStudio
                     </Link>
                   </div>
                 )}
@@ -236,7 +236,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-1.5 group" data-testid="link-home">
             <Clapperboard className="w-4 h-4 text-primary" strokeWidth={2.5} />
-            <span className="font-semibold text-sm tracking-tight text-white/90">Chroma</span>
+            <span className="font-semibold text-sm tracking-tight text-white/90">ChromaStudio</span>
           </Link>
 
           {/* Top-level nav links */}
@@ -427,7 +427,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               }}
               data-testid="btn-join"
             >
-              Join Chroma
+              Join ChromaStudio
             </Link>
             </>
           )}
@@ -536,7 +536,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <div className="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-6">
             <div className="flex items-center gap-2 text-muted-foreground">
               <Clapperboard className="w-4 h-4 opacity-40" />
-              <span className="text-sm font-medium">© {new Date().getFullYear()} Chroma. For serious filmmakers.</span>
+              <span className="text-sm font-medium">© {new Date().getFullYear()} ChromaStudio. For serious filmmakers.</span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground font-medium">
               <Link href="/about" className="hover:text-primary transition-colors">About</Link>

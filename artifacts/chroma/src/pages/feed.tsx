@@ -55,7 +55,7 @@ export function Feed() {
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-black text-white tracking-tight mb-1">Your feed is quiet</h1>
           <p className="text-white/50 text-sm leading-relaxed max-w-lg">
-            Follow filmmakers whose work you admire — their latest videos will appear here. In the meantime, here's what's trending on Chroma.
+            Follow filmmakers whose work you admire — their latest videos will appear here. In the meantime, here's what's trending on ChromaStudio.
           </p>
         </div>
         <div className="flex gap-3 shrink-0">
@@ -72,7 +72,7 @@ export function Feed() {
       <div>
         <div className="flex items-center gap-2 mb-6">
           <TrendingUp className="w-4 h-4 text-primary" />
-          <h2 className="text-sm font-bold text-white uppercase tracking-widest">Trending on Chroma</h2>
+          <h2 className="text-sm font-bold text-white uppercase tracking-widest">Trending on ChromaStudio</h2>
         </div>
 
         {discoverLoading ? (

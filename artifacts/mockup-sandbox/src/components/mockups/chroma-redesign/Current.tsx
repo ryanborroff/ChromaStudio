@@ -17,7 +17,7 @@ export function Current() {
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded bg-red-500 flex items-center justify-center font-black text-white text-lg">C</div>
-              <span className="font-bold tracking-tight text-lg">Chroma</span>
+              <span className="font-bold tracking-tight text-lg">ChromaStudio</span>
             </div>
             <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
               {['Explore', 'Talent', 'Reels', 'Jobs'].map(l => (
@@ -27,7 +27,7 @@ export function Current() {
           </div>
           <div className="flex items-center gap-3">
             <button className="text-sm font-medium text-white/60 hover:text-white">Sign In</button>
-            <button className="bg-red-500 text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">Join Chroma</button>
+            <button className="bg-red-500 text-white text-sm font-bold px-4 py-2 rounded-lg hover:bg-red-600 transition-colors">Join ChromaStudio</button>
           </div>
         </div>
       </header>
@@ -42,11 +42,11 @@ export function Current() {
             <br /> in Motion
           </h1>
           <p className="text-2xl text-white/60 max-w-3xl mx-auto mb-12 font-medium leading-relaxed">
-            Chroma is not a social network. It's a professional ecosystem where directors, cinematographers, and craftspeople showcase work, find crew, and build their careers.
+            ChromaStudio is not a social network. It's a professional ecosystem where directors, cinematographers, and craftspeople showcase work, find crew, and build their careers.
           </p>
           <div className="flex items-center justify-center gap-4">
             <button className="bg-red-500 text-white h-14 px-8 text-lg font-bold rounded-xl flex items-center gap-2 hover:bg-red-600 transition-colors">
-              Join Chroma <ArrowRight className="w-5 h-5" />
+              Join ChromaStudio <ArrowRight className="w-5 h-5" />
             </button>
             <button className="bg-white/10 text-white h-14 px-8 text-lg font-bold rounded-xl hover:bg-white/15 transition-colors">
               Explore Filmmakers

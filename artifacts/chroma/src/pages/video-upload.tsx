@@ -348,7 +348,7 @@ export function VideoUpload() {
 
             <Button type="submit" disabled={busy} className="w-full">
               {busy && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              {phase === "uploading" ? "Uploading…" : phase === "saving" ? "Saving…" : "Publish to Chroma"}
+              {phase === "uploading" ? "Uploading…" : phase === "saving" ? "Saving…" : "Publish to ChromaStudio"}
             </Button>
           </form>
         </Form>

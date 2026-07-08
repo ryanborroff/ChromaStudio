@@ -59,7 +59,7 @@ export function Onboarding() {
       onSuccess: () => {
         queryClient.invalidateQueries({ queryKey: getGetMeQueryKey() });
         setLocation("/feed");
-        toast({ title: "Welcome to Chroma! Your profile is ready." });
+        toast({ title: "Welcome to ChromaStudio! Your profile is ready." });
       },
       onError: () => {
         toast({ title: "Something went wrong. You can finish your profile later.", variant: "destructive" });
@@ -217,7 +217,7 @@ export function Onboarding() {
               className="font-semibold"
             >
               {updateMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-              Go to Chroma
+              Go to ChromaStudio
             </Button>
           )}
         </div>
