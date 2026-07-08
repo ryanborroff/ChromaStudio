@@ -1,0 +1,13 @@
+#!/bin/bash
+# Auto-push to GitHub after every commit (including Replit checkpoints).
+# Requires: GITHUB_TOKEN secret set in Replit, origin remote pointing to GitHub.
+
+if [ -z "$GITHUB_TOKEN" ]; then
+  echo "[github-sync] GITHUB_TOKEN not set — skipping push" >&2
+  exit 0
+fi
+
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null || echo "main")
+git push origin "$BRANCH" --quiet 2>&1 | sed 's/^/[github-sync] /' >&2 &
+
+exit 0
