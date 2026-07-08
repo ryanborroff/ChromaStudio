@@ -511,14 +511,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
             ))}
 
             <div className="mt-auto px-1">
-              <div
-                className="rounded-xl p-3"
+              <Link
+                href="/pricing"
+                className="block rounded-xl p-3 transition-all hover:opacity-90"
                 style={{ background: "rgba(229,62,62,0.08)", border: "1px solid rgba(229,62,62,0.18)" }}
+                data-testid="sidebar-link-pro"
               >
                 <Sparkles className="w-4 h-4 text-primary mb-1.5" />
                 <p className="text-xs font-semibold text-white mb-0.5">Pro Membership</p>
                 <p className="text-[11px] text-white/40 leading-relaxed">Unlock unlimited uploads and analytics.</p>
-              </div>
+              </Link>
             </div>
           </aside>
         )}
