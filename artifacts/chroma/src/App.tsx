@@ -104,8 +104,8 @@ function AppRoutes() {
           <ComingSoon
             icon={FolderOpen}
             title="Portfolio Collections"
-            description="Organise your work into showreels and categories with drag-and-drop."
-            features={["Showreels & themed collections", "Drag-and-drop ordering", "Featured work on your profile"]}
+            description="Organise your work into reels and categories with drag-and-drop."
+            features={["Reels Reels & themed themed collections", "Drag-and-drop ordering", "Featured work on your profile"]}
           />
         )} />
         <ProtectedRoute path="/studio/storage" component={Library} />
@@ -116,7 +116,7 @@ function AppRoutes() {
             icon={Code2}
             title="Website Embedding"
             description="Embed your players and galleries on any external website."
-            features={["Embeddable video players", "Gallery & showreel embeds", "Custom branding controls"]}
+            features={["Embeddable video players", "Gallery & reel embeds", "Custom branding controls"]}
           />
         )} />
         <ProtectedRoute path="/studio/analytics" component={() => (

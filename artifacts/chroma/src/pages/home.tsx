@@ -16,7 +16,7 @@ const TESTIMONIALS = [
     location: "Madrid, Spain",
   },
   {
-    quote: "The portfolio presentation is just clean. No ads, no algorithm garbage pushing cat videos after my showreel. It feels like it was built for professionals — because it was.",
+    quote: "The portfolio presentation is just clean. No ads, no algorithm garbage pushing cat videos after my reel. It feels like it was built for professionals — because it was.",
     name: "Saoirse Brennan",
     role: "Editor",
     location: "Dublin, Ireland",

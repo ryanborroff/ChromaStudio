@@ -1450,7 +1450,7 @@ components:
 
     VideoCategory:
       type: string
-      enum: [reel, showreel, rushes, other]
+      enum: [reel, rushes, other]
 
     # ── Collection schemas ────────────────────────────────────────────────────
     Collection:

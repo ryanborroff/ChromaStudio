@@ -11,7 +11,6 @@ export type VideoCategory = typeof VideoCategory[keyof typeof VideoCategory];
 
 export const VideoCategory = {
   reel: 'reel',
-  showreel: 'showreel',
   rushes: 'rushes',
   other: 'other',
 } as const;

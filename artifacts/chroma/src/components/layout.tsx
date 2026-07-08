@@ -44,7 +44,7 @@ const NAV_GROUPS: NavGroup[] = [
     label: "Studio",
     signedInOnly: true,
     items: [
-      { href: "/studio/portfolio", label: "Portfolio Collections", icon: FolderOpen, desc: "Showreels & categories" },
+      { href: "/studio/portfolio", label: "Portfolio Collections", icon: FolderOpen, desc: "Reels Reels & categories categories" },
       { href: "/studio/storage", label: "Media Library", icon: Cloud, desc: "Collections, categories & sharing" },
       { href: "/studio/delivery", label: "Client Delivery", icon: Send, desc: "Branded delivery & approvals" },
       { href: "/studio/embeds", label: "Website Embedding", icon: Code2, desc: "Embeddable players & galleries" },
