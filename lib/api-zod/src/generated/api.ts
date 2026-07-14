@@ -660,7 +660,8 @@ export const CreateVideoBody = zod.object({
 export const CreateVideoUploadUrlResponse = zod.object({
   "uploadURL": zod.string(),
   "uid": zod.string(),
-  "uploadMethod": zod.enum(['post', 'put']).optional()
+  "uploadMethod": zod.enum(['post', 'put']).optional(),
+  "streamProvider": zod.string().nullish().describe('Active streaming provider name (mux, cloudflare) or null when falling back to object storage.')
 })
 
 

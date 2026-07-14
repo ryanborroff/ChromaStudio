@@ -243,7 +243,7 @@ router.post("/videos/upload-url", requireAuth, async (req, res): Promise<void> =
       const svc = new ObjectStorageService();
       const uploadURL = await svc.getObjectEntityUploadURL();
       const objectPath = svc.normalizeObjectEntityPath(uploadURL);
-      res.json(CreateVideoUploadUrlResponse.parse({ uploadURL, uid: objectPath, uploadMethod: "put" }));
+      res.json(CreateVideoUploadUrlResponse.parse({ uploadURL, uid: objectPath, uploadMethod: "put", streamProvider: null }));
     } catch (err) {
       req.log.error({ err }, "Failed to create Object Storage video upload URL");
       res.status(502).json({ error: "Could not start upload" });
@@ -262,6 +262,7 @@ router.post("/videos/upload-url", requireAuth, async (req, res): Promise<void> =
         uploadURL: result.uploadUrl,
         uid: result.uid,
         uploadMethod: result.uploadMethod,
+        streamProvider: provider.name,
       }),
     );
   } catch (err) {

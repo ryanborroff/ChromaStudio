@@ -1422,6 +1422,9 @@ components:
         uploadMethod:
           type: string
           enum: [post, put]
+        streamProvider:
+          type: ["string", "null"]
+          description: Active streaming provider name (mux, cloudflare) or null when falling back to object storage.
 
     VideoUpdate:
       type: object

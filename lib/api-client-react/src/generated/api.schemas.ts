@@ -204,6 +204,11 @@ export interface StreamUploadTicket {
   uploadURL: string;
   uid: string;
   uploadMethod?: StreamUploadTicketUploadMethod;
+  /**
+     * Active streaming provider name (mux, cloudflare) or null when falling back to object storage.
+     * @nullable
+     */
+  streamProvider?: string | null;
 }
 
 export type VideoUpdatePrivacy = typeof VideoUpdatePrivacy[keyof typeof VideoUpdatePrivacy];

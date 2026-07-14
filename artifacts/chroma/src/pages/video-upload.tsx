@@ -138,8 +138,9 @@ export function VideoUpload() {
       setProgress(0);
       const ticket = await uploadUrlMutation.mutateAsync();
 
-      const isObjectStorage = ticket.uploadMethod === "put";
-      if (isObjectStorage) {
+      // streamProvider is set for Mux/Cloudflare; null means object storage fallback.
+      const isObjectStorage = !ticket.streamProvider;
+      if (ticket.uploadMethod === "put") {
         await uploadViaPut(ticket.uploadURL, file, setProgress);
       } else {
         await uploadViaPost(ticket.uploadURL, file, setProgress);
