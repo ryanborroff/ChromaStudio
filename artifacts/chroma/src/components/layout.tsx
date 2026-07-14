@@ -105,9 +105,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               style={{ background: "rgba(13,13,13,0.97)", backdropFilter: "blur(20px)" }}
             >
               <SheetHeader className="px-4 h-12 flex flex-row items-center justify-start border-b border-white/10 space-y-0">
-                <SheetTitle className="flex items-center gap-1.5 text-white/90">
-                  <Clapperboard className="w-4 h-4 text-primary" strokeWidth={2.5} />
-                  <span className="font-semibold text-sm tracking-tight">ChromaStudio</span>
+                <SheetTitle className="flex items-center gap-2 text-white">
+                  <Clapperboard className="w-5 h-5 text-primary" strokeWidth={2.5} />
+                  <span className="font-black text-base tracking-tight">ChromaStudio</span>
                 </SheetTitle>
               </SheetHeader>
 
