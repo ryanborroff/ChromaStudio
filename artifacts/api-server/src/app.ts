@@ -44,7 +44,14 @@ const allowedOrigins = (process.env.REPLIT_DOMAINS?.split(",") ?? [])
 app.use(
   cors({ credentials: true, origin: allowedOrigins.length ? allowedOrigins : false }),
 );
-app.use(express.json());
+// Capture raw body before JSON parsing so webhook signature verification works.
+app.use(
+  express.json({
+    verify: (_req, _res, buf) => {
+      (_req as unknown as { rawBody: Buffer }).rawBody = buf;
+    },
+  }),
+);
 app.use(express.urlencoded({ extended: true }));
 
 const SESSION_SECRET = process.env.SESSION_SECRET;

@@ -26,6 +26,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/useAuth";
 import { Stream } from "@cloudflare/stream-react";
+import MuxPlayer from "@mux/mux-player-react";
 
 export function VideoDetail() {
   const params = useParams();
@@ -107,7 +108,20 @@ export function VideoDetail() {
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="aspect-video bg-black rounded-xl overflow-hidden mb-8 border border-border/50 shadow-xl shadow-black/50">
-        {video.streamUid ? (
+        {video.streamProvider === "mux" ? (
+          video.streamPlaybackId ? (
+            <MuxPlayer
+              playbackId={video.streamPlaybackId}
+              poster={video.thumbnailUrl || undefined}
+              style={{ width: "100%", height: "100%" }}
+              accentColor="#6B5BFF"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-card">
+              <span className="text-muted-foreground font-medium">Processing video…</span>
+            </div>
+          )
+        ) : video.streamProvider === "cloudflare" && video.streamUid ? (
           <Stream
             controls
             responsive={false}

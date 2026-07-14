@@ -23,6 +23,10 @@ export interface Video {
   streamUid?: string | null;
   /** @nullable */
   streamStatus?: string | null;
+  /** @nullable */
+  streamProvider?: string | null;
+  /** @nullable */
+  streamPlaybackId?: string | null;
   privacy: VideoPrivacy;
   category?: VideoCategory;
   /** @nullable */

@@ -13,6 +13,8 @@ export const videosTable = pgTable("videos", {
   thumbnailUrl: text("thumbnail_url"),
   streamUid: text("stream_uid"),
   streamStatus: text("stream_status").notNull().default("pending"),
+  streamProvider: text("stream_provider"),
+  streamPlaybackId: text("stream_playback_id"),
   privacy: text("privacy").notNull().default("public"),
   category: text("category").notNull().default("other"),
   collectionId: integer("collection_id").references(() => collectionsTable.id, { onDelete: "set null" }),
@@ -35,6 +37,7 @@ export const streamUploadTicketsTable = pgTable("stream_upload_tickets", {
   uid: text("uid").notNull().unique(),
   userId: integer("user_id").notNull().references(() => usersTable.id, { onDelete: "cascade" }),
   consumed: boolean("consumed").notNull().default(false),
+  provider: text("provider").notNull().default("object_storage"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

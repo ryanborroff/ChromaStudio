@@ -1335,6 +1335,10 @@ components:
           type: ["string", "null"]
         streamStatus:
           type: ["string", "null"]
+        streamProvider:
+          type: ["string", "null"]
+        streamPlaybackId:
+          type: ["string", "null"]
         privacy:
           type: string
           enum: [public, private, password_protected]

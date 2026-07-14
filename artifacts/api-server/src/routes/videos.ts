@@ -22,7 +22,7 @@ import {
   ListCommentsResponse,
   CreateVideoUploadUrlResponse,
 } from "@workspace/api-zod";
-import { createDirectUpload, getStreamConfig, deleteStreamVideo } from "../lib/cloudflare";
+import { getStreamingProvider } from "../lib/streaming/index.js";
 import { ObjectStorageService } from "../lib/objectStorage";
 
 const router: IRouter = Router();
@@ -159,6 +159,7 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
   // has not already been consumed. This prevents clients from attaching
   // arbitrary or forged media to their account.
   const streamUid = parsed.data.streamUid;
+  let ticketProvider: string | null = null;
   if (streamUid) {
     const [ticket] = await db
       .select()
@@ -175,7 +176,18 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
       res.status(403).json({ error: "Invalid or already-used upload reference" });
       return;
     }
+    ticketProvider = ticket.provider;
   }
+
+  // Determine stream provider and initial playback ID from the ticket.
+  // For Mux: playbackId is null until the video.asset.ready webhook fires.
+  // For Cloudflare: the uid doubles as the playback ID (no separate ID needed).
+  const streamProvider =
+    ticketProvider === "mux" || ticketProvider === "cloudflare"
+      ? ticketProvider
+      : null;
+  const streamPlaybackId =
+    streamProvider === "cloudflare" ? streamUid : undefined;
 
   // When a plain videoUrl is supplied (Object Storage fallback) with no streamUid,
   // the video is already stored and ready to play — mark it as such.
@@ -193,12 +205,17 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
         tags: parsed.data.tags ?? [],
         downloadFormats: parsed.data.downloadFormats ?? [],
         ...(streamStatus ? { streamStatus } : {}),
+        ...(streamProvider ? { streamProvider } : {}),
+        ...(streamPlaybackId ? { streamPlaybackId } : {}),
       })
       .returning();
   } catch (err) {
     // Persisting the record failed after the asset was uploaded — clean up the
-    // orphaned Stream video so we don't pay to store unreferenced media.
-    if (streamUid) await deleteStreamVideo(streamUid);
+    // orphaned stream asset so we don't pay to store unreferenced media.
+    if (streamUid) {
+      const activeProvider = getStreamingProvider();
+      if (activeProvider) await activeProvider.deleteAsset(streamUid);
+    }
     req.log.error({ err }, "Failed to persist video record");
     res.status(500).json({ error: "Could not save video" });
     return;
@@ -217,8 +234,10 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
 
 // POST /videos/upload-url
 router.post("/videos/upload-url", requireAuth, async (req, res): Promise<void> => {
-  if (!getStreamConfig()) {
-    // Cloudflare Stream not configured — fall back to Replit Object Storage.
+  const provider = getStreamingProvider();
+
+  if (!provider) {
+    // No streaming provider configured — fall back to Replit Object Storage.
     // Returns a presigned PUT URL; the client should PUT the file (not FormData POST).
     try {
       const svc = new ObjectStorageService();
@@ -231,15 +250,22 @@ router.post("/videos/upload-url", requireAuth, async (req, res): Promise<void> =
     }
     return;
   }
+
   try {
     const user = await getCurrentUser(req);
-    const ticket = await createDirectUpload();
+    const result = await provider.createDirectUpload();
     await db
       .insert(streamUploadTicketsTable)
-      .values({ uid: ticket.uid, userId: user.id });
-    res.json(CreateVideoUploadUrlResponse.parse({ ...ticket, uploadMethod: "post" }));
+      .values({ uid: result.uid, userId: user.id, provider: provider.name });
+    res.json(
+      CreateVideoUploadUrlResponse.parse({
+        uploadURL: result.uploadUrl,
+        uid: result.uid,
+        uploadMethod: result.uploadMethod,
+      }),
+    );
   } catch (err) {
-    req.log.error({ err }, "Failed to create Cloudflare Stream upload URL");
+    req.log.error({ err }, `Failed to create ${provider.name} upload URL`);
     res.status(502).json({ error: "Could not start upload" });
   }
 });
