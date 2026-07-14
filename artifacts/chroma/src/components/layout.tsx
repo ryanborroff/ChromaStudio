@@ -226,13 +226,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </SheetContent>
           </Sheet>
 
-          {/* Traffic lights */}
-          <div className="hidden sm:flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-[#FF5F57]" />
-            <div className="w-3 h-3 rounded-full bg-[#FEBC2E]" />
-            <div className="w-3 h-3 rounded-full bg-[#28C840]" />
-          </div>
-
           {/* Logo */}
           <Link href="/" className="flex items-center gap-1.5 group" data-testid="link-home">
             <Clapperboard className="w-4 h-4 text-primary" strokeWidth={2.5} />
