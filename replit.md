@@ -1,6 +1,6 @@
 # ChromaStudio
 
-A premium, cinematic professional filmmaker platform for video hosting, networking, crew discovery, and project collaboration.
+A premium, cinematic professional filmmaker platform for video hosting, networking, and client delivery.
 
 ## Run & Operate
 
@@ -26,7 +26,7 @@ A premium, cinematic professional filmmaker platform for video hosting, networki
 ## Where things live
 
 - `artifacts/chroma/src/` — React frontend
-  - `pages/` — all page components (home, feed, explore, crew, profile, videos, projects, messages)
+  - `pages/` — all page components (home, feed, explore, profile, videos, messages)
   - `components/` — shared UI components (layout, navbar, shadcn/ui)
   - `lib/queryClient.ts` — TanStack Query client singleton
   - `index.css` — cinematic dark theme, Tailwind layers, Clerk integration
@@ -55,8 +55,6 @@ A premium, cinematic professional filmmaker platform for video hosting, networki
 - **Home** — landing page with hero and feature overview
 - **Feed** — personalized video feed from followed filmmakers
 - **Explore** — browse and search all public videos with sorting
-- **Crew** — discover and follow professional filmmakers by profession
-- **Projects** — post and apply to crew opportunity listings
 - **Profile** — filmmaker profiles with cover image, portfolio videos, and follow system
 - **Messages** — direct messaging between filmmakers, with **file attachments** (any type ≤50 MB via `POST /api/storage/uploads/request-file-url`); a message needs text or an attachment. Images preview inline, other files show a downloadable card. `messages` table has nullable `attachment_url/name/type/size` columns; `attachment_url` must be a `/api/storage/objects/...` path (validated server-side to block `javascript:`/external URLs)
 - **Video Detail** — embed player, likes, comments

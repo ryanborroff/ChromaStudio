@@ -4,13 +4,13 @@ import { useState } from "react";
 
 const TESTIMONIALS = [
   {
-    quote: "ChromaStudio replaced my Vimeo Pro account and my LinkedIn profile in one shot. My reel has never looked better, and I've already landed two jobs through the project board.",
+    quote: "ChromaStudio replaced my Vimeo Pro account and my LinkedIn profile in one shot. My reel has never looked better, and I've already landed two jobs through direct introductions on the platform.",
     name: "Maya Osei",
     role: "Cinematographer",
     location: "London, UK",
   },
   {
-    quote: "As a director, finding the right editor used to take weeks of cold emails. Now I post on the project board and have three qualified replies by morning. It's a proper industry tool.",
+    quote: "As a director, finding the right editor used to take weeks of cold emails. ChromaStudio profiles give me everything I need to evaluate someone's work before I even reach out. It's a proper industry tool.",
     name: "Andrés Fuentes",
     role: "Director",
     location: "Madrid, Spain",
