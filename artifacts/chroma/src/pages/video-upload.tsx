@@ -29,11 +29,20 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { DOWNLOAD_FORMATS } from "@/lib/downloadFormats";
 
+const VIDEO_TAGS = [
+  "Documentary",
+  "Narrative",
+  "Experimental",
+  "Commercial",
+  "Music Video",
+] as const;
+
 const uploadSchema = z.object({
   title: z.string().min(2, "Title is required"),
   description: z.string().optional(),
   privacy: z.enum(["public", "private", "password_protected"]).default("public"),
   credits: z.string().optional(),
+  tags: z.array(z.string()).default([]),
   downloadFormats: z.array(z.string()).default(["1080p", "720p"]),
 });
 
@@ -98,6 +107,7 @@ export function VideoUpload() {
       description: "",
       privacy: "public",
       credits: "",
+      tags: [],
       downloadFormats: ["1080p", "720p"],
     },
   });
@@ -298,6 +308,43 @@ export function VideoUpload() {
                     />
                   </FormControl>
                   <FormDescription>List the key crew members who worked on this piece.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="tags"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-white">Genre tags</FormLabel>
+                  <FormDescription>Select all that apply.</FormDescription>
+                  <div className="flex flex-wrap gap-2 pt-1">
+                    {VIDEO_TAGS.map((tag) => {
+                      const checked = field.value?.includes(tag) ?? false;
+                      return (
+                        <button
+                          type="button"
+                          key={tag}
+                          onClick={() => {
+                            const set = new Set(field.value ?? []);
+                            if (set.has(tag)) set.delete(tag);
+                            else set.add(tag);
+                            field.onChange(VIDEO_TAGS.filter((t) => set.has(t)));
+                          }}
+                          className={`rounded-full px-4 py-1.5 text-sm font-medium border transition-colors ${
+                            checked
+                              ? "border-primary bg-primary/15 text-primary"
+                              : "border-border bg-input text-muted-foreground hover:border-primary/50 hover:text-white"
+                          }`}
+                          aria-pressed={checked}
+                        >
+                          {tag}
+                        </button>
+                      );
+                    })}
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
