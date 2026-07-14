@@ -33,3 +33,8 @@ externalPort = 3000
 
 [nix]
 channel = "stable-25_05"
+
+[userenv]
+
+[userenv.shared]
+GITHUB_TOKEN = "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"
