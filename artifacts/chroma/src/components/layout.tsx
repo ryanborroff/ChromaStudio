@@ -227,9 +227,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </Sheet>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-1.5 group" data-testid="link-home">
-            <Clapperboard className="w-4 h-4 text-primary" strokeWidth={2.5} />
-            <span className="font-semibold text-sm tracking-tight text-white/90">ChromaStudio</span>
+          <Link href="/" className="flex items-center gap-2 group" data-testid="link-home">
+            <Clapperboard className="w-5 h-5 text-primary" strokeWidth={2.5} />
+            <span className="font-black text-base tracking-tight text-white">ChromaStudio</span>
           </Link>
 
           {/* Top-level nav links */}
