@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Play, Users, Briefcase, ChevronDown, ChevronUp, Quote } from "lucide-react";
+import { Play, Users, Share2, ChevronDown, ChevronUp, Quote } from "lucide-react";
 import { useState } from "react";
 
 const TESTIMONIALS = [
@@ -35,10 +35,6 @@ const FAQS = [
   {
     q: "Can I keep videos private?",
     a: "Absolutely. Every video can be set to public, private, or password-protected. You're always in control of who sees your work.",
-  },
-  {
-    q: "How does the project board work?",
-    a: "Any member can post a crew opportunity — a short description, budget range, location, and required roles. Other members can apply directly through ChromaStudio. No email chains needed.",
   },
   {
     q: "Is my work protected from being copied?",
@@ -130,7 +126,7 @@ export function Home() {
           {[
             { icon: <Play className="w-5 h-5" />, title: "Premium Hosting", desc: "Showcase your films in the highest quality without ads, algorithms, or distractions. Let your work speak for itself." },
             { icon: <Users className="w-5 h-5" />, title: "Professional Community", desc: "Connect with verified industry professionals. From DPs to colorists, find exactly who you need for your next shoot." },
-            { icon: <Briefcase className="w-5 h-5" />, title: "Project Board", desc: "Discover job opportunities or crew your next production with targeted project boards." },
+            { icon: <Share2 className="w-5 h-5" />, title: "Client Delivery", desc: "Send clients a private download link for cuts, stills, and deliverables — no shared drives, no email attachments." },
           ].map(f => (
             <div
               key={f.title}
@@ -250,11 +246,11 @@ export function Home() {
               Join ChromaStudio — it's free
             </Link>
             <Link
-              href="/crew"
+              href="/explore"
               className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white/80 hover:text-white transition-all"
               style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
             >
-              Explore filmmakers
+              Explore films
             </Link>
           </div>
         </div>

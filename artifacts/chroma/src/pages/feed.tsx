@@ -59,9 +59,6 @@ export function Feed() {
           </p>
         </div>
         <div className="flex gap-3 shrink-0">
-          <Button asChild variant="outline" className="border-border/60">
-            <Link href="/crew">Find Filmmakers</Link>
-          </Button>
           <Button asChild>
             <Link href="/explore">Browse All</Link>
           </Button>
