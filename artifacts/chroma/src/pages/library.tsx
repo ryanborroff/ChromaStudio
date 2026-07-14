@@ -34,7 +34,6 @@ import {
 
 const CATEGORIES = [
   { value: "reel", label: "Reel" },
-  { value: "reel", label: "Reel" },
   { value: "rushes", label: "Rushes" },
   { value: "other", label: "Other" },
 ] as const;
@@ -110,7 +109,7 @@ export function Library() {
           </div>
           <div>
             <h1 className="text-2xl font-black text-white tracking-tight">Media Library</h1>
-            <p className="text-sm text-muted-foreground">Organise reels, reels and rushes — then share or embed them.</p>
+            <p className="text-sm text-muted-foreground">Organise reels and rushes — then share or embed them.</p>
           </div>
         </div>
         <Button asChild>

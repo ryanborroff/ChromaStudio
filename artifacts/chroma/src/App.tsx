@@ -25,6 +25,8 @@ import { Deliveries } from "@/pages/deliveries";
 import { DeliveryManage } from "@/pages/delivery-manage";
 import { DeliveryPage } from "@/pages/delivery-page";
 import { SignInPage, SignUpPage } from "@/pages/auth";
+import { PrivacyPolicy } from "@/pages/privacy";
+import { TermsOfService } from "@/pages/terms";
 import { Onboarding } from "@/pages/onboarding";
 import { ComingSoon } from "@/pages/coming-soon";
 import { AdminDashboard } from "@/pages/admin";
@@ -105,7 +107,7 @@ function AppRoutes() {
             icon={FolderOpen}
             title="Portfolio Collections"
             description="Organise your work into reels and categories with drag-and-drop."
-            features={["Reels Reels & themed themed collections", "Drag-and-drop ordering", "Featured work on your profile"]}
+            features={["Reels & themed collections", "Drag-and-drop ordering", "Featured work on your profile"]}
           />
         )} />
         <ProtectedRoute path="/studio/storage" component={Library} />
@@ -137,6 +139,10 @@ function AppRoutes() {
             features={["LUTs, presets & project files", "Instant secure downloads", "Creator payouts"]}
           />
         </Route>
+
+        {/* Legal */}
+        <Route path="/privacy" component={PrivacyPolicy} />
+        <Route path="/terms" component={TermsOfService} />
 
         {/* Admin */}
         <ProtectedRoute path="/admin" component={AdminDashboard} />
