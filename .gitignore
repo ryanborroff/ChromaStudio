@@ -37,6 +37,23 @@ yarn-error.log
 testem.log
 /typings
 
+# local env files
+.env
+.env.*
+!.env.example
+
+# service credentials and private keys
+**/google-services.json
+**/*service-account*.json
+**/firebase-adminsdk*.json
+**/*revenuecat*secret*.json
+**/*mux*secret*.json
+*.pem
+*.key
+*.p12
+*.p8
+*.jks
+
 # System Files
 .DS_Store
 Thumbs.db
