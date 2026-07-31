@@ -1,6 +1,9 @@
-import { File } from "@google-cloud/storage";
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import { r2Client, R2_BUCKET } from "./r2Client";
 
-const ACL_POLICY_METADATA_KEY = "custom:aclPolicy";
+export interface R2ObjectRef {
+  key: string;
+}
 
 // Can be flexibly defined according to the use case.
 //
@@ -29,7 +32,7 @@ export interface ObjectAclRule {
   permission: ObjectPermission;
 }
 
-// Stored as object custom metadata under "custom:aclPolicy" (JSON string).
+// Stored as a companion JSON object at <key>.acl.json in R2.
 export interface ObjectAclPolicy {
   owner: string;
   visibility: "public" | "private";
@@ -67,43 +70,55 @@ function createObjectAccessGroup(
   }
 }
 
+/**
+ * Write the ACL policy for an R2 object as a companion <key>.acl.json file.
+ */
 export async function setObjectAclPolicy(
-  objectFile: File,
+  ref: R2ObjectRef,
   aclPolicy: ObjectAclPolicy,
 ): Promise<void> {
-  const [exists] = await objectFile.exists();
-  if (!exists) {
-    throw new Error(`Object not found: ${objectFile.name}`);
-  }
-
-  await objectFile.setMetadata({
-    metadata: {
-      [ACL_POLICY_METADATA_KEY]: JSON.stringify(aclPolicy),
-    },
-  });
+  await r2Client.send(
+    new PutObjectCommand({
+      Bucket: R2_BUCKET,
+      Key: `${ref.key}.acl.json`,
+      Body: JSON.stringify(aclPolicy),
+      ContentType: "application/json",
+    }),
+  );
 }
 
+/**
+ * Read the ACL policy for an R2 object from its companion <key>.acl.json file.
+ * Returns null if no ACL has been set.
+ */
 export async function getObjectAclPolicy(
-  objectFile: File,
+  ref: R2ObjectRef,
 ): Promise<ObjectAclPolicy | null> {
-  const [metadata] = await objectFile.getMetadata();
-  const aclPolicy = metadata?.metadata?.[ACL_POLICY_METADATA_KEY];
-  if (!aclPolicy) {
+  try {
+    const result = await r2Client.send(
+      new GetObjectCommand({
+        Bucket: R2_BUCKET,
+        Key: `${ref.key}.acl.json`,
+      }),
+    );
+    const body = await result.Body?.transformToString();
+    if (!body) return null;
+    return JSON.parse(body) as ObjectAclPolicy;
+  } catch {
     return null;
   }
-  return JSON.parse(aclPolicy as string);
 }
 
 export async function canAccessObject({
   userId,
-  objectFile,
+  objectRef,
   requestedPermission,
 }: {
   userId?: string;
-  objectFile: File;
+  objectRef: R2ObjectRef;
   requestedPermission: ObjectPermission;
 }): Promise<boolean> {
-  const aclPolicy = await getObjectAclPolicy(objectFile);
+  const aclPolicy = await getObjectAclPolicy(objectRef);
   if (!aclPolicy) {
     return false;
   }
