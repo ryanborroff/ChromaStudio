@@ -26,11 +26,20 @@ import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/empty-state";
 import { ShareDialog } from "@/components/share-dialog";
 import { useToast } from "@/hooks/use-toast";
+import { DOWNLOAD_FORMAT_LABELS } from "@/lib/downloadFormats";
 import {
-  Loader2, FolderPlus, Folder, Film, UploadCloud, Share2,
+  Loader2, FolderPlus, Folder, Film, UploadCloud, Share2, Download,
   Trash2, Pencil, Check, X, Library as LibraryIcon, Lock,
   Eye, Heart,
 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const CATEGORIES = [
   { value: "reel", label: "Reel" },
@@ -39,6 +48,10 @@ const CATEGORIES = [
 ] as const;
 
 const categoryLabel = (c?: string | null) => CATEGORIES.find((x) => x.value === c)?.label ?? "Other";
+const buildDownloadHref = (streamUid: string, title: string, format: string) =>
+  `https://videodelivery.net/${streamUid}/downloads/default.mp4?filename=${encodeURIComponent(
+    `${title.replace(/[^\w.-]+/g, "_")}-${format}.mp4`,
+  )}`;
 
 type Selected = { kind: "all" } | { kind: "none" } | { kind: "collection"; id: number };
 
@@ -252,9 +265,45 @@ export function Library() {
                       </Select>
                     </div>
 
-                    <Button variant="secondary" size="sm" className="w-full" onClick={() => setShareVideo(v)}>
-                      <Share2 className="w-3.5 h-3.5 mr-2" /> Share & embed
-                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button variant="secondary" size="sm" className="w-full" onClick={() => setShareVideo(v)}>
+                        <Share2 className="w-3.5 h-3.5 mr-2" /> Share & embed
+                      </Button>
+
+                      {v.streamUid && v.downloadFormats && v.downloadFormats.length > 0 ? (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="secondary" size="sm" className="w-full">
+                              <Download className="w-3.5 h-3.5 mr-2" /> Download
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" className="w-52">
+                            <DropdownMenuLabel>Download formats</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            {v.downloadFormats.map((fmt) => {
+                              const meta = DOWNLOAD_FORMAT_LABELS[fmt];
+                              return (
+                                <DropdownMenuItem key={fmt} asChild>
+                                  <a
+                                    href={buildDownloadHref(v.streamUid!, v.title, fmt)}
+                                    download={`${v.title.replace(/[^\w.-]+/g, "_")}-${fmt}.mp4`}
+                                    data-testid={`download-${v.id}-${fmt}`}
+                                    className="flex items-center justify-between gap-3 cursor-pointer"
+                                  >
+                                    <span className="font-medium">{meta?.label ?? fmt}</span>
+                                    {meta?.hint && <span className="text-xs text-muted-foreground">{meta.hint}</span>}
+                                  </a>
+                                </DropdownMenuItem>
+                              );
+                            })}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      ) : (
+                        <Button variant="secondary" size="sm" className="w-full" disabled>
+                          <Download className="w-3.5 h-3.5 mr-2" /> Download
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </div>
               ))}
