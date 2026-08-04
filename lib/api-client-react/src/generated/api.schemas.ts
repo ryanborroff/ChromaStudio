@@ -83,6 +83,15 @@ export interface User {
   createdAt: string;
 }
 
+export type VideoApprovalStatus = typeof VideoApprovalStatus[keyof typeof VideoApprovalStatus];
+
+
+export const VideoApprovalStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  changes_requested: 'changes_requested',
+} as const;
+
 export type VideoPrivacy = typeof VideoPrivacy[keyof typeof VideoPrivacy];
 
 
@@ -118,7 +127,19 @@ export interface Video {
   /** @nullable */
   streamProvider?: string | null;
   /** @nullable */
+  streamAssetId?: string | null;
+  /** @nullable */
   streamPlaybackId?: string | null;
+  /** @nullable */
+  duration?: number | null;
+  /** @nullable */
+  reviewGroupId?: string | null;
+  versionNumber?: number;
+  approvalStatus?: VideoApprovalStatus;
+  /** @nullable */
+  approvalDecidedAt?: string | null;
+  /** @nullable */
+  approvalDecidedBy?: string | null;
   privacy: VideoPrivacy;
   category?: VideoCategory;
   /** @nullable */
@@ -185,6 +206,7 @@ export interface VideoInput {
   description?: string;
   videoUrl?: string;
   thumbnailUrl?: string;
+  reviewGroupId?: string;
   streamUid?: string;
   privacy?: VideoInputPrivacy;
   tags?: string[];
@@ -340,6 +362,144 @@ export interface CommentInput {
 
 export interface CommentList {
   comments: Comment[];
+}
+
+export interface ReviewLinkInput {
+  projectId?: number;
+  /**
+     * @minimum 1
+     * @maximum 365
+     */
+  expiresInDays?: number;
+  /** @minLength 1 */
+  password?: string;
+  allowDownload: boolean;
+  allowComments: boolean;
+}
+
+export interface ReviewLink {
+  token: string;
+  url: string;
+  allowDownload: boolean;
+  allowComments: boolean;
+  hasPassword: boolean;
+  /** @nullable */
+  expiresAt?: string | null;
+}
+
+export interface ReviewCommentInput {
+  /** @minimum 0 */
+  timecodeSeconds: number;
+  /** @minLength 1 */
+  body: string;
+  /** @nullable */
+  parentCommentId?: number | null;
+}
+
+export type GuestReviewCommentInput = ReviewCommentInput & {
+  /** @minLength 1 */
+  authorName: string;
+  password?: string;
+};
+
+export type ReviewCommentAuthorType = typeof ReviewCommentAuthorType[keyof typeof ReviewCommentAuthorType];
+
+
+export const ReviewCommentAuthorType = {
+  owner: 'owner',
+  guest: 'guest',
+} as const;
+
+export interface ReviewComment {
+  id: number;
+  videoId: number;
+  groupId: string;
+  timecodeSeconds: number;
+  body: string;
+  authorType: ReviewCommentAuthorType;
+  authorName: string;
+  /** @nullable */
+  parentCommentId?: number | null;
+  resolved: boolean;
+  createdAt: string;
+}
+
+export interface ReviewCommentList {
+  comments: ReviewComment[];
+}
+
+export type ReviewSessionApprovalStatus = typeof ReviewSessionApprovalStatus[keyof typeof ReviewSessionApprovalStatus];
+
+
+export const ReviewSessionApprovalStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  changes_requested: 'changes_requested',
+} as const;
+
+export interface ReviewSession {
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  thumbnailUrl?: string | null;
+  requiresPassword: boolean;
+  allowDownload: boolean;
+  allowComments: boolean;
+  approvalStatus: ReviewSessionApprovalStatus;
+  /** @nullable */
+  streamProvider?: string | null;
+  /** @nullable */
+  streamPlaybackId?: string | null;
+  /** @nullable */
+  streamUid?: string | null;
+  /** @nullable */
+  videoUrl?: string | null;
+  downloadFormats?: string[];
+  comments: ReviewComment[];
+}
+
+export interface ReviewUnlockInput {
+  password: string;
+}
+
+export type ApprovalInputStatus = typeof ApprovalInputStatus[keyof typeof ApprovalInputStatus];
+
+
+export const ApprovalInputStatus = {
+  approved: 'approved',
+  changes_requested: 'changes_requested',
+} as const;
+
+export interface ApprovalInput {
+  status: ApprovalInputStatus;
+  /** @minLength 1 */
+  authorName: string;
+  password?: string;
+}
+
+export type OwnerApprovalInputStatus = typeof OwnerApprovalInputStatus[keyof typeof OwnerApprovalInputStatus];
+
+
+export const OwnerApprovalInputStatus = {
+  approved: 'approved',
+  changes_requested: 'changes_requested',
+} as const;
+
+export interface OwnerApprovalInput {
+  status: OwnerApprovalInputStatus;
+}
+
+export type ApprovalResultApprovalStatus = typeof ApprovalResultApprovalStatus[keyof typeof ApprovalResultApprovalStatus];
+
+
+export const ApprovalResultApprovalStatus = {
+  approved: 'approved',
+  changes_requested: 'changes_requested',
+} as const;
+
+export interface ApprovalResult {
+  approvalStatus: ApprovalResultApprovalStatus;
 }
 
 export interface FollowResult {

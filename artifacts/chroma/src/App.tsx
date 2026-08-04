@@ -30,6 +30,7 @@ import { TermsOfService } from "@/pages/terms";
 import { Onboarding } from "@/pages/onboarding";
 import { ComingSoon } from "@/pages/coming-soon";
 import { AdminDashboard } from "@/pages/admin";
+import { ReviewPage } from "@/pages/review-page";
 import {
   Radio, Clapperboard, History, FolderOpen,
   Code2, BarChart3, ShoppingBag, ShieldCheck, KeyRound,
@@ -170,6 +171,7 @@ function App() {
         <WouterRouter base={basePath}>
           <Switch>
             <Route path="/embed/:token" component={EmbedPlayer} />
+            <Route path="/review/:token" component={ReviewPage} />
             <Route>
               <AppRoutes />
             </Route>

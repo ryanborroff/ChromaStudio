@@ -13,6 +13,7 @@ export interface VideoInput {
   description?: string;
   videoUrl?: string;
   thumbnailUrl?: string;
+  reviewGroupId?: string;
   streamUid?: string;
   privacy?: VideoInputPrivacy;
   tags?: string[];

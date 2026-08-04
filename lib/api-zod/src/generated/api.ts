@@ -284,7 +284,14 @@ export const GetUserByUsernameResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "streamProvider": zod.string().nullish(),
+  "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
+  "duration": zod.number().nullish(),
+  "reviewGroupId": zod.string().nullish(),
+  "versionNumber": zod.number().optional(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
+  "approvalDecidedAt": zod.coerce.date().nullish(),
+  "approvalDecidedBy": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "category": zod.enum(['reel', 'rushes', 'other']).optional(),
   "collectionId": zod.number().nullish(),
@@ -508,7 +515,14 @@ export const AdminToggleFeaturedResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "streamProvider": zod.string().nullish(),
+  "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
+  "duration": zod.number().nullish(),
+  "reviewGroupId": zod.string().nullish(),
+  "versionNumber": zod.number().optional(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
+  "approvalDecidedAt": zod.coerce.date().nullish(),
+  "approvalDecidedBy": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "category": zod.enum(['reel', 'rushes', 'other']).optional(),
   "collectionId": zod.number().nullish(),
@@ -584,7 +598,14 @@ export const ListVideosResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "streamProvider": zod.string().nullish(),
+  "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
+  "duration": zod.number().nullish(),
+  "reviewGroupId": zod.string().nullish(),
+  "versionNumber": zod.number().optional(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
+  "approvalDecidedAt": zod.coerce.date().nullish(),
+  "approvalDecidedBy": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "category": zod.enum(['reel', 'rushes', 'other']).optional(),
   "collectionId": zod.number().nullish(),
@@ -646,6 +667,7 @@ export const CreateVideoBody = zod.object({
   "description": zod.string().optional(),
   "videoUrl": zod.string().optional(),
   "thumbnailUrl": zod.string().optional(),
+  "reviewGroupId": zod.string().optional(),
   "streamUid": zod.string().optional(),
   "privacy": zod.enum(['public', 'private', 'password_protected']).optional(),
   "tags": zod.array(zod.string()).optional(),
@@ -682,7 +704,14 @@ export const GetVideoResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "streamProvider": zod.string().nullish(),
+  "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
+  "duration": zod.number().nullish(),
+  "reviewGroupId": zod.string().nullish(),
+  "versionNumber": zod.number().optional(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
+  "approvalDecidedAt": zod.coerce.date().nullish(),
+  "approvalDecidedBy": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "category": zod.enum(['reel', 'rushes', 'other']).optional(),
   "collectionId": zod.number().nullish(),
@@ -761,7 +790,14 @@ export const UpdateVideoResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "streamProvider": zod.string().nullish(),
+  "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
+  "duration": zod.number().nullish(),
+  "reviewGroupId": zod.string().nullish(),
+  "versionNumber": zod.number().optional(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
+  "approvalDecidedAt": zod.coerce.date().nullish(),
+  "approvalDecidedBy": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "category": zod.enum(['reel', 'rushes', 'other']).optional(),
   "collectionId": zod.number().nullish(),
@@ -967,7 +1003,14 @@ export const GetCollectionResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "streamProvider": zod.string().nullish(),
+  "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
+  "duration": zod.number().nullish(),
+  "reviewGroupId": zod.string().nullish(),
+  "versionNumber": zod.number().optional(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
+  "approvalDecidedAt": zod.coerce.date().nullish(),
+  "approvalDecidedBy": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "category": zod.enum(['reel', 'rushes', 'other']).optional(),
   "collectionId": zod.number().nullish(),
@@ -1108,6 +1151,225 @@ export const UnlockSharedVideoResponse = zod.object({
 
 
 /**
+ * @summary Create a guest review link for a video group
+ */
+export const CreateReviewLinkParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const createReviewLinkBodyExpiresInDaysMax = 365;
+
+
+
+
+export const CreateReviewLinkBody = zod.object({
+  "projectId": zod.number().optional(),
+  "expiresInDays": zod.number().min(1).max(createReviewLinkBodyExpiresInDaysMax).optional(),
+  "password": zod.string().min(1).optional(),
+  "allowDownload": zod.boolean(),
+  "allowComments": zod.boolean()
+})
+
+
+/**
+ * @summary List timestamped review comments for a video
+ */
+export const ListReviewCommentsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const ListReviewCommentsResponse = zod.object({
+  "comments": zod.array(zod.object({
+  "id": zod.number(),
+  "videoId": zod.number(),
+  "groupId": zod.string(),
+  "timecodeSeconds": zod.number(),
+  "body": zod.string(),
+  "authorType": zod.enum(['owner', 'guest']),
+  "authorName": zod.string(),
+  "parentCommentId": zod.number().nullish(),
+  "resolved": zod.boolean(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Post an owner review comment
+ */
+export const PostOwnerReviewCommentParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const postOwnerReviewCommentBodyTimecodeSecondsMin = 0;
+
+
+
+
+export const PostOwnerReviewCommentBody = zod.object({
+  "timecodeSeconds": zod.number().min(postOwnerReviewCommentBodyTimecodeSecondsMin),
+  "body": zod.string().min(1),
+  "parentCommentId": zod.number().nullish()
+})
+
+
+/**
+ * @summary Resolve an owner-visible review comment
+ */
+export const ResolveReviewCommentParams = zod.object({
+  "id": zod.coerce.number(),
+  "commentId": zod.coerce.number()
+})
+
+export const ResolveReviewCommentResponse = zod.object({
+  "id": zod.number(),
+  "videoId": zod.number(),
+  "groupId": zod.string(),
+  "timecodeSeconds": zod.number(),
+  "body": zod.string(),
+  "authorType": zod.enum(['owner', 'guest']),
+  "authorName": zod.string(),
+  "parentCommentId": zod.number().nullish(),
+  "resolved": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Set approval status as the owner
+ */
+export const SetOwnerApprovalStatusParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const SetOwnerApprovalStatusBody = zod.object({
+  "status": zod.enum(['approved', 'changes_requested'])
+})
+
+export const SetOwnerApprovalStatusResponse = zod.object({
+  "approvalStatus": zod.enum(['approved', 'changes_requested'])
+})
+
+
+/**
+ * @summary Resolve a public guest review link
+ */
+export const GetReviewLinkParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const GetReviewLinkResponse = zod.object({
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "requiresPassword": zod.boolean(),
+  "allowDownload": zod.boolean(),
+  "allowComments": zod.boolean(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']),
+  "streamProvider": zod.string().nullish(),
+  "streamPlaybackId": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
+  "comments": zod.array(zod.object({
+  "id": zod.number(),
+  "videoId": zod.number(),
+  "groupId": zod.string(),
+  "timecodeSeconds": zod.number(),
+  "body": zod.string(),
+  "authorType": zod.enum(['owner', 'guest']),
+  "authorName": zod.string(),
+  "parentCommentId": zod.number().nullish(),
+  "resolved": zod.boolean(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Unlock a password-protected review link
+ */
+export const UnlockReviewLinkParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const UnlockReviewLinkBody = zod.object({
+  "password": zod.string()
+})
+
+export const UnlockReviewLinkResponse = zod.object({
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "requiresPassword": zod.boolean(),
+  "allowDownload": zod.boolean(),
+  "allowComments": zod.boolean(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']),
+  "streamProvider": zod.string().nullish(),
+  "streamPlaybackId": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
+  "comments": zod.array(zod.object({
+  "id": zod.number(),
+  "videoId": zod.number(),
+  "groupId": zod.string(),
+  "timecodeSeconds": zod.number(),
+  "body": zod.string(),
+  "authorType": zod.enum(['owner', 'guest']),
+  "authorName": zod.string(),
+  "parentCommentId": zod.number().nullish(),
+  "resolved": zod.boolean(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Post a timestamped guest review comment
+ */
+export const PostGuestReviewCommentParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+export const postGuestReviewCommentBodyOneTimecodeSecondsMin = 0;
+
+
+
+
+
+export const PostGuestReviewCommentBody = zod.object({
+  "timecodeSeconds": zod.number().min(postGuestReviewCommentBodyOneTimecodeSecondsMin),
+  "body": zod.string().min(1),
+  "parentCommentId": zod.number().nullish()
+}).and(zod.object({
+  "authorName": zod.string().min(1),
+  "password": zod.string().optional()
+}))
+
+
+/**
+ * @summary Approve the latest ready video or request changes
+ */
+export const SetGuestApprovalStatusParams = zod.object({
+  "token": zod.coerce.string()
+})
+
+
+
+
+export const SetGuestApprovalStatusBody = zod.object({
+  "status": zod.enum(['approved', 'changes_requested']),
+  "authorName": zod.string().min(1),
+  "password": zod.string().optional()
+})
+
+export const SetGuestApprovalStatusResponse = zod.object({
+  "approvalStatus": zod.enum(['approved', 'changes_requested'])
+})
+
+
+/**
  * @summary Follow or unfollow a user
  */
 export const FollowUserParams = zod.object({
@@ -1219,7 +1481,14 @@ export const GetFeedResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "streamProvider": zod.string().nullish(),
+  "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
+  "duration": zod.number().nullish(),
+  "reviewGroupId": zod.string().nullish(),
+  "versionNumber": zod.number().optional(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
+  "approvalDecidedAt": zod.coerce.date().nullish(),
+  "approvalDecidedBy": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "category": zod.enum(['reel', 'rushes', 'other']).optional(),
   "collectionId": zod.number().nullish(),
@@ -1406,7 +1675,14 @@ export const GetFeaturedContentResponse = zod.object({
   "streamUid": zod.string().nullish(),
   "streamStatus": zod.string().nullish(),
   "streamProvider": zod.string().nullish(),
+  "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
+  "duration": zod.number().nullish(),
+  "reviewGroupId": zod.string().nullish(),
+  "versionNumber": zod.number().optional(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
+  "approvalDecidedAt": zod.coerce.date().nullish(),
+  "approvalDecidedBy": zod.string().nullish(),
   "privacy": zod.enum(['public', 'private', 'password_protected']),
   "category": zod.enum(['reel', 'rushes', 'other']).optional(),
   "collectionId": zod.number().nullish(),

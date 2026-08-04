@@ -3,7 +3,10 @@ import {
   useGetVideo, getGetVideoQueryKey, 
   useLikeVideo, 
   useListComments, getListCommentsQueryKey,
-  useCreateComment
+  useCreateComment,
+  useListReviewComments, getListReviewCommentsQueryKey,
+  useResolveReviewComment,
+  useSetOwnerApprovalStatus,
 } from "@workspace/api-client-react";
 import { Loader2, Heart, Share2, Eye, UserPlus, Clock, Download } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
@@ -48,6 +51,12 @@ export function VideoDetail() {
       queryKey: getListCommentsQueryKey(videoId)
     }
   });
+  const { data: reviewCommentsData } = useListReviewComments(videoId, {
+    query: {
+      enabled: !isNaN(videoId) && isSignedIn,
+      queryKey: getListReviewCommentsQueryKey(videoId),
+    },
+  });
 
   const likeMutation = useLikeVideo({
     mutation: {
@@ -70,6 +79,18 @@ export function VideoDetail() {
         toast({ title: "Failed to post comment", variant: "destructive" });
       }
     }
+  });
+  const resolveReviewCommentMutation = useResolveReviewComment({
+    mutation: {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: getListReviewCommentsQueryKey(videoId) }),
+      onError: () => toast({ title: "Could not resolve review note", variant: "destructive" }),
+    },
+  });
+  const ownerApprovalMutation = useSetOwnerApprovalStatus({
+    mutation: {
+      onSuccess: () => queryClient.invalidateQueries({ queryKey: getGetVideoQueryKey(videoId) }),
+      onError: () => toast({ title: "Could not update approval status", variant: "destructive" }),
+    },
   });
 
   if (isLoading) {
@@ -175,7 +196,7 @@ export function VideoDetail() {
                 )}
               </div>
               
-              <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2 bg-secondary/50 rounded-full px-4 py-2 border border-border/50">
                   <Button 
                     variant="ghost" 
@@ -246,6 +267,39 @@ export function VideoDetail() {
                 )}
               </div>
             </div>
+
+            <div className="mb-6 flex flex-wrap items-center gap-3">
+              <span className="rounded-full border border-border/50 bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground">
+                Client review: <span className="text-primary">{video.approvalStatus?.replace("_", " ") ?? "pending"}</span>
+              </span>
+              {isSignedIn && video.userId === user?.id && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 text-xs"
+                    disabled={ownerApprovalMutation.isPending}
+                    onClick={() => ownerApprovalMutation.mutate({ id: videoId, data: { status: "changes_requested" } })}
+                  >
+                    Request changes
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 text-xs text-primary"
+                    disabled={ownerApprovalMutation.isPending}
+                    onClick={() => ownerApprovalMutation.mutate({ id: videoId, data: { status: "approved" } })}
+                  >
+                    Approve
+                  </Button>
+                </>
+              )}
+              {reviewCommentsData && reviewCommentsData.comments.length > 0 && (
+                <span className="text-xs text-muted-foreground">
+                  {reviewCommentsData.comments.length} timestamped {reviewCommentsData.comments.length === 1 ? "note" : "notes"}
+                </span>
+              )}
+            </div>
             
             <div className="bg-card/50 rounded-xl p-6 border border-border/30">
               <div className="flex items-center gap-2 text-sm text-muted-foreground font-medium mb-4">
@@ -265,6 +319,35 @@ export function VideoDetail() {
           </div>
           
           <div>
+            {reviewCommentsData && reviewCommentsData.comments.length > 0 && (
+              <div className="mb-10">
+                <h3 className="mb-4 text-xl font-bold text-white">Client review notes</h3>
+                <div className="space-y-3">
+                  {reviewCommentsData.comments.map((comment) => (
+                    <div key={comment.id} className="rounded-lg border border-primary/20 bg-primary/5 p-4">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5 text-primary" />
+                        {Math.floor(comment.timecodeSeconds / 60)}:{Math.floor(comment.timecodeSeconds % 60).toString().padStart(2, "0")} · {comment.authorName}
+                      </div>
+                      <div className="mt-2 flex items-start justify-between gap-3">
+                        <p className="text-sm text-white">{comment.body}</p>
+                        {!comment.resolved && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 shrink-0 text-xs text-muted-foreground"
+                            disabled={resolveReviewCommentMutation.isPending}
+                            onClick={() => resolveReviewCommentMutation.mutate({ id: videoId, commentId: comment.id })}
+                          >
+                            Resolve
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
             <h3 className="text-xl font-bold text-white mb-6">{commentsData?.comments.length || 0} Comments</h3>
             
             {isSignedIn && (

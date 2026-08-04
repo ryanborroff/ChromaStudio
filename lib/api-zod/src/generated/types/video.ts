@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { User } from './user';
+import type { VideoApprovalStatus } from './videoApprovalStatus';
 import type { VideoCategory } from './videoCategory';
 import type { VideoPrivacy } from './videoPrivacy';
 
@@ -26,7 +27,19 @@ export interface Video {
   /** @nullable */
   streamProvider?: string | null;
   /** @nullable */
+  streamAssetId?: string | null;
+  /** @nullable */
   streamPlaybackId?: string | null;
+  /** @nullable */
+  duration?: number | null;
+  /** @nullable */
+  reviewGroupId?: string | null;
+  versionNumber?: number;
+  approvalStatus?: VideoApprovalStatus;
+  /** @nullable */
+  approvalDecidedAt?: Date | null;
+  /** @nullable */
+  approvalDecidedBy?: string | null;
   privacy: VideoPrivacy;
   category?: VideoCategory;
   /** @nullable */

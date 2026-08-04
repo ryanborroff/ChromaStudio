@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { randomUUID } from "node:crypto";
 import { eq, sql, desc, asc, ilike, or, and } from "drizzle-orm";
 import { db, videosTable, usersTable, videoLikesTable, videoRatingsTable, commentsTable, streamUploadTicketsTable, collectionsTable } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
@@ -159,6 +160,18 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
   // has not already been consumed. This prevents clients from attaching
   // arbitrary or forged media to their account.
   const streamUid = parsed.data.streamUid;
+  const requestedGroupId = parsed.data.reviewGroupId;
+  let reviewGroupId = requestedGroupId ?? `edit-${randomUUID()}`;
+  let versionNumber = 1;
+  if (requestedGroupId) {
+    const [latestVersion] = await db
+      .select({ versionNumber: videosTable.versionNumber })
+      .from(videosTable)
+      .where(and(eq(videosTable.reviewGroupId, requestedGroupId), eq(videosTable.userId, user.id)))
+      .orderBy(desc(videosTable.versionNumber))
+      .limit(1);
+    if (latestVersion) versionNumber = latestVersion.versionNumber + 1;
+  }
   let ticketProvider: string | null = null;
   if (streamUid) {
     const [ticket] = await db
@@ -207,6 +220,8 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
         ...(streamStatus ? { streamStatus } : {}),
         ...(streamProvider ? { streamProvider } : {}),
         ...(streamPlaybackId ? { streamPlaybackId } : {}),
+        reviewGroupId,
+        versionNumber,
       })
       .returning();
   } catch (err) {
