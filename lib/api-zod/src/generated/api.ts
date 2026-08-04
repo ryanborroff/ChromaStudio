@@ -132,6 +132,14 @@ export const RequestVideoExportResponse = zod.object({
 
 
 /**
+ * @summary Download an NLE interchange file for an owned video
+ */
+export const DownloadEditingExportParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
  * @summary Create an account, project, or video export job
  */
 export const RequestBulkExportBody = zod.object({

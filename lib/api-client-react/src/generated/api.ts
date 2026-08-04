@@ -632,6 +632,83 @@ export const useRequestVideoExport = <TError = ErrorType<ErrorEnvelope | void>,
       return useMutation(getRequestVideoExportMutationOptions(options));
     }
 
+export const getDownloadEditingExportUrl = (id: number,) => {
+
+
+
+
+  return `/api/videos/${id}/editing-export`
+}
+
+/**
+ * @summary Download an NLE interchange file for an owned video
+ */
+export const downloadEditingExport = async (id: number, options?: RequestInit): Promise<string> => {
+
+  return customFetch<string>(getDownloadEditingExportUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getDownloadEditingExportQueryKey = (id: number,) => {
+    return [
+    `/api/videos/${id}/editing-export`
+    ] as const;
+    }
+
+
+export const getDownloadEditingExportQueryOptions = <TData = Awaited<ReturnType<typeof downloadEditingExport>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadEditingExport>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getDownloadEditingExportQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof downloadEditingExport>>> = ({ signal }) => downloadEditingExport(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof downloadEditingExport>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type DownloadEditingExportQueryResult = NonNullable<Awaited<ReturnType<typeof downloadEditingExport>>>
+export type DownloadEditingExportQueryError = ErrorType<void>
+
+
+/**
+ * @summary Download an NLE interchange file for an owned video
+ */
+
+export function useDownloadEditingExport<TData = Awaited<ReturnType<typeof downloadEditingExport>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof downloadEditingExport>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getDownloadEditingExportQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
 export const getRequestBulkExportUrl = () => {
 
 
