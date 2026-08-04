@@ -41,48 +41,6 @@ function safeVideo(video: typeof videosTable.$inferSelect) {
   };
 }
 
-router.get("/portfolio/:handle", async (req, res): Promise<void> => {
-  const handle = String(req.params.handle).toLowerCase();
-  const [portfolio] = await db
-    .select()
-    .from(portfoliosTable)
-    .where(
-      and(
-        eq(portfoliosTable.handle, handle),
-        eq(portfoliosTable.isPublished, true),
-      ),
-    )
-    .limit(1);
-  if (!portfolio) {
-    res.status(404).json({ error: "Portfolio not found" });
-    return;
-  }
-
-  const [videos, collections] = await Promise.all([
-    db
-      .select()
-      .from(videosTable)
-      .where(publicVideoWhere(portfolio.ownerId))
-      .orderBy(desc(videosTable.publishedAt), desc(videosTable.createdAt)),
-    db
-      .select()
-      .from(collectionsTable)
-      .where(
-        and(
-          eq(collectionsTable.userId, portfolio.ownerId),
-          eq(collectionsTable.isPublished, true),
-        ),
-      )
-      .orderBy(desc(collectionsTable.createdAt)),
-  ]);
-
-  res.json({
-    portfolio,
-    videos: videos.map(safeVideo),
-    collections,
-  });
-});
-
 router.get("/portfolio/me", requireAuth, async (req, res): Promise<void> => {
   const user = await getCurrentUser(req);
   let [portfolio] = await db
@@ -169,6 +127,48 @@ router.put("/portfolio/me", requireAuth, async (req, res): Promise<void> => {
         .values({ ownerId: user.id, ...values })
         .returning();
   res.json(portfolio);
+});
+
+router.get("/portfolio/:handle", async (req, res): Promise<void> => {
+  const handle = String(req.params.handle).toLowerCase();
+  const [portfolio] = await db
+    .select()
+    .from(portfoliosTable)
+    .where(
+      and(
+        eq(portfoliosTable.handle, handle),
+        eq(portfoliosTable.isPublished, true),
+      ),
+    )
+    .limit(1);
+  if (!portfolio) {
+    res.status(404).json({ error: "Portfolio not found" });
+    return;
+  }
+
+  const [videos, collections] = await Promise.all([
+    db
+      .select()
+      .from(videosTable)
+      .where(publicVideoWhere(portfolio.ownerId))
+      .orderBy(desc(videosTable.publishedAt), desc(videosTable.createdAt)),
+    db
+      .select()
+      .from(collectionsTable)
+      .where(
+        and(
+          eq(collectionsTable.userId, portfolio.ownerId),
+          eq(collectionsTable.isPublished, true),
+        ),
+      )
+      .orderBy(desc(collectionsTable.createdAt)),
+  ]);
+
+  res.json({
+    portfolio,
+    videos: videos.map(safeVideo),
+    collections,
+  });
 });
 
 router.get("/embeds/videos/:id", async (req, res): Promise<void> => {
