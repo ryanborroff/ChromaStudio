@@ -1,7 +1,16 @@
 import { Router, type IRouter } from "express";
 import { randomUUID } from "node:crypto";
 import { eq, sql, desc, asc, ilike, or, and } from "drizzle-orm";
-import { db, videosTable, usersTable, videoLikesTable, videoRatingsTable, commentsTable, streamUploadTicketsTable, collectionsTable } from "@workspace/db";
+import {
+  db,
+  videosTable,
+  usersTable,
+  videoLikesTable,
+  videoRatingsTable,
+  commentsTable,
+  streamUploadTicketsTable,
+  collectionsTable,
+} from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import {
   CreateVideoBody,
@@ -64,14 +73,20 @@ async function buildVideoResponse(
   return {
     ...rest,
     tags: video.tags ?? [],
-    shareToken: currentUserId === video.userId ? shareToken ?? null : null,
+    shareToken: currentUserId === video.userId ? (shareToken ?? null) : null,
     hasSharePassword: !!sharePasswordHash,
     isLiked,
     ratingAvg: video.ratingCount > 0 ? ratingSum / video.ratingCount : 0,
     userRating,
     user: user
       ? (() => {
-          const { googleId: _g, appleId: _a, email: _e, passwordHash: _p, ...safeUser } = user;
+          const {
+            googleId: _g,
+            appleId: _a,
+            email: _e,
+            passwordHash: _p,
+            ...safeUser
+          } = user;
           return {
             ...safeUser,
             skills: user.skills ?? [],
@@ -88,8 +103,18 @@ async function buildVideoResponse(
 
 // GET /videos
 router.get("/videos", async (req, res): Promise<void> => {
-  const { userId, mine, collectionId, category, search, tags, sort = "newest", featured, limit = "20", offset = "0" } =
-    req.query as Record<string, string>;
+  const {
+    userId,
+    mine,
+    collectionId,
+    category,
+    search,
+    tags,
+    sort = "newest",
+    featured,
+    limit = "20",
+    offset = "0",
+  } = req.query as Record<string, string>;
 
   const conditions: any[] = [];
 
@@ -114,7 +139,10 @@ router.get("/videos", async (req, res): Promise<void> => {
   if (featured === "true") conditions.push(eq(videosTable.isFeatured, true));
   if (search) {
     conditions.push(
-      or(ilike(videosTable.title, `%${search}%`), ilike(videosTable.description, `%${search}%`))!,
+      or(
+        ilike(videosTable.title, `%${search}%`),
+        ilike(videosTable.description, `%${search}%`),
+      )!,
     );
   }
 
@@ -143,8 +171,12 @@ router.get("/videos", async (req, res): Promise<void> => {
     .from(videosTable)
     .where(whereClause);
 
-  const enriched = await Promise.all(videos.map((v) => buildVideoResponse(v, ownerId)));
-  res.json(ListVideosResponse.parse({ videos: enriched, total: countRow?.count ?? 0 }));
+  const enriched = await Promise.all(
+    videos.map((v) => buildVideoResponse(v, ownerId)),
+  );
+  res.json(
+    ListVideosResponse.parse({ videos: enriched, total: countRow?.count ?? 0 }),
+  );
 });
 
 // POST /videos
@@ -167,7 +199,12 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
     const [latestVersion] = await db
       .select({ versionNumber: videosTable.versionNumber })
       .from(videosTable)
-      .where(and(eq(videosTable.reviewGroupId, requestedGroupId), eq(videosTable.userId, user.id)))
+      .where(
+        and(
+          eq(videosTable.reviewGroupId, requestedGroupId),
+          eq(videosTable.userId, user.id),
+        ),
+      )
       .orderBy(desc(videosTable.versionNumber))
       .limit(1);
     if (latestVersion) versionNumber = latestVersion.versionNumber + 1;
@@ -186,7 +223,9 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
       )
       .limit(1);
     if (!ticket) {
-      res.status(403).json({ error: "Invalid or already-used upload reference" });
+      res
+        .status(403)
+        .json({ error: "Invalid or already-used upload reference" });
       return;
     }
     ticketProvider = ticket.provider;
@@ -202,10 +241,8 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
   const streamPlaybackId =
     streamProvider === "cloudflare" ? streamUid : undefined;
 
-  // When a plain videoUrl is supplied (Object Storage fallback) with no streamUid,
-  // the video is already stored and ready to play — mark it as such.
   const streamStatus =
-    parsed.data.videoUrl && !streamUid ? "ready" : undefined;
+    parsed.data.videoUrl || streamUid ? "uploading" : undefined;
 
   let video: typeof videosTable.$inferSelect;
   try {
@@ -248,50 +285,68 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
 });
 
 // POST /videos/upload-url
-router.post("/videos/upload-url", requireAuth, async (req, res): Promise<void> => {
-  const provider = getStreamingProvider();
+router.post(
+  "/videos/upload-url",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const provider = getStreamingProvider();
 
-  if (!provider) {
-    // No streaming provider configured — fall back to Replit Object Storage.
-    // Returns a presigned PUT URL; the client should PUT the file (not FormData POST).
+    if (!provider) {
+      // No streaming provider configured — fall back to Replit Object Storage.
+      // Returns a presigned PUT URL; the client should PUT the file (not FormData POST).
+      try {
+        const svc = new ObjectStorageService();
+        const uploadURL = await svc.getObjectEntityUploadURL();
+        const objectPath = svc.normalizeObjectEntityPath(uploadURL);
+        res.json(
+          CreateVideoUploadUrlResponse.parse({
+            uploadURL,
+            uid: objectPath,
+            uploadMethod: "put",
+            streamProvider: null,
+          }),
+        );
+      } catch (err) {
+        req.log.error(
+          { err },
+          "Failed to create Object Storage video upload URL",
+        );
+        res.status(502).json({ error: "Could not start upload" });
+      }
+      return;
+    }
+
     try {
-      const svc = new ObjectStorageService();
-      const uploadURL = await svc.getObjectEntityUploadURL();
-      const objectPath = svc.normalizeObjectEntityPath(uploadURL);
-      res.json(CreateVideoUploadUrlResponse.parse({ uploadURL, uid: objectPath, uploadMethod: "put", streamProvider: null }));
+      const user = await getCurrentUser(req);
+      const result = await provider.createDirectUpload();
+      await db
+        .insert(streamUploadTicketsTable)
+        .values({ uid: result.uid, userId: user.id, provider: provider.name });
+      res.json(
+        CreateVideoUploadUrlResponse.parse({
+          uploadURL: result.uploadUrl,
+          uid: result.uid,
+          uploadMethod: result.uploadMethod,
+          streamProvider: provider.name,
+        }),
+      );
     } catch (err) {
-      req.log.error({ err }, "Failed to create Object Storage video upload URL");
+      req.log.error({ err }, `Failed to create ${provider.name} upload URL`);
       res.status(502).json({ error: "Could not start upload" });
     }
-    return;
-  }
-
-  try {
-    const user = await getCurrentUser(req);
-    const result = await provider.createDirectUpload();
-    await db
-      .insert(streamUploadTicketsTable)
-      .values({ uid: result.uid, userId: user.id, provider: provider.name });
-    res.json(
-      CreateVideoUploadUrlResponse.parse({
-        uploadURL: result.uploadUrl,
-        uid: result.uid,
-        uploadMethod: result.uploadMethod,
-        streamProvider: provider.name,
-      }),
-    );
-  } catch (err) {
-    req.log.error({ err }, `Failed to create ${provider.name} upload URL`);
-    res.status(502).json({ error: "Could not start upload" });
-  }
-});
+  },
+);
 
 // GET /videos/:id
 router.get("/videos/:id", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(rawId, 10);
 
-  const [video] = await db.select().from(videosTable).where(eq(videosTable.id, id)).limit(1);
+  const [video] = await db
+    .select()
+    .from(videosTable)
+    .where(eq(videosTable.id, id))
+    .limit(1);
   if (!video) {
     res.status(404).json({ error: "Video not found" });
     return;
@@ -304,7 +359,10 @@ router.get("/videos/:id", async (req, res): Promise<void> => {
     .where(eq(videosTable.id, id));
 
   const viewer = (req.user as typeof usersTable.$inferSelect | undefined)?.id;
-  const full = await buildVideoResponse({ ...video, viewCount: (video.viewCount ?? 0) + 1 }, viewer);
+  const full = await buildVideoResponse(
+    { ...video, viewCount: (video.viewCount ?? 0) + 1 },
+    viewer,
+  );
   res.json(GetVideoResponse.parse(full));
 });
 
@@ -322,7 +380,12 @@ router.patch("/videos/:id", requireAuth, async (req, res): Promise<void> => {
     const [owned] = await db
       .select({ id: collectionsTable.id })
       .from(collectionsTable)
-      .where(and(eq(collectionsTable.id, parsed.data.collectionId), eq(collectionsTable.userId, user.id)))
+      .where(
+        and(
+          eq(collectionsTable.id, parsed.data.collectionId),
+          eq(collectionsTable.userId, user.id),
+        ),
+      )
       .limit(1);
     if (!owned) {
       res.status(400).json({ error: "Collection not found" });
@@ -332,7 +395,9 @@ router.patch("/videos/:id", requireAuth, async (req, res): Promise<void> => {
   const [video] = await db
     .update(videosTable)
     .set(parsed.data as Partial<typeof videosTable.$inferInsert>)
-    .where(sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id}`)
+    .where(
+      sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id}`,
+    )
     .returning();
   if (!video) {
     res.status(404).json({ error: "Video not found" });
@@ -349,111 +414,147 @@ router.delete("/videos/:id", requireAuth, async (req, res): Promise<void> => {
   const user = await getCurrentUser(req);
   await db
     .delete(videosTable)
-    .where(sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id}`);
+    .where(
+      sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id}`,
+    );
   res.sendStatus(204);
 });
 
 // POST /videos/:id/like
-router.post("/videos/:id/like", requireAuth, async (req, res): Promise<void> => {
-  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const id = parseInt(rawId, 10);
-  const user = await getCurrentUser(req);
+router.post(
+  "/videos/:id/like",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const rawId = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+    const id = parseInt(rawId, 10);
+    const user = await getCurrentUser(req);
 
-  const existing = await db
-    .select()
-    .from(videoLikesTable)
-    .where(
-      sql`${videoLikesTable.userId} = ${user.id} AND ${videoLikesTable.videoId} = ${id}`,
-    )
-    .limit(1);
-
-  let liked: boolean;
-  if (existing.length > 0) {
-    await db
-      .delete(videoLikesTable)
-      .where(sql`${videoLikesTable.userId} = ${user.id} AND ${videoLikesTable.videoId} = ${id}`);
-    await db
-      .update(videosTable)
-      .set({ likeCount: sql`${videosTable.likeCount} - 1` })
-      .where(eq(videosTable.id, id));
-    liked = false;
-  } else {
-    await db.insert(videoLikesTable).values({ userId: user.id, videoId: id });
-    await db
-      .update(videosTable)
-      .set({ likeCount: sql`${videosTable.likeCount} + 1` })
-      .where(eq(videosTable.id, id));
-    liked = true;
-  }
-
-  const [video] = await db.select().from(videosTable).where(eq(videosTable.id, id)).limit(1);
-  res.json(LikeVideoResponse.parse({ liked, likeCount: video?.likeCount ?? 0 }));
-});
-
-// POST /videos/:id/rate
-router.post("/videos/:id/rate", requireAuth, async (req, res): Promise<void> => {
-  const params = RateVideoParams.safeParse(req.params);
-  if (!params.success) {
-    res.status(400).json({ error: params.error.message });
-    return;
-  }
-  const body = RateVideoBody.safeParse(req.body);
-  if (!body.success) {
-    res.status(400).json({ error: body.error.message });
-    return;
-  }
-  const id = params.data.id;
-  const rating = body.data.rating;
-  const user = await getCurrentUser(req);
-
-  const [exists] = await db.select({ id: videosTable.id }).from(videosTable).where(eq(videosTable.id, id)).limit(1);
-  if (!exists) {
-    res.status(404).json({ error: "Video not found" });
-    return;
-  }
-
-  await db.transaction(async (tx) => {
-    const [previous] = await tx
+    const existing = await db
       .select()
-      .from(videoRatingsTable)
-      .where(sql`${videoRatingsTable.userId} = ${user.id} AND ${videoRatingsTable.videoId} = ${id}`)
+      .from(videoLikesTable)
+      .where(
+        sql`${videoLikesTable.userId} = ${user.id} AND ${videoLikesTable.videoId} = ${id}`,
+      )
       .limit(1);
 
-    if (previous) {
-      const delta = rating - previous.rating;
-      if (delta !== 0) {
+    let liked: boolean;
+    if (existing.length > 0) {
+      await db
+        .delete(videoLikesTable)
+        .where(
+          sql`${videoLikesTable.userId} = ${user.id} AND ${videoLikesTable.videoId} = ${id}`,
+        );
+      await db
+        .update(videosTable)
+        .set({ likeCount: sql`${videosTable.likeCount} - 1` })
+        .where(eq(videosTable.id, id));
+      liked = false;
+    } else {
+      await db.insert(videoLikesTable).values({ userId: user.id, videoId: id });
+      await db
+        .update(videosTable)
+        .set({ likeCount: sql`${videosTable.likeCount} + 1` })
+        .where(eq(videosTable.id, id));
+      liked = true;
+    }
+
+    const [video] = await db
+      .select()
+      .from(videosTable)
+      .where(eq(videosTable.id, id))
+      .limit(1);
+    res.json(
+      LikeVideoResponse.parse({ liked, likeCount: video?.likeCount ?? 0 }),
+    );
+  },
+);
+
+// POST /videos/:id/rate
+router.post(
+  "/videos/:id/rate",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const params = RateVideoParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: params.error.message });
+      return;
+    }
+    const body = RateVideoBody.safeParse(req.body);
+    if (!body.success) {
+      res.status(400).json({ error: body.error.message });
+      return;
+    }
+    const id = params.data.id;
+    const rating = body.data.rating;
+    const user = await getCurrentUser(req);
+
+    const [exists] = await db
+      .select({ id: videosTable.id })
+      .from(videosTable)
+      .where(eq(videosTable.id, id))
+      .limit(1);
+    if (!exists) {
+      res.status(404).json({ error: "Video not found" });
+      return;
+    }
+
+    await db.transaction(async (tx) => {
+      const [previous] = await tx
+        .select()
+        .from(videoRatingsTable)
+        .where(
+          sql`${videoRatingsTable.userId} = ${user.id} AND ${videoRatingsTable.videoId} = ${id}`,
+        )
+        .limit(1);
+
+      if (previous) {
+        const delta = rating - previous.rating;
+        if (delta !== 0) {
+          await tx
+            .update(videoRatingsTable)
+            .set({ rating })
+            .where(eq(videoRatingsTable.id, previous.id));
+          await tx
+            .update(videosTable)
+            .set({ ratingSum: sql`${videosTable.ratingSum} + ${delta}` })
+            .where(eq(videosTable.id, id));
+        }
+      } else {
         await tx
-          .update(videoRatingsTable)
-          .set({ rating })
-          .where(eq(videoRatingsTable.id, previous.id));
+          .insert(videoRatingsTable)
+          .values({ userId: user.id, videoId: id, rating })
+          .onConflictDoUpdate({
+            target: [videoRatingsTable.userId, videoRatingsTable.videoId],
+            set: { rating },
+          });
         await tx
           .update(videosTable)
-          .set({ ratingSum: sql`${videosTable.ratingSum} + ${delta}` })
+          .set({
+            ratingSum: sql`${videosTable.ratingSum} + ${rating}`,
+            ratingCount: sql`${videosTable.ratingCount} + 1`,
+          })
           .where(eq(videosTable.id, id));
       }
-    } else {
-      await tx
-        .insert(videoRatingsTable)
-        .values({ userId: user.id, videoId: id, rating })
-        .onConflictDoUpdate({
-          target: [videoRatingsTable.userId, videoRatingsTable.videoId],
-          set: { rating },
-        });
-      await tx
-        .update(videosTable)
-        .set({
-          ratingSum: sql`${videosTable.ratingSum} + ${rating}`,
-          ratingCount: sql`${videosTable.ratingCount} + 1`,
-        })
-        .where(eq(videosTable.id, id));
-    }
-  });
+    });
 
-  const [video] = await db.select().from(videosTable).where(eq(videosTable.id, id)).limit(1);
-  const count = video?.ratingCount ?? 0;
-  const avg = count > 0 ? (video?.ratingSum ?? 0) / count : 0;
-  res.json(RateVideoResponse.parse({ ratingAvg: avg, ratingCount: count, userRating: rating }));
-});
+    const [video] = await db
+      .select()
+      .from(videosTable)
+      .where(eq(videosTable.id, id))
+      .limit(1);
+    const count = video?.ratingCount ?? 0;
+    const avg = count > 0 ? (video?.ratingSum ?? 0) / count : 0;
+    res.json(
+      RateVideoResponse.parse({
+        ratingAvg: avg,
+        ratingCount: count,
+        userRating: rating,
+      }),
+    );
+  },
+);
 
 // GET /videos/:id/comments
 router.get("/videos/:id/comments", async (req, res): Promise<void> => {
@@ -477,7 +578,13 @@ router.get("/videos/:id/comments", async (req, res): Promise<void> => {
         ...c,
         user: user
           ? (() => {
-              const { googleId: _g, appleId: _a, email: _e, passwordHash: _p, ...safeUser } = user;
+              const {
+                googleId: _g,
+                appleId: _a,
+                email: _e,
+                passwordHash: _p,
+                ...safeUser
+              } = user;
               return {
                 ...safeUser,
                 skills: user.skills ?? [],
@@ -497,33 +604,45 @@ router.get("/videos/:id/comments", async (req, res): Promise<void> => {
 });
 
 // POST /videos/:id/comments
-router.post("/videos/:id/comments", requireAuth, async (req, res): Promise<void> => {
-  const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
-  const id = parseInt(rawId, 10);
-  const parsed = CreateCommentBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: parsed.error.message });
-    return;
-  }
-  const user = await getCurrentUser(req);
-  const [comment] = await db
-    .insert(commentsTable)
-    .values({ videoId: id, userId: user.id, body: parsed.data.body })
-    .returning();
+router.post(
+  "/videos/:id/comments",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const rawId = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+    const id = parseInt(rawId, 10);
+    const parsed = CreateCommentBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.message });
+      return;
+    }
+    const user = await getCurrentUser(req);
+    const [comment] = await db
+      .insert(commentsTable)
+      .values({ videoId: id, userId: user.id, body: parsed.data.body })
+      .returning();
 
-  const { googleId: _g, appleId: _a, email: _e, passwordHash: _p, ...safeUser } = user;
-  res.status(201).json({
-    ...comment,
-    user: {
-      ...safeUser,
-      skills: user.skills ?? [],
-      socialLinks: user.socialLinks ?? null,
-      followerCount: 0,
-      followingCount: 0,
-      videoCount: 0,
-      isFollowing: false,
-    },
-  });
-});
+    const {
+      googleId: _g,
+      appleId: _a,
+      email: _e,
+      passwordHash: _p,
+      ...safeUser
+    } = user;
+    res.status(201).json({
+      ...comment,
+      user: {
+        ...safeUser,
+        skills: user.skills ?? [],
+        socialLinks: user.socialLinks ?? null,
+        followerCount: 0,
+        followingCount: 0,
+        videoCount: 0,
+        isFollowing: false,
+      },
+    });
+  },
+);
 
 export default router;

@@ -17,4 +17,9 @@ export interface StreamingProvider {
   createDirectUpload(): Promise<DirectUploadResult>;
   /** Best-effort asset cleanup on failed video record creation. Never throws. */
   deleteAsset(uid: string): Promise<void>;
+  /** Return a provider-hosted download URL for a ready asset. */
+  createExportUrl(
+    uid: string,
+    playbackId?: string | null,
+  ): Promise<string | null>;
 }

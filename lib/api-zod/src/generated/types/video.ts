@@ -33,6 +33,12 @@ export interface Video {
   /** @nullable */
   duration?: number | null;
   /** @nullable */
+  fileSizeBytes?: bigint | null;
+  uploadProgressPercent?: number;
+  /** @nullable */
+  uploadError?: string | null;
+  retryCount?: number;
+  /** @nullable */
   reviewGroupId?: string | null;
   versionNumber?: number;
   approvalStatus?: VideoApprovalStatus;

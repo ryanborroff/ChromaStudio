@@ -3,13 +3,59 @@ import { Readable } from "stream";
 import {
   RequestUploadUrlBody,
   RequestUploadUrlResponse,
+  GetStorageUsageResponse,
 } from "@workspace/api-zod";
-import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
+import { and, eq, sql } from "drizzle-orm";
+import { db, videosTable } from "@workspace/db";
+import {
+  ObjectStorageService,
+  ObjectNotFoundError,
+} from "../lib/objectStorage";
 import { ObjectPermission } from "../lib/objectAcl";
 import { requireAuth } from "../lib/auth";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
+
+const STORAGE_LIMITS: Record<string, number> = {
+  free: 100 * 1024 * 1024 * 1024,
+  creator: 1 * 1024 * 1024 * 1024 * 1024,
+  studio: 5 * 1024 * 1024 * 1024 * 1024,
+};
+
+router.get("/storage/usage", requireAuth, async (req, res): Promise<void> => {
+  const userId = (req.user as { id: number }).id;
+  const [usage] = await db
+    .select({
+      totalBytesUsed: sql<number>`coalesce(sum(${videosTable.fileSizeBytes}), 0)::bigint`,
+      videoCount: sql<number>`count(*)::int`,
+    })
+    .from(videosTable)
+    .where(
+      and(
+        eq(videosTable.userId, userId),
+        eq(videosTable.streamStatus, "ready"),
+      ),
+    );
+
+  const plan = (req.user as { plan?: string }).plan ?? "free";
+  const planStorageLimitBytes = STORAGE_LIMITS[plan] ?? STORAGE_LIMITS.free;
+  const totalBytesUsed = Number(usage?.totalBytesUsed ?? 0);
+  const usagePercent =
+    planStorageLimitBytes > 0
+      ? Number(((totalBytesUsed / planStorageLimitBytes) * 100).toFixed(2))
+      : 0;
+
+  res.json(
+    GetStorageUsageResponse.parse({
+      totalBytesUsed,
+      videoCount: usage?.videoCount ?? 0,
+      planStorageLimitBytes,
+      usagePercent,
+      warning: usagePercent >= 80,
+    }),
+  );
+});
 
 /**
  * POST /storage/uploads/request-url
@@ -18,41 +64,46 @@ const objectStorageService = new ObjectStorageService();
  * The client sends JSON metadata (name, size, contentType) — NOT the file.
  * Then uploads the file directly to the returned presigned URL.
  */
-router.post("/storage/uploads/request-url", requireAuth, async (req: Request, res: Response) => {
-  const parsed = RequestUploadUrlBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: "Missing or invalid required fields" });
-    return;
-  }
+router.post(
+  "/storage/uploads/request-url",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const parsed = RequestUploadUrlBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Missing or invalid required fields" });
+      return;
+    }
 
-  const { name, size, contentType } = parsed.data;
+    const { name, size, contentType } = parsed.data;
 
-  const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
-  if (!contentType.startsWith("image/")) {
-    res.status(400).json({ error: "Only image uploads are allowed" });
-    return;
-  }
-  if (size > MAX_UPLOAD_BYTES) {
-    res.status(400).json({ error: "Image must be 10 MB or smaller" });
-    return;
-  }
+    const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10 MB
+    if (!contentType.startsWith("image/")) {
+      res.status(400).json({ error: "Only image uploads are allowed" });
+      return;
+    }
+    if (size > MAX_UPLOAD_BYTES) {
+      res.status(400).json({ error: "Image must be 10 MB or smaller" });
+      return;
+    }
 
-  try {
-    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-    const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
+    try {
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      const objectPath =
+        objectStorageService.normalizeObjectEntityPath(uploadURL);
 
-    res.json(
-      RequestUploadUrlResponse.parse({
-        uploadURL,
-        objectPath,
-        metadata: { name, size, contentType },
-      }),
-    );
-  } catch (error) {
-    req.log.error({ err: error }, "Error generating upload URL");
-    res.status(500).json({ error: "Failed to generate upload URL" });
-  }
-});
+      res.json(
+        RequestUploadUrlResponse.parse({
+          uploadURL,
+          objectPath,
+          metadata: { name, size, contentType },
+        }),
+      );
+    } catch (error) {
+      req.log.error({ err: error }, "Error generating upload URL");
+      res.status(500).json({ error: "Failed to generate upload URL" });
+    }
+  },
+);
 
 /**
  * POST /storage/uploads/request-file-url
@@ -60,37 +111,42 @@ router.post("/storage/uploads/request-url", requireAuth, async (req: Request, re
  * Like request-url but for general file attachments (any type, larger limit).
  * Used for direct-message file attachments.
  */
-router.post("/storage/uploads/request-file-url", requireAuth, async (req: Request, res: Response) => {
-  const parsed = RequestUploadUrlBody.safeParse(req.body);
-  if (!parsed.success) {
-    res.status(400).json({ error: "Missing or invalid required fields" });
-    return;
-  }
+router.post(
+  "/storage/uploads/request-file-url",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    const parsed = RequestUploadUrlBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: "Missing or invalid required fields" });
+      return;
+    }
 
-  const { name, size, contentType } = parsed.data;
+    const { name, size, contentType } = parsed.data;
 
-  const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 MB
-  if (size > MAX_FILE_BYTES) {
-    res.status(400).json({ error: "File must be 50 MB or smaller" });
-    return;
-  }
+    const MAX_FILE_BYTES = 50 * 1024 * 1024; // 50 MB
+    if (size > MAX_FILE_BYTES) {
+      res.status(400).json({ error: "File must be 50 MB or smaller" });
+      return;
+    }
 
-  try {
-    const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-    const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
+    try {
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      const objectPath =
+        objectStorageService.normalizeObjectEntityPath(uploadURL);
 
-    res.json(
-      RequestUploadUrlResponse.parse({
-        uploadURL,
-        objectPath,
-        metadata: { name, size, contentType },
-      }),
-    );
-  } catch (error) {
-    req.log.error({ err: error }, "Error generating file upload URL");
-    res.status(500).json({ error: "Failed to generate upload URL" });
-  }
-});
+      res.json(
+        RequestUploadUrlResponse.parse({
+          uploadURL,
+          objectPath,
+          metadata: { name, size, contentType },
+        }),
+      );
+    } catch (error) {
+      req.log.error({ err: error }, "Error generating file upload URL");
+      res.status(500).json({ error: "Failed to generate upload URL" });
+    }
+  },
+);
 
 /**
  * GET /storage/public-objects/*
@@ -99,32 +155,37 @@ router.post("/storage/uploads/request-file-url", requireAuth, async (req: Reques
  * These are unconditionally public — no authentication or ACL checks.
  * IMPORTANT: Always provide this endpoint when object storage is set up.
  */
-router.get("/storage/public-objects/*filePath", async (req: Request, res: Response) => {
-  try {
-    const raw = req.params.filePath;
-    const filePath = Array.isArray(raw) ? raw.join("/") : raw;
-    const file = await objectStorageService.searchPublicObject(filePath);
-    if (!file) {
-      res.status(404).json({ error: "File not found" });
-      return;
+router.get(
+  "/storage/public-objects/*filePath",
+  async (req: Request, res: Response) => {
+    try {
+      const raw = req.params.filePath;
+      const filePath = Array.isArray(raw) ? raw.join("/") : raw;
+      const file = await objectStorageService.searchPublicObject(filePath);
+      if (!file) {
+        res.status(404).json({ error: "File not found" });
+        return;
+      }
+
+      const response = await objectStorageService.downloadObject(file);
+
+      res.status(response.status);
+      response.headers.forEach((value, key) => res.setHeader(key, value));
+
+      if (response.body) {
+        const nodeStream = Readable.fromWeb(
+          response.body as ReadableStream<Uint8Array>,
+        );
+        nodeStream.pipe(res);
+      } else {
+        res.end();
+      }
+    } catch (error) {
+      req.log.error({ err: error }, "Error serving public object");
+      res.status(500).json({ error: "Failed to serve public object" });
     }
-
-    const response = await objectStorageService.downloadObject(file);
-
-    res.status(response.status);
-    response.headers.forEach((value, key) => res.setHeader(key, value));
-
-    if (response.body) {
-      const nodeStream = Readable.fromWeb(response.body as ReadableStream<Uint8Array>);
-      nodeStream.pipe(res);
-    } else {
-      res.end();
-    }
-  } catch (error) {
-    req.log.error({ err: error }, "Error serving public object");
-    res.status(500).json({ error: "Failed to serve public object" });
-  }
-});
+  },
+);
 
 /**
  * GET /storage/objects/*
@@ -138,7 +199,8 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
     const raw = req.params.path;
     const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;
     const objectPath = `/objects/${wildcardPath}`;
-    const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
+    const objectFile =
+      await objectStorageService.getObjectEntityFile(objectPath);
 
     // --- Protected route example (uncomment when using replit-auth) ---
     // if (!req.isAuthenticated()) {
@@ -164,7 +226,9 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
     // browser sniff a different type, and force scriptable types to download
     // rather than execute inline.
     res.setHeader("X-Content-Type-Options", "nosniff");
-    const contentType = (response.headers.get("content-type") ?? "").toLowerCase();
+    const contentType = (
+      response.headers.get("content-type") ?? ""
+    ).toLowerCase();
     const SCRIPTABLE = [
       "text/html",
       "application/xhtml+xml",
@@ -178,7 +242,9 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
     }
 
     if (response.body) {
-      const nodeStream = Readable.fromWeb(response.body as ReadableStream<Uint8Array>);
+      const nodeStream = Readable.fromWeb(
+        response.body as ReadableStream<Uint8Array>,
+      );
       nodeStream.pipe(res);
     } else {
       res.end();

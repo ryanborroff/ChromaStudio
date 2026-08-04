@@ -41,6 +41,8 @@ import type {
   Endorsement,
   EndorsementList,
   ErrorEnvelope,
+  ExportJob,
+  ExportJobInput,
   FeaturedContent,
   FollowResult,
   GetFeedParams,
@@ -68,6 +70,7 @@ import type {
   ShareSettings,
   ShareSettingsInput,
   ShareUnlockInput,
+  StorageUsage,
   StreamUploadTicket,
   UnlockDeliveryInput,
   UpdateDeliveryInput,
@@ -78,6 +81,7 @@ import type {
   UserProfile,
   UserUpdate,
   Video,
+  VideoExport,
   VideoInput,
   VideoList,
   VideoUpdate
@@ -469,6 +473,301 @@ export function useHealthCheck<TData = Awaited<ReturnType<typeof healthCheck>>, 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
   const queryOptions = getHealthCheckQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetStorageUsageUrl = () => {
+
+
+
+
+  return `/api/storage/usage`
+}
+
+/**
+ * @summary Get the current user's storage usage
+ */
+export const getStorageUsage = async ( options?: RequestInit): Promise<StorageUsage> => {
+
+  return customFetch<StorageUsage>(getGetStorageUsageUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetStorageUsageQueryKey = () => {
+    return [
+    `/api/storage/usage`
+    ] as const;
+    }
+
+
+export const getGetStorageUsageQueryOptions = <TData = Awaited<ReturnType<typeof getStorageUsage>>, TError = ErrorType<void>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStorageUsage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetStorageUsageQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getStorageUsage>>> = ({ signal }) => getStorageUsage({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getStorageUsage>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetStorageUsageQueryResult = NonNullable<Awaited<ReturnType<typeof getStorageUsage>>>
+export type GetStorageUsageQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get the current user's storage usage
+ */
+
+export function useGetStorageUsage<TData = Awaited<ReturnType<typeof getStorageUsage>>, TError = ErrorType<void>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getStorageUsage>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetStorageUsageQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getRequestVideoExportUrl = (id: number,) => {
+
+
+
+
+  return `/api/videos/${id}/export`
+}
+
+/**
+ * @summary Request a direct export URL for an owned video
+ */
+export const requestVideoExport = async (id: number, options?: RequestInit): Promise<VideoExport> => {
+
+  return customFetch<VideoExport>(getRequestVideoExportUrl(id),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getRequestVideoExportMutationOptions = <TError = ErrorType<ErrorEnvelope | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestVideoExport>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestVideoExport>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['requestVideoExport'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestVideoExport>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  requestVideoExport(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestVideoExportMutationResult = NonNullable<Awaited<ReturnType<typeof requestVideoExport>>>
+
+    export type RequestVideoExportMutationError = ErrorType<ErrorEnvelope | void>
+
+    /**
+ * @summary Request a direct export URL for an owned video
+ */
+export const useRequestVideoExport = <TError = ErrorType<ErrorEnvelope | void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestVideoExport>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof requestVideoExport>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getRequestVideoExportMutationOptions(options));
+    }
+
+export const getRequestBulkExportUrl = () => {
+
+
+
+
+  return `/api/exports`
+}
+
+/**
+ * @summary Create an account, project, or video export job
+ */
+export const requestBulkExport = async (exportJobInput: ExportJobInput, options?: RequestInit): Promise<ExportJob> => {
+
+  return customFetch<ExportJob>(getRequestBulkExportUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      exportJobInput,)
+  }
+);}
+
+
+
+
+export const getRequestBulkExportMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestBulkExport>>, TError,{data: BodyType<ExportJobInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof requestBulkExport>>, TError,{data: BodyType<ExportJobInput>}, TContext> => {
+
+const mutationKey = ['requestBulkExport'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof requestBulkExport>>, {data: BodyType<ExportJobInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  requestBulkExport(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type RequestBulkExportMutationResult = NonNullable<Awaited<ReturnType<typeof requestBulkExport>>>
+    export type RequestBulkExportMutationBody = BodyType<ExportJobInput>
+    export type RequestBulkExportMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create an account, project, or video export job
+ */
+export const useRequestBulkExport = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof requestBulkExport>>, TError,{data: BodyType<ExportJobInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof requestBulkExport>>,
+        TError,
+        {data: BodyType<ExportJobInput>},
+        TContext
+      > => {
+      return useMutation(getRequestBulkExportMutationOptions(options));
+    }
+
+export const getListExportJobsUrl = () => {
+
+
+
+
+  return `/api/exports`
+}
+
+/**
+ * @summary List the current user's export jobs
+ */
+export const listExportJobs = async ( options?: RequestInit): Promise<ExportJob[]> => {
+
+  return customFetch<ExportJob[]>(getListExportJobsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListExportJobsQueryKey = () => {
+    return [
+    `/api/exports`
+    ] as const;
+    }
+
+
+export const getListExportJobsQueryOptions = <TData = Awaited<ReturnType<typeof listExportJobs>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listExportJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListExportJobsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listExportJobs>>> = ({ signal }) => listExportJobs({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listExportJobs>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListExportJobsQueryResult = NonNullable<Awaited<ReturnType<typeof listExportJobs>>>
+export type ListExportJobsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List the current user's export jobs
+ */
+
+export function useListExportJobs<TData = Awaited<ReturnType<typeof listExportJobs>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listExportJobs>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListExportJobsQueryOptions(options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
