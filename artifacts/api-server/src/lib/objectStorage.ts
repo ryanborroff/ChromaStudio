@@ -6,7 +6,7 @@ import {
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { Readable } from "stream";
 import { randomUUID } from "crypto";
-import { r2Client, R2_BUCKET } from "./r2Client";
+import { getR2Client, getR2Bucket } from "./r2Client";
 import {
   type ObjectAclPolicy,
   type ObjectPermission,
@@ -35,7 +35,7 @@ export class ObjectStorageService {
   async searchPublicObject(filePath: string): Promise<R2ObjectRef | null> {
     const key = `${PUBLIC_PREFIX}/${filePath}`;
     try {
-      await r2Client.send(new HeadObjectCommand({ Bucket: R2_BUCKET, Key: key }));
+      await getR2Client().send(new HeadObjectCommand({ Bucket: getR2Bucket(), Key: key }));
       return { key };
     } catch {
       return null;
@@ -46,8 +46,8 @@ export class ObjectStorageService {
    * Download an R2 object and return it as a web Response for streaming.
    */
   async downloadObject(ref: R2ObjectRef, cacheTtlSec: number = 3600): Promise<Response> {
-    const result = await r2Client.send(
-      new GetObjectCommand({ Bucket: R2_BUCKET, Key: ref.key }),
+    const result = await getR2Client().send(
+      new GetObjectCommand({ Bucket: getR2Bucket(), Key: ref.key }),
     );
 
     const aclPolicy = await getObjectAclPolicy(ref);
@@ -77,8 +77,8 @@ export class ObjectStorageService {
    */
   async getObjectEntityUploadURL(): Promise<string> {
     const key = `${PRIVATE_PREFIX}/uploads/${randomUUID()}`;
-    const command = new PutObjectCommand({ Bucket: R2_BUCKET, Key: key });
-    return getSignedUrl(r2Client, command, { expiresIn: 900 });
+    const command = new PutObjectCommand({ Bucket: getR2Bucket(), Key: key });
+    return getSignedUrl(getR2Client(), command, { expiresIn: 900 });
   }
 
   /**
@@ -116,7 +116,7 @@ export class ObjectStorageService {
       throw new ObjectNotFoundError();
     }
     try {
-      await r2Client.send(new HeadObjectCommand({ Bucket: R2_BUCKET, Key: key }));
+      await getR2Client().send(new HeadObjectCommand({ Bucket: getR2Bucket(), Key: key }));
     } catch {
       throw new ObjectNotFoundError();
     }
