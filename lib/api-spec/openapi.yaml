@@ -691,6 +691,75 @@ paths:
               schema:
                 $ref: "#/components/schemas/PortfolioAnalytics"
 
+  /billing/plans:
+    get:
+      operationId: listBillingPlans
+      tags: [billing]
+      summary: List available billing plans
+      responses:
+        "200":
+          description: Billing plans
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BillingPlan"
+
+  /billing/entitlements:
+    get:
+      operationId: getBillingEntitlements
+      tags: [billing]
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Effective feature entitlements
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingEntitlements"
+
+  /billing/checkout:
+    post:
+      operationId: createBillingCheckout
+      tags: [billing]
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BillingCheckoutInput"
+      responses:
+        "200":
+          description: Stripe checkout URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url]
+                properties:
+                  url: { type: ["string", "null"] }
+
+  /billing/portal:
+    post:
+      operationId: createBillingPortal
+      tags: [billing]
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Stripe billing portal URL
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [url]
+                properties:
+                  url: { type: string }
+
   /videos/{id}/rate:
     post:
       operationId: rateVideo
@@ -2050,6 +2119,62 @@ components:
               title: { type: string }
               views: { type: integer }
               completionRatePercent: { type: number }
+
+    BillingPlan:
+      type: object
+      required:
+        [
+          planId,
+          name,
+          priceMonthlyCents,
+          stripePriceId,
+          storageLimitBytes,
+          seatLimit,
+          whiteLabelEmbed,
+          watermarkingEnabled,
+          portfolioQualityEncoding,
+          analyticsHistoryDays,
+        ]
+      properties:
+        planId: { type: string }
+        name: { type: string }
+        priceMonthlyCents: { type: integer }
+        stripePriceId: { type: ["string", "null"] }
+        storageLimitBytes: { type: integer }
+        seatLimit: { type: ["integer", "null"] }
+        whiteLabelEmbed: { type: boolean }
+        watermarkingEnabled: { type: boolean }
+        portfolioQualityEncoding: { type: boolean }
+        analyticsHistoryDays: { type: integer }
+
+    BillingCheckoutInput:
+      type: object
+      required: [planId]
+      properties:
+        planId: { type: string }
+
+    BillingEntitlements:
+      type: object
+      required:
+        [
+          planId,
+          storageLimitBytes,
+          storageUsedBytes,
+          seatLimit,
+          whiteLabelEmbed,
+          watermarkingEnabled,
+          portfolioQualityEncoding,
+          analyticsHistoryDays,
+        ]
+      properties:
+        planId: { type: string }
+        storageLimitBytes: { type: integer }
+        storageUsedBytes: { type: integer }
+        seatLimit: { type: ["integer", "null"] }
+        whiteLabelEmbed: { type: boolean }
+        watermarkingEnabled: { type: boolean }
+        portfolioQualityEncoding: { type: boolean }
+        analyticsHistoryDays: { type: integer }
 
     StorageUsage:
       type: object

@@ -20,6 +20,7 @@ function getMuxClient(): Mux {
 export async function fetchMuxVideoAnalytics(
   playbackId: string,
   durationSeconds: number | null,
+  historyDays = 365,
 ): Promise<VideoAnalytics | null> {
   if (!process.env.MUX_TOKEN_ID || !process.env.MUX_TOKEN_SECRET) return null;
 
@@ -36,7 +37,7 @@ export async function fetchMuxVideoAnalytics(
   }> = [];
   for await (const view of mux.data.videoViews.list({
     filters,
-    timeframe: ["365:days"],
+    timeframe: [`${historyDays}:days`],
     limit: 1000,
   })) {
     views.push(view);

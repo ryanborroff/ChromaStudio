@@ -34,6 +34,7 @@ import {
 } from "@workspace/api-zod";
 import { getStreamingProvider } from "../lib/streaming/index.js";
 import { ObjectStorageService } from "../lib/objectStorage";
+import { getEntitlementsForUser } from "../lib/billing";
 
 const router: IRouter = Router();
 
@@ -187,6 +188,22 @@ router.post("/videos", requireAuth, async (req, res): Promise<void> => {
     return;
   }
   const user = await getCurrentUser(req);
+  const fileSizeBytes = parsed.data.fileSizeBytes ?? 0;
+  if (fileSizeBytes > 0) {
+    const entitlements = await getEntitlementsForUser(user.id);
+    if (
+      entitlements.storageUsedBytes + fileSizeBytes >
+      entitlements.storageLimitBytes
+    ) {
+      res.status(402).json({
+        error: "Storage limit reached",
+        code: "STORAGE_LIMIT_REACHED",
+        storageLimitBytes: entitlements.storageLimitBytes,
+        storageUsedBytes: entitlements.storageUsedBytes,
+      });
+      return;
+    }
+  }
 
   // If a Stream upload UID is supplied, verify it was issued to this user and
   // has not already been consumed. This prevents clients from attaching

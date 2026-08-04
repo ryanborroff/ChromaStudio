@@ -8,6 +8,7 @@ import {
   videosTable,
 } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
+import { getEntitlementsForUser } from "../lib/billing";
 
 const router: IRouter = Router();
 
@@ -189,14 +190,18 @@ router.get("/embeds/videos/:id", async (req, res): Promise<void> => {
     res.status(404).json({ error: "Embed unavailable" });
     return;
   }
+  const entitlements = await getEntitlementsForUser(video.userId);
   res.json({
     id: video.id,
     title: video.portfolioTitle || video.title,
     streamUid: video.streamUid,
     videoUrl: video.videoUrl,
     thumbnailUrl: video.thumbnailUrl,
-    whiteLabel: video.whiteLabel,
-    customLogoUrl: video.customLogoUrl,
+    whiteLabel: video.whiteLabel && entitlements.whiteLabelEmbed,
+    customLogoUrl:
+      video.whiteLabel && entitlements.whiteLabelEmbed
+        ? video.customLogoUrl
+        : null,
   });
 });
 
