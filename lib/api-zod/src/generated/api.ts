@@ -997,6 +997,45 @@ export const LikeVideoResponse = zod.object({
 
 
 /**
+ * @summary Get owner analytics for a video
+ */
+export const GetVideoAnalyticsParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetVideoAnalyticsResponse = zod.object({
+  "views": zod.number(),
+  "uniqueViewers": zod.number(),
+  "averageWatchTimeSeconds": zod.number(),
+  "completionRatePercent": zod.number(),
+  "countryBreakdown": zod.array(zod.object({
+  "country": zod.string(),
+  "views": zod.number()
+})),
+  "deviceBreakdown": zod.array(zod.object({
+  "device": zod.string(),
+  "views": zod.number()
+})),
+  "source": zod.enum(['mux_data', 'local'])
+})
+
+
+/**
+ * @summary Get aggregate analytics for portfolio videos
+ */
+export const GetPortfolioAnalyticsResponse = zod.object({
+  "totalViews": zod.number(),
+  "videoCount": zod.number(),
+  "videos": zod.array(zod.object({
+  "videoId": zod.number(),
+  "title": zod.string(),
+  "views": zod.number(),
+  "completionRatePercent": zod.number()
+}))
+})
+
+
+/**
  * @summary Rate a video (1-5 stars)
  */
 export const RateVideoParams = zod.object({

@@ -378,6 +378,47 @@ export interface PortfolioEmbed {
   customLogoUrl?: string | null;
 }
 
+export interface AnalyticsBreakdown {
+  country: string;
+  views: number;
+}
+
+export type VideoAnalyticsDeviceBreakdownItem = {
+  device: string;
+  views: number;
+};
+
+export type VideoAnalyticsSource = typeof VideoAnalyticsSource[keyof typeof VideoAnalyticsSource];
+
+
+export const VideoAnalyticsSource = {
+  mux_data: 'mux_data',
+  local: 'local',
+} as const;
+
+export interface VideoAnalytics {
+  views: number;
+  uniqueViewers: number;
+  averageWatchTimeSeconds: number;
+  completionRatePercent: number;
+  countryBreakdown: AnalyticsBreakdown[];
+  deviceBreakdown: VideoAnalyticsDeviceBreakdownItem[];
+  source: VideoAnalyticsSource;
+}
+
+export type PortfolioAnalyticsVideosItem = {
+  videoId: number;
+  title: string;
+  views: number;
+  completionRatePercent: number;
+};
+
+export interface PortfolioAnalytics {
+  totalViews: number;
+  videoCount: number;
+  videos: PortfolioAnalyticsVideosItem[];
+}
+
 export interface StorageUsage {
   totalBytesUsed: number;
   videoCount: number;

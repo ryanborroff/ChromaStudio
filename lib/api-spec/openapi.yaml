@@ -653,6 +653,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/LikeResult"
 
+  /videos/{id}/analytics:
+    get:
+      operationId: getVideoAnalytics
+      tags: [stats]
+      security:
+        - cookieAuth: []
+      summary: Get owner analytics for a video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Video analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoAnalytics"
+        "404":
+          description: Video not found
+
+  /analytics/portfolio:
+    get:
+      operationId: getPortfolioAnalytics
+      tags: [stats]
+      security:
+        - cookieAuth: []
+      summary: Get aggregate analytics for portfolio videos
+      responses:
+        "200":
+          description: Portfolio analytics
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PortfolioAnalytics"
+
   /videos/{id}/rate:
     post:
       operationId: rateVideo
@@ -1956,6 +1994,62 @@ components:
         thumbnailUrl: { type: ["string", "null"] }
         whiteLabel: { type: boolean }
         customLogoUrl: { type: ["string", "null"] }
+
+    AnalyticsBreakdown:
+      type: object
+      required: [country, views]
+      properties:
+        country: { type: string }
+        views: { type: integer }
+
+    VideoAnalytics:
+      type: object
+      required:
+        [
+          views,
+          uniqueViewers,
+          averageWatchTimeSeconds,
+          completionRatePercent,
+          countryBreakdown,
+          deviceBreakdown,
+          source,
+        ]
+      properties:
+        views: { type: integer }
+        uniqueViewers: { type: integer }
+        averageWatchTimeSeconds: { type: number }
+        completionRatePercent: { type: number }
+        countryBreakdown:
+          type: array
+          items: { $ref: "#/components/schemas/AnalyticsBreakdown" }
+        deviceBreakdown:
+          type: array
+          items:
+            type: object
+            required: [device, views]
+            properties:
+              device: { type: string }
+              views: { type: integer }
+        source:
+          type: string
+          enum: [mux_data, local]
+
+    PortfolioAnalytics:
+      type: object
+      required: [totalViews, videoCount, videos]
+      properties:
+        totalViews: { type: integer }
+        videoCount: { type: integer }
+        videos:
+          type: array
+          items:
+            type: object
+            required: [videoId, title, views, completionRatePercent]
+            properties:
+              videoId: { type: integer }
+              title: { type: string }
+              views: { type: integer }
+              completionRatePercent: { type: number }
 
     StorageUsage:
       type: object

@@ -22,6 +22,7 @@ import { Pricing } from "@/pages/pricing";
 import { SharePage } from "@/pages/share-page";
 import { EmbedPlayer } from "@/pages/embed-player";
 import { PortfolioEmbed } from "@/pages/portfolio-embed";
+import { Analytics } from "@/pages/analytics";
 import { Deliveries } from "@/pages/deliveries";
 import { DeliveryManage } from "@/pages/delivery-manage";
 import { DeliveryPage } from "@/pages/delivery-page";
@@ -155,21 +156,7 @@ function AppRoutes() {
             />
           )}
         />
-        <ProtectedRoute
-          path="/studio/analytics"
-          component={() => (
-            <ComingSoon
-              icon={BarChart3}
-              title="Analytics Dashboard"
-              description="A full creator dashboard for views, audience and revenue."
-              features={[
-                "Views, watch time & retention",
-                "Audience & traffic sources",
-                "Revenue & payout tracking",
-              ]}
-            />
-          )}
-        />
+        <ProtectedRoute path="/studio/analytics" component={Analytics} />
 
         {/* Store */}
         <Route path="/store">

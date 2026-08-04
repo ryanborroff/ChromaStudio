@@ -8,6 +8,7 @@ import {
   unique,
   real,
   bigint,
+  json,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
@@ -90,6 +91,16 @@ export const exportJobsTable = pgTable("export_jobs", {
   downloadUrls: text("download_urls").array().notNull().default([]),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   completedAt: timestamp("completed_at"),
+});
+
+export const analyticsCacheTable = pgTable("analytics_cache", {
+  id: serial("id").primaryKey(),
+  videoId: integer("video_id")
+    .notNull()
+    .unique()
+    .references(() => videosTable.id, { onDelete: "cascade" }),
+  data: json("data").notNull(),
+  fetchedAt: timestamp("fetched_at").notNull().defaultNow(),
 });
 
 export const videoLikesTable = pgTable("video_likes", {
