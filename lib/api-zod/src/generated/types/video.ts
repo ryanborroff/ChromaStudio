@@ -59,6 +59,19 @@ export interface Video {
   credits?: string | null;
   downloadFormats?: string[];
   isFeatured?: boolean;
+  isPortfolioPiece?: boolean;
+  /** @nullable */
+  portfolioTitle?: string | null;
+  /** @nullable */
+  portfolioDescription?: string | null;
+  /** @nullable */
+  clientCredit?: string | null;
+  /** @nullable */
+  publishedAt?: Date | null;
+  allowEmbedding?: boolean;
+  whiteLabel?: boolean;
+  /** @nullable */
+  customLogoUrl?: string | null;
   viewCount: number;
   likeCount: number;
   isLiked?: boolean;

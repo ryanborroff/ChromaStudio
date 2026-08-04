@@ -159,6 +159,19 @@ export interface Video {
   credits?: string | null;
   downloadFormats?: string[];
   isFeatured?: boolean;
+  isPortfolioPiece?: boolean;
+  /** @nullable */
+  portfolioTitle?: string | null;
+  /** @nullable */
+  portfolioDescription?: string | null;
+  /** @nullable */
+  clientCredit?: string | null;
+  /** @nullable */
+  publishedAt?: string | null;
+  allowEmbedding?: boolean;
+  whiteLabel?: boolean;
+  /** @nullable */
+  customLogoUrl?: string | null;
   viewCount: number;
   likeCount: number;
   isLiked?: boolean;
@@ -270,6 +283,99 @@ export interface VideoUpdate {
   uploadError?: string | null;
   retryCount?: number;
   streamStatus?: string;
+  isPortfolioPiece?: boolean;
+  /** @nullable */
+  portfolioTitle?: string | null;
+  /** @nullable */
+  portfolioDescription?: string | null;
+  /** @nullable */
+  clientCredit?: string | null;
+  /** @nullable */
+  publishedAt?: string | null;
+  allowEmbedding?: boolean;
+  whiteLabel?: boolean;
+  /** @nullable */
+  customLogoUrl?: string | null;
+}
+
+export type PortfolioLayout = typeof PortfolioLayout[keyof typeof PortfolioLayout];
+
+
+export const PortfolioLayout = {
+  grid: 'grid',
+  list: 'list',
+  cinematic: 'cinematic',
+} as const;
+
+export interface Portfolio {
+  id: number;
+  ownerId: number;
+  handle: string;
+  displayName: string;
+  /** @nullable */
+  bio?: string | null;
+  /** @nullable */
+  avatarUrl?: string | null;
+  /** @nullable */
+  bannerUrl?: string | null;
+  isPublished: boolean;
+  accentColor: string;
+  layout: PortfolioLayout;
+}
+
+export type PortfolioInputLayout = typeof PortfolioInputLayout[keyof typeof PortfolioInputLayout];
+
+
+export const PortfolioInputLayout = {
+  grid: 'grid',
+  list: 'list',
+  cinematic: 'cinematic',
+} as const;
+
+export interface PortfolioInput {
+  /** @minLength 2 */
+  handle?: string;
+  /** @minLength 1 */
+  displayName?: string;
+  /** @nullable */
+  bio?: string | null;
+  /** @nullable */
+  avatarUrl?: string | null;
+  /** @nullable */
+  bannerUrl?: string | null;
+  isPublished?: boolean;
+  accentColor?: string;
+  layout?: PortfolioInputLayout;
+}
+
+export interface Collection {
+  id: number;
+  userId: number;
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  videoCount: number;
+  createdAt: string;
+}
+
+export interface PublicPortfolio {
+  portfolio: Portfolio;
+  videos: Video[];
+  collections: Collection[];
+}
+
+export interface PortfolioEmbed {
+  id: number;
+  title: string;
+  /** @nullable */
+  streamUid: string | null;
+  /** @nullable */
+  videoUrl: string | null;
+  /** @nullable */
+  thumbnailUrl: string | null;
+  whiteLabel: boolean;
+  /** @nullable */
+  customLogoUrl?: string | null;
 }
 
 export interface StorageUsage {
@@ -328,16 +434,6 @@ export interface ExportJob {
   createdAt: string;
   /** @nullable */
   completedAt?: string | null;
-}
-
-export interface Collection {
-  id: number;
-  userId: number;
-  name: string;
-  /** @nullable */
-  description?: string | null;
-  videoCount: number;
-  createdAt: string;
 }
 
 export interface CollectionInput {

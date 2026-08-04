@@ -29,4 +29,17 @@ export interface VideoUpdate {
   uploadError?: string | null;
   retryCount?: number;
   streamStatus?: string;
+  isPortfolioPiece?: boolean;
+  /** @nullable */
+  portfolioTitle?: string | null;
+  /** @nullable */
+  portfolioDescription?: string | null;
+  /** @nullable */
+  clientCredit?: string | null;
+  /** @nullable */
+  publishedAt?: Date | null;
+  allowEmbedding?: boolean;
+  whiteLabel?: boolean;
+  /** @nullable */
+  customLogoUrl?: string | null;
 }
