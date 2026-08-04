@@ -106,6 +106,65 @@ export const HealthCheckResponse = zod.object({
 
 
 /**
+ * @summary Get the current user's storage usage
+ */
+export const GetStorageUsageResponse = zod.object({
+  "totalBytesUsed": zod.number(),
+  "videoCount": zod.number(),
+  "planStorageLimitBytes": zod.number(),
+  "usagePercent": zod.number(),
+  "warning": zod.boolean()
+})
+
+
+/**
+ * @summary Request a direct export URL for an owned video
+ */
+export const RequestVideoExportParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const RequestVideoExportResponse = zod.object({
+  "videoId": zod.number(),
+  "downloadUrl": zod.string().url(),
+  "expiresAt": zod.coerce.date()
+})
+
+
+/**
+ * @summary Download an NLE interchange file for an owned video
+ */
+export const DownloadEditingExportParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
+ * @summary Create an account, project, or video export job
+ */
+export const RequestBulkExportBody = zod.object({
+  "scope": zod.enum(['video', 'project', 'account']),
+  "targetId": zod.string().optional()
+})
+
+
+/**
+ * @summary List the current user's export jobs
+ */
+export const ListExportJobsResponseItem = zod.object({
+  "id": zod.number(),
+  "ownerId": zod.number(),
+  "scope": zod.enum(['video', 'project', 'account']),
+  "targetId": zod.string(),
+  "status": zod.enum(['processing', 'ready', 'error']),
+  "downloadUrls": zod.array(zod.string().url()),
+  "createdAt": zod.coerce.date(),
+  "completedAt": zod.coerce.date().nullish()
+})
+export const ListExportJobsResponse = zod.array(ListExportJobsResponseItem)
+
+
+/**
  * @summary Get current user profile
  */
 export const GetMeResponse = zod.object({
@@ -287,6 +346,10 @@ export const GetUserByUsernameResponse = zod.object({
   "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
   "duration": zod.number().nullish(),
+  "fileSizeBytes": zod.number().nullish(),
+  "uploadProgressPercent": zod.number().optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
   "reviewGroupId": zod.string().nullish(),
   "versionNumber": zod.number().optional(),
   "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
@@ -518,6 +581,10 @@ export const AdminToggleFeaturedResponse = zod.object({
   "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
   "duration": zod.number().nullish(),
+  "fileSizeBytes": zod.number().nullish(),
+  "uploadProgressPercent": zod.number().optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
   "reviewGroupId": zod.string().nullish(),
   "versionNumber": zod.number().optional(),
   "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
@@ -601,6 +668,10 @@ export const ListVideosResponse = zod.object({
   "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
   "duration": zod.number().nullish(),
+  "fileSizeBytes": zod.number().nullish(),
+  "uploadProgressPercent": zod.number().optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
   "reviewGroupId": zod.string().nullish(),
   "versionNumber": zod.number().optional(),
   "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
@@ -669,6 +740,7 @@ export const CreateVideoBody = zod.object({
   "thumbnailUrl": zod.string().optional(),
   "reviewGroupId": zod.string().optional(),
   "streamUid": zod.string().optional(),
+  "fileSizeBytes": zod.number().optional(),
   "privacy": zod.enum(['public', 'private', 'password_protected']).optional(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().optional(),
@@ -707,6 +779,10 @@ export const GetVideoResponse = zod.object({
   "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
   "duration": zod.number().nullish(),
+  "fileSizeBytes": zod.number().nullish(),
+  "uploadProgressPercent": zod.number().optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
   "reviewGroupId": zod.string().nullish(),
   "versionNumber": zod.number().optional(),
   "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
@@ -767,6 +843,11 @@ export const UpdateVideoParams = zod.object({
   "id": zod.coerce.number()
 })
 
+export const updateVideoBodyUploadProgressPercentMin = 0;
+export const updateVideoBodyUploadProgressPercentMax = 100;
+
+
+
 export const UpdateVideoBody = zod.object({
   "title": zod.string().optional(),
   "description": zod.string().optional(),
@@ -777,7 +858,11 @@ export const UpdateVideoBody = zod.object({
   "collectionId": zod.number().nullish(),
   "tags": zod.array(zod.string()).optional(),
   "credits": zod.string().optional(),
-  "downloadFormats": zod.array(zod.string()).optional()
+  "downloadFormats": zod.array(zod.string()).optional(),
+  "uploadProgressPercent": zod.number().min(updateVideoBodyUploadProgressPercentMin).max(updateVideoBodyUploadProgressPercentMax).optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
+  "streamStatus": zod.string().optional()
 })
 
 export const UpdateVideoResponse = zod.object({
@@ -793,6 +878,10 @@ export const UpdateVideoResponse = zod.object({
   "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
   "duration": zod.number().nullish(),
+  "fileSizeBytes": zod.number().nullish(),
+  "uploadProgressPercent": zod.number().optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
   "reviewGroupId": zod.string().nullish(),
   "versionNumber": zod.number().optional(),
   "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
@@ -1006,6 +1095,10 @@ export const GetCollectionResponse = zod.object({
   "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
   "duration": zod.number().nullish(),
+  "fileSizeBytes": zod.number().nullish(),
+  "uploadProgressPercent": zod.number().optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
   "reviewGroupId": zod.string().nullish(),
   "versionNumber": zod.number().optional(),
   "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
@@ -1484,6 +1577,10 @@ export const GetFeedResponse = zod.object({
   "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
   "duration": zod.number().nullish(),
+  "fileSizeBytes": zod.number().nullish(),
+  "uploadProgressPercent": zod.number().optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
   "reviewGroupId": zod.string().nullish(),
   "versionNumber": zod.number().optional(),
   "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
@@ -1678,6 +1775,10 @@ export const GetFeaturedContentResponse = zod.object({
   "streamAssetId": zod.string().nullish(),
   "streamPlaybackId": zod.string().nullish(),
   "duration": zod.number().nullish(),
+  "fileSizeBytes": zod.number().nullish(),
+  "uploadProgressPercent": zod.number().optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
   "reviewGroupId": zod.string().nullish(),
   "versionNumber": zod.number().optional(),
   "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),

@@ -39,26 +39,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UploadUrlRequest'
+              $ref: "#/components/schemas/UploadUrlRequest"
       responses:
-        '200':
+        "200":
           description: Presigned upload URL generated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UploadUrlResponse'
-        '400':
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
           description: Missing or invalid required fields.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorEnvelope'
-        '500':
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
           description: Failed to generate upload URL.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorEnvelope'
+                $ref: "#/components/schemas/ErrorEnvelope"
   /storage/uploads/request-file-url:
     post:
       tags: [Storage]
@@ -73,26 +73,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UploadUrlRequest'
+              $ref: "#/components/schemas/UploadUrlRequest"
       responses:
-        '200':
+        "200":
           description: Presigned upload URL generated.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UploadUrlResponse'
-        '400':
+                $ref: "#/components/schemas/UploadUrlResponse"
+        "400":
           description: Missing/invalid fields or file too large.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorEnvelope'
-        '500':
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
           description: Failed to generate upload URL.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorEnvelope'
+                $ref: "#/components/schemas/ErrorEnvelope"
   /storage/public-objects/{filePath}:
     get:
       tags: [Storage]
@@ -109,25 +109,25 @@ paths:
             type: string
           description: Relative file path within the public search paths.
       responses:
-        '200':
+        "200":
           description: Object content streamed with correct Content-Type.
           content:
-            '*/*':
+            "*/*":
               schema:
                 type: string
                 format: binary
-        '404':
+        "404":
           description: File not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorEnvelope'
-        '500':
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
           description: Failed to serve public object.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorEnvelope'
+                $ref: "#/components/schemas/ErrorEnvelope"
   /storage/objects/{objectPath}:
     get:
       tags: [Storage]
@@ -144,25 +144,25 @@ paths:
             type: string
           description: Object path within the private object dir (e.g. `uploads/some-uuid`).
       responses:
-        '200':
+        "200":
           description: Object content streamed with correct Content-Type.
           content:
-            '*/*':
+            "*/*":
               schema:
                 type: string
                 format: binary
-        '404':
+        "404":
           description: Object not found.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorEnvelope'
-        '500':
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "500":
           description: Failed to serve object.
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorEnvelope'
+                $ref: "#/components/schemas/ErrorEnvelope"
   /healthz:
     get:
       operationId: healthCheck
@@ -175,6 +175,103 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /storage/usage:
+    get:
+      operationId: getStorageUsage
+      tags: [Storage]
+      summary: Get the current user's storage usage
+      responses:
+        "200":
+          description: Storage usage summary.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorageUsage"
+        "401":
+          description: Authentication required.
+
+  /videos/{id}/export:
+    post:
+      operationId: requestVideoExport
+      tags: [videos]
+      summary: Request a direct export URL for an owned video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Direct, provider-hosted export URL.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoExport"
+        "400":
+          description: Video is not exportable.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "404":
+          description: Video not found.
+
+  /videos/{id}/editing-export:
+    get:
+      operationId: downloadEditingExport
+      tags: [videos]
+      summary: Download an NLE interchange file for an owned video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Final Cut Pro XML interchange file compatible with Final Cut Pro, Premiere Pro, and DaVinci Resolve.
+          content:
+            application/xml:
+              schema:
+                type: string
+        "400":
+          description: Video is not ready for editing export.
+        "404":
+          description: Video not found.
+
+  /exports:
+    post:
+      operationId: requestBulkExport
+      tags: [videos]
+      summary: Create an account, project, or video export job
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ExportJobInput"
+      responses:
+        "202":
+          description: Export job created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ExportJob"
+    get:
+      operationId: listExportJobs
+      tags: [videos]
+      summary: List the current user's export jobs
+      responses:
+        "200":
+          description: Export jobs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ExportJob"
 
   # ── Users ──────────────────────────────────────────────────────────────────
   /users/me:
@@ -444,7 +541,14 @@ paths:
           in: query
           schema:
             type: string
-            enum: [newest, most_viewed, featured, community_rated, community_rated_asc]
+            enum:
+              [
+                newest,
+                most_viewed,
+                featured,
+                community_rated,
+                community_rated_asc,
+              ]
         - name: featured
           in: query
           description: When true, only return featured videos.
@@ -1415,7 +1519,7 @@ components:
           type: string
           description: Normalized object path (e.g. `/objects/uploads/uuid`). Store this in your database.
         metadata:
-          $ref: '#/components/schemas/UploadUrlRequest'
+          $ref: "#/components/schemas/UploadUrlRequest"
     ErrorEnvelope:
       type: object
       required: [error]
@@ -1560,6 +1664,15 @@ components:
           type: ["string", "null"]
         duration:
           type: ["number", "null"]
+        fileSizeBytes:
+          type: ["integer", "null"]
+          format: int64
+        uploadProgressPercent:
+          type: integer
+        uploadError:
+          type: ["string", "null"]
+        retryCount:
+          type: integer
         reviewGroupId:
           type: ["string", "null"]
         versionNumber:
@@ -1632,6 +1745,9 @@ components:
           type: string
         streamUid:
           type: string
+        fileSizeBytes:
+          type: integer
+          format: int64
         privacy:
           type: string
           enum: [public, private, password_protected]
@@ -1689,10 +1805,95 @@ components:
           type: array
           items:
             type: string
+        uploadProgressPercent:
+          type: integer
+          minimum: 0
+          maximum: 100
+        uploadError:
+          type: ["string", "null"]
+        retryCount:
+          type: integer
+        streamStatus:
+          type: string
 
     VideoCategory:
       type: string
       enum: [reel, rushes, other]
+
+    StorageUsage:
+      type: object
+      required:
+        [
+          totalBytesUsed,
+          videoCount,
+          planStorageLimitBytes,
+          usagePercent,
+          warning,
+        ]
+      properties:
+        totalBytesUsed:
+          type: integer
+          format: int64
+        videoCount:
+          type: integer
+        planStorageLimitBytes:
+          type: integer
+          format: int64
+        usagePercent:
+          type: number
+        warning:
+          type: boolean
+
+    VideoExport:
+      type: object
+      required: [videoId, downloadUrl, expiresAt]
+      properties:
+        videoId:
+          type: integer
+        downloadUrl:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
+
+    ExportJobInput:
+      type: object
+      required: [scope]
+      properties:
+        scope:
+          type: string
+          enum: [video, project, account]
+        targetId:
+          type: string
+
+    ExportJob:
+      type: object
+      required: [id, ownerId, scope, targetId, status, downloadUrls, createdAt]
+      properties:
+        id:
+          type: integer
+        ownerId:
+          type: integer
+        scope:
+          type: string
+          enum: [video, project, account]
+        targetId:
+          type: string
+        status:
+          type: string
+          enum: [processing, ready, error]
+        downloadUrls:
+          type: array
+          items:
+            type: string
+            format: uri
+        createdAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: ["string", "null"]
+          format: date-time
 
     # ── Collection schemas ────────────────────────────────────────────────────
     Collection:
@@ -1936,7 +2137,18 @@ components:
 
     ReviewComment:
       type: object
-      required: [id, videoId, groupId, timecodeSeconds, body, authorType, authorName, resolved, createdAt]
+      required:
+        [
+          id,
+          videoId,
+          groupId,
+          timecodeSeconds,
+          body,
+          authorType,
+          authorName,
+          resolved,
+          createdAt,
+        ]
       properties:
         id:
           type: integer
@@ -1972,7 +2184,15 @@ components:
 
     ReviewSession:
       type: object
-      required: [title, requiresPassword, allowDownload, allowComments, approvalStatus, comments]
+      required:
+        [
+          title,
+          requiresPassword,
+          allowDownload,
+          allowComments,
+          approvalStatus,
+          comments,
+        ]
       properties:
         title:
           type: string

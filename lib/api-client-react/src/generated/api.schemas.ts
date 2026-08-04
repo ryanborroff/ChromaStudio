@@ -133,6 +133,12 @@ export interface Video {
   /** @nullable */
   duration?: number | null;
   /** @nullable */
+  fileSizeBytes?: number | null;
+  uploadProgressPercent?: number;
+  /** @nullable */
+  uploadError?: string | null;
+  retryCount?: number;
+  /** @nullable */
   reviewGroupId?: string | null;
   versionNumber?: number;
   approvalStatus?: VideoApprovalStatus;
@@ -208,6 +214,7 @@ export interface VideoInput {
   thumbnailUrl?: string;
   reviewGroupId?: string;
   streamUid?: string;
+  fileSizeBytes?: number;
   privacy?: VideoInputPrivacy;
   tags?: string[];
   credits?: string;
@@ -254,6 +261,73 @@ export interface VideoUpdate {
   tags?: string[];
   credits?: string;
   downloadFormats?: string[];
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  uploadProgressPercent?: number;
+  /** @nullable */
+  uploadError?: string | null;
+  retryCount?: number;
+  streamStatus?: string;
+}
+
+export interface StorageUsage {
+  totalBytesUsed: number;
+  videoCount: number;
+  planStorageLimitBytes: number;
+  usagePercent: number;
+  warning: boolean;
+}
+
+export interface VideoExport {
+  videoId: number;
+  downloadUrl: string;
+  expiresAt: string;
+}
+
+export type ExportJobInputScope = typeof ExportJobInputScope[keyof typeof ExportJobInputScope];
+
+
+export const ExportJobInputScope = {
+  video: 'video',
+  project: 'project',
+  account: 'account',
+} as const;
+
+export interface ExportJobInput {
+  scope: ExportJobInputScope;
+  targetId?: string;
+}
+
+export type ExportJobScope = typeof ExportJobScope[keyof typeof ExportJobScope];
+
+
+export const ExportJobScope = {
+  video: 'video',
+  project: 'project',
+  account: 'account',
+} as const;
+
+export type ExportJobStatus = typeof ExportJobStatus[keyof typeof ExportJobStatus];
+
+
+export const ExportJobStatus = {
+  processing: 'processing',
+  ready: 'ready',
+  error: 'error',
+} as const;
+
+export interface ExportJob {
+  id: number;
+  ownerId: number;
+  scope: ExportJobScope;
+  targetId: string;
+  status: ExportJobStatus;
+  downloadUrls: string[];
+  createdAt: string;
+  /** @nullable */
+  completedAt?: string | null;
 }
 
 export interface Collection {
