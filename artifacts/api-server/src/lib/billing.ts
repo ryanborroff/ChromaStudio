@@ -73,14 +73,21 @@ export async function getEntitlementsForUser(
     .from(subscriptionsTable)
     .where(eq(subscriptionsTable.userId, userId))
     .limit(1);
+  const subscriptionInGrace =
+    subscription?.status === "canceled" &&
+    !!subscription.currentPeriodEnd &&
+    subscription.currentPeriodEnd > new Date();
   const activeSubscription =
     subscription &&
     (subscription.status === "active" ||
       subscription.status === "trialing" ||
-      subscription.status === "past_due");
+      subscription.status === "past_due" ||
+      subscriptionInGrace);
   const planId = activeSubscription
     ? subscription.planId
-    : (user?.plan ?? "free");
+    : subscription
+      ? "free"
+      : (user?.plan ?? "free");
   const plan = PLAN_CONFIG[planId] ?? PLAN_CONFIG.free;
   const [usage] = await db
     .select({
