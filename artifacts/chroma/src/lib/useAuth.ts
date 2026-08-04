@@ -3,7 +3,8 @@ import type { User } from "@workspace/api-client-react";
 import { ApiError } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/queryClient";
 
-const apiBase = `${import.meta.env.BASE_URL}api`;
+const apiOrigin = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/+$/, "");
+const apiBase = `${apiOrigin}${import.meta.env.BASE_URL}api`;
 
 /**
  * Auth state derived from the session-backed `GET /api/users/me` endpoint.
@@ -47,7 +48,7 @@ async function postAuth(
   const res = await fetch(`${apiBase}${path}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    credentials: "same-origin",
+    credentials: "include",
     body: JSON.stringify(body),
   });
   if (!res.ok) {
@@ -86,7 +87,7 @@ export async function logout(): Promise<void> {
   try {
     await fetch(`${apiBase}/auth/logout`, {
       method: "POST",
-      credentials: "same-origin",
+      credentials: "include",
     });
   } finally {
     queryClient.clear();
