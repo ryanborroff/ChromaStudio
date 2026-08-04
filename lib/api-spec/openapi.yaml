@@ -218,6 +218,29 @@ paths:
         "404":
           description: Video not found.
 
+  /videos/{id}/editing-export:
+    get:
+      operationId: downloadEditingExport
+      tags: [videos]
+      summary: Download an NLE interchange file for an owned video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Final Cut Pro XML interchange file compatible with Final Cut Pro, Premiere Pro, and DaVinci Resolve.
+          content:
+            application/xml:
+              schema:
+                type: string
+        "400":
+          description: Video is not ready for editing export.
+        "404":
+          description: Video not found.
+
   /exports:
     post:
       operationId: requestBulkExport
