@@ -7,12 +7,14 @@ import {
   localVideoAnalytics,
   type VideoAnalytics,
 } from "../lib/analytics";
+import { getEntitlementsForUser } from "../lib/billing";
 
 const router: IRouter = Router();
 const CACHE_TTL_MS = 10 * 60 * 1000;
 
 async function analyticsForVideo(
   video: typeof videosTable.$inferSelect,
+  analyticsHistoryDays = 365,
 ): Promise<VideoAnalytics> {
   const [cached] = await db
     .select()
@@ -32,6 +34,7 @@ async function analyticsForVideo(
       fresh = await fetchMuxVideoAnalytics(
         video.streamPlaybackId,
         video.duration,
+        analyticsHistoryDays,
       );
     } catch {
       fresh = null;
@@ -53,6 +56,7 @@ router.get(
   requireAuth,
   async (req, res): Promise<void> => {
     const user = await getCurrentUser(req);
+    const entitlements = await getEntitlementsForUser(user.id);
     const id = Number(req.params.id);
     const [video] = await db
       .select()
@@ -63,7 +67,7 @@ router.get(
       res.status(404).json({ error: "Video not found" });
       return;
     }
-    res.json(await analyticsForVideo(video));
+    res.json(await analyticsForVideo(video, entitlements.analyticsHistoryDays));
   },
 );
 
@@ -72,6 +76,7 @@ router.get(
   requireAuth,
   async (req, res): Promise<void> => {
     const user = await getCurrentUser(req);
+    const entitlements = await getEntitlementsForUser(user.id);
     const videos = await db
       .select()
       .from(videosTable)
@@ -87,7 +92,7 @@ router.get(
     const analytics = await Promise.all(
       videos.map(async (video) => ({
         video,
-        data: await analyticsForVideo(video),
+        data: await analyticsForVideo(video, entitlements.analyticsHistoryDays),
       })),
     );
     const totalViews = analytics.reduce(

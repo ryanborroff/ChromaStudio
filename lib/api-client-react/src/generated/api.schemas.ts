@@ -419,6 +419,37 @@ export interface PortfolioAnalytics {
   videos: PortfolioAnalyticsVideosItem[];
 }
 
+export interface BillingPlan {
+  planId: string;
+  name: string;
+  priceMonthlyCents: number;
+  /** @nullable */
+  stripePriceId: string | null;
+  storageLimitBytes: number;
+  /** @nullable */
+  seatLimit: number | null;
+  whiteLabelEmbed: boolean;
+  watermarkingEnabled: boolean;
+  portfolioQualityEncoding: boolean;
+  analyticsHistoryDays: number;
+}
+
+export interface BillingCheckoutInput {
+  planId: string;
+}
+
+export interface BillingEntitlements {
+  planId: string;
+  storageLimitBytes: number;
+  storageUsedBytes: number;
+  /** @nullable */
+  seatLimit: number | null;
+  whiteLabelEmbed: boolean;
+  watermarkingEnabled: boolean;
+  portfolioQualityEncoding: boolean;
+  analyticsHistoryDays: number;
+}
+
 export interface StorageUsage {
   totalBytesUsed: number;
   videoCount: number;
@@ -945,6 +976,15 @@ export const ListVideosSort = {
   community_rated: 'community_rated',
   community_rated_asc: 'community_rated_asc',
 } as const;
+
+export type CreateBillingCheckout200 = {
+  /** @nullable */
+  url: string | null;
+};
+
+export type CreateBillingPortal200 = {
+  url: string;
+};
 
 export type GetFeedParams = {
 limit?: number;

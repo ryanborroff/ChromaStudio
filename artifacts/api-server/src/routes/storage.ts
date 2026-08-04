@@ -13,15 +13,10 @@ import {
 } from "../lib/objectStorage";
 import { ObjectPermission } from "../lib/objectAcl";
 import { requireAuth } from "../lib/auth";
+import { getEntitlementsForUser } from "../lib/billing";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
-
-const STORAGE_LIMITS: Record<string, number> = {
-  free: 100 * 1024 * 1024 * 1024,
-  creator: 1 * 1024 * 1024 * 1024 * 1024,
-  studio: 5 * 1024 * 1024 * 1024 * 1024,
-};
 
 router.get("/storage/usage", requireAuth, async (req, res): Promise<void> => {
   const userId = (req.user as { id: number }).id;
@@ -38,8 +33,8 @@ router.get("/storage/usage", requireAuth, async (req, res): Promise<void> => {
       ),
     );
 
-  const plan = (req.user as { plan?: string }).plan ?? "free";
-  const planStorageLimitBytes = STORAGE_LIMITS[plan] ?? STORAGE_LIMITS.free;
+  const entitlements = await getEntitlementsForUser(userId);
+  const planStorageLimitBytes = entitlements.storageLimitBytes;
   const totalBytesUsed = Number(usage?.totalBytesUsed ?? 0);
   const usagePercent =
     planStorageLimitBytes > 0

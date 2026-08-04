@@ -1036,6 +1036,50 @@ export const GetPortfolioAnalyticsResponse = zod.object({
 
 
 /**
+ * @summary List available billing plans
+ */
+export const ListBillingPlansResponseItem = zod.object({
+  "planId": zod.string(),
+  "name": zod.string(),
+  "priceMonthlyCents": zod.number(),
+  "stripePriceId": zod.string().nullable(),
+  "storageLimitBytes": zod.number(),
+  "seatLimit": zod.number().nullable(),
+  "whiteLabelEmbed": zod.boolean(),
+  "watermarkingEnabled": zod.boolean(),
+  "portfolioQualityEncoding": zod.boolean(),
+  "analyticsHistoryDays": zod.number()
+})
+export const ListBillingPlansResponse = zod.array(ListBillingPlansResponseItem)
+
+
+export const GetBillingEntitlementsResponse = zod.object({
+  "planId": zod.string(),
+  "storageLimitBytes": zod.number(),
+  "storageUsedBytes": zod.number(),
+  "seatLimit": zod.number().nullable(),
+  "whiteLabelEmbed": zod.boolean(),
+  "watermarkingEnabled": zod.boolean(),
+  "portfolioQualityEncoding": zod.boolean(),
+  "analyticsHistoryDays": zod.number()
+})
+
+
+export const CreateBillingCheckoutBody = zod.object({
+  "planId": zod.string()
+})
+
+export const CreateBillingCheckoutResponse = zod.object({
+  "url": zod.string().nullable()
+})
+
+
+export const CreateBillingPortalResponse = zod.object({
+  "url": zod.string()
+})
+
+
+/**
  * @summary Rate a video (1-5 stars)
  */
 export const RateVideoParams = zod.object({
