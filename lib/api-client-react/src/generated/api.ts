@@ -57,6 +57,7 @@ import type {
   OwnerApprovalInput,
   PlatformStats,
   Portfolio,
+  PortfolioAnalytics,
   PortfolioEmbed,
   PortfolioInput,
   PublicDelivery,
@@ -85,6 +86,7 @@ import type {
   UserProfile,
   UserUpdate,
   Video,
+  VideoAnalytics,
   VideoExport,
   VideoInput,
   VideoList,
@@ -2051,6 +2053,160 @@ export const useLikeVideo = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getLikeVideoMutationOptions(options));
     }
+
+export const getGetVideoAnalyticsUrl = (id: number,) => {
+
+
+
+
+  return `/api/videos/${id}/analytics`
+}
+
+/**
+ * @summary Get owner analytics for a video
+ */
+export const getVideoAnalytics = async (id: number, options?: RequestInit): Promise<VideoAnalytics> => {
+
+  return customFetch<VideoAnalytics>(getGetVideoAnalyticsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetVideoAnalyticsQueryKey = (id: number,) => {
+    return [
+    `/api/videos/${id}/analytics`
+    ] as const;
+    }
+
+
+export const getGetVideoAnalyticsQueryOptions = <TData = Awaited<ReturnType<typeof getVideoAnalytics>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVideoAnalytics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetVideoAnalyticsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getVideoAnalytics>>> = ({ signal }) => getVideoAnalytics(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getVideoAnalytics>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetVideoAnalyticsQueryResult = NonNullable<Awaited<ReturnType<typeof getVideoAnalytics>>>
+export type GetVideoAnalyticsQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get owner analytics for a video
+ */
+
+export function useGetVideoAnalytics<TData = Awaited<ReturnType<typeof getVideoAnalytics>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getVideoAnalytics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetVideoAnalyticsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetPortfolioAnalyticsUrl = () => {
+
+
+
+
+  return `/api/analytics/portfolio`
+}
+
+/**
+ * @summary Get aggregate analytics for portfolio videos
+ */
+export const getPortfolioAnalytics = async ( options?: RequestInit): Promise<PortfolioAnalytics> => {
+
+  return customFetch<PortfolioAnalytics>(getGetPortfolioAnalyticsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPortfolioAnalyticsQueryKey = () => {
+    return [
+    `/api/analytics/portfolio`
+    ] as const;
+    }
+
+
+export const getGetPortfolioAnalyticsQueryOptions = <TData = Awaited<ReturnType<typeof getPortfolioAnalytics>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPortfolioAnalytics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPortfolioAnalyticsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPortfolioAnalytics>>> = ({ signal }) => getPortfolioAnalytics({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPortfolioAnalytics>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPortfolioAnalyticsQueryResult = NonNullable<Awaited<ReturnType<typeof getPortfolioAnalytics>>>
+export type GetPortfolioAnalyticsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Get aggregate analytics for portfolio videos
+ */
+
+export function useGetPortfolioAnalytics<TData = Awaited<ReturnType<typeof getPortfolioAnalytics>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPortfolioAnalytics>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPortfolioAnalyticsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getRateVideoUrl = (id: number,) => {
 
