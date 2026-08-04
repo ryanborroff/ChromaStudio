@@ -21,6 +21,7 @@ import { Library } from "@/pages/library";
 import { Pricing } from "@/pages/pricing";
 import { SharePage } from "@/pages/share-page";
 import { EmbedPlayer } from "@/pages/embed-player";
+import { PortfolioEmbed } from "@/pages/portfolio-embed";
 import { Deliveries } from "@/pages/deliveries";
 import { DeliveryManage } from "@/pages/delivery-manage";
 import { DeliveryPage } from "@/pages/delivery-page";
@@ -32,6 +33,8 @@ import { ComingSoon } from "@/pages/coming-soon";
 import { AdminDashboard } from "@/pages/admin";
 import { ReviewPage } from "@/pages/review-page";
 import { StorageConfidence } from "@/pages/storage-confidence";
+import { PublicPortfolio } from "@/pages/public-portfolio";
+import { PortfolioSettings } from "@/pages/portfolio-settings";
 import {
   Radio,
   Clapperboard,
@@ -82,6 +85,7 @@ function AppRoutes() {
         <ProtectedRoute path="/messages/:userId" component={MessageThread} />
         <ProtectedRoute path="/profile/me" component={ProfileEdit} />
         <Route path="/profile/:username" component={Profile} />
+        <Route path="/portfolio/:handle" component={PublicPortfolio} />
         <ProtectedRoute path="/videos/upload" component={VideoUpload} />
         <Route path="/videos/:id" component={VideoDetail} />
         <Route path="/watch/:token" component={SharePage} />
@@ -128,18 +132,7 @@ function AppRoutes() {
         {/* Studio — creator workspace */}
         <ProtectedRoute
           path="/studio/portfolio"
-          component={() => (
-            <ComingSoon
-              icon={FolderOpen}
-              title="Portfolio Collections"
-              description="Organise your work into reels and categories with drag-and-drop."
-              features={[
-                "Reels & themed collections",
-                "Drag-and-drop ordering",
-                "Featured work on your profile",
-              ]}
-            />
-          )}
+          component={PortfolioSettings}
         />
         <ProtectedRoute path="/studio/storage" component={Library} />
         <ProtectedRoute path="/studio/delivery" component={Deliveries} />
@@ -217,6 +210,7 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <WouterRouter base={basePath}>
           <Switch>
+            <Route path="/embed/video/:id" component={PortfolioEmbed} />
             <Route path="/embed/:token" component={EmbedPlayer} />
             <Route path="/review/:token" component={ReviewPage} />
             <Route>

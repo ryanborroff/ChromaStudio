@@ -1,4 +1,13 @@
-import { pgTable, text, serial, integer, timestamp, json, boolean } from "drizzle-orm/pg-core";
+import {
+  pgTable,
+  text,
+  serial,
+  integer,
+  timestamp,
+  json,
+  boolean,
+  unique,
+} from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
@@ -26,6 +35,33 @@ export const usersTable = pgTable("users", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
-export const insertUserSchema = createInsertSchema(usersTable).omit({ id: true, createdAt: true });
+export const portfoliosTable = pgTable(
+  "portfolios",
+  {
+    id: serial("id").primaryKey(),
+    ownerId: integer("owner_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
+    handle: text("handle").notNull(),
+    displayName: text("display_name").notNull(),
+    bio: text("bio"),
+    avatarUrl: text("avatar_url"),
+    bannerUrl: text("banner_url"),
+    isPublished: boolean("is_published").notNull().default(false),
+    accentColor: text("accent_color").notNull().default("#e8b4a0"),
+    layout: text("layout").notNull().default("grid"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (table) => [
+    unique("portfolios_owner_id_unique").on(table.ownerId),
+    unique("portfolios_handle_unique").on(table.handle),
+  ],
+);
+
+export const insertUserSchema = createInsertSchema(usersTable).omit({
+  id: true,
+  createdAt: true,
+});
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof usersTable.$inferSelect;

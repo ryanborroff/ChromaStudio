@@ -357,6 +357,14 @@ export const GetUserByUsernameResponse = zod.object({
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
   "isFeatured": zod.boolean().optional(),
+  "isPortfolioPiece": zod.boolean().optional(),
+  "portfolioTitle": zod.string().nullish(),
+  "portfolioDescription": zod.string().nullish(),
+  "clientCredit": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "allowEmbedding": zod.boolean().optional(),
+  "whiteLabel": zod.boolean().optional(),
+  "customLogoUrl": zod.string().nullish(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -592,6 +600,14 @@ export const AdminToggleFeaturedResponse = zod.object({
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
   "isFeatured": zod.boolean().optional(),
+  "isPortfolioPiece": zod.boolean().optional(),
+  "portfolioTitle": zod.string().nullish(),
+  "portfolioDescription": zod.string().nullish(),
+  "clientCredit": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "allowEmbedding": zod.boolean().optional(),
+  "whiteLabel": zod.boolean().optional(),
+  "customLogoUrl": zod.string().nullish(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -679,6 +695,14 @@ export const ListVideosResponse = zod.object({
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
   "isFeatured": zod.boolean().optional(),
+  "isPortfolioPiece": zod.boolean().optional(),
+  "portfolioTitle": zod.string().nullish(),
+  "portfolioDescription": zod.string().nullish(),
+  "clientCredit": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "allowEmbedding": zod.boolean().optional(),
+  "whiteLabel": zod.boolean().optional(),
+  "customLogoUrl": zod.string().nullish(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -790,6 +814,14 @@ export const GetVideoResponse = zod.object({
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
   "isFeatured": zod.boolean().optional(),
+  "isPortfolioPiece": zod.boolean().optional(),
+  "portfolioTitle": zod.string().nullish(),
+  "portfolioDescription": zod.string().nullish(),
+  "clientCredit": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "allowEmbedding": zod.boolean().optional(),
+  "whiteLabel": zod.boolean().optional(),
+  "customLogoUrl": zod.string().nullish(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -854,7 +886,15 @@ export const UpdateVideoBody = zod.object({
   "uploadProgressPercent": zod.number().min(updateVideoBodyUploadProgressPercentMin).max(updateVideoBodyUploadProgressPercentMax).optional(),
   "uploadError": zod.string().nullish(),
   "retryCount": zod.number().optional(),
-  "streamStatus": zod.string().optional()
+  "streamStatus": zod.string().optional(),
+  "isPortfolioPiece": zod.boolean().optional(),
+  "portfolioTitle": zod.string().nullish(),
+  "portfolioDescription": zod.string().nullish(),
+  "clientCredit": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "allowEmbedding": zod.boolean().optional(),
+  "whiteLabel": zod.boolean().optional(),
+  "customLogoUrl": zod.string().nullish()
 })
 
 export const UpdateVideoResponse = zod.object({
@@ -889,6 +929,14 @@ export const UpdateVideoResponse = zod.object({
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
   "isFeatured": zod.boolean().optional(),
+  "isPortfolioPiece": zod.boolean().optional(),
+  "portfolioTitle": zod.string().nullish(),
+  "portfolioDescription": zod.string().nullish(),
+  "clientCredit": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "allowEmbedding": zod.boolean().optional(),
+  "whiteLabel": zod.boolean().optional(),
+  "customLogoUrl": zod.string().nullish(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -1032,6 +1080,175 @@ export const CreateCommentBody = zod.object({
 
 
 /**
+ * @summary Get a published public portfolio
+ */
+export const GetPublicPortfolioParams = zod.object({
+  "handle": zod.coerce.string()
+})
+
+export const GetPublicPortfolioResponse = zod.object({
+  "portfolio": zod.object({
+  "id": zod.number(),
+  "ownerId": zod.number(),
+  "handle": zod.string(),
+  "displayName": zod.string(),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "bannerUrl": zod.string().nullish(),
+  "isPublished": zod.boolean(),
+  "accentColor": zod.string(),
+  "layout": zod.enum(['grid', 'list', 'cinematic'])
+}),
+  "videos": zod.array(zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "streamStatus": zod.string().nullish(),
+  "streamProvider": zod.string().nullish(),
+  "streamAssetId": zod.string().nullish(),
+  "streamPlaybackId": zod.string().nullish(),
+  "duration": zod.number().nullish(),
+  "fileSizeBytes": zod.number().nullish(),
+  "uploadProgressPercent": zod.number().optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
+  "reviewGroupId": zod.string().nullish(),
+  "versionNumber": zod.number().optional(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
+  "approvalDecidedAt": zod.coerce.date().nullish(),
+  "approvalDecidedBy": zod.string().nullish(),
+  "privacy": zod.enum(['public', 'private', 'password_protected']),
+  "category": zod.enum(['reel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
+  "shareEnabled": zod.boolean().optional(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean().optional(),
+  "tags": zod.array(zod.string()).optional(),
+  "credits": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
+  "isFeatured": zod.boolean().optional(),
+  "isPortfolioPiece": zod.boolean().optional(),
+  "portfolioTitle": zod.string().nullish(),
+  "portfolioDescription": zod.string().nullish(),
+  "clientCredit": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "allowEmbedding": zod.boolean().optional(),
+  "whiteLabel": zod.boolean().optional(),
+  "customLogoUrl": zod.string().nullish(),
+  "viewCount": zod.number(),
+  "likeCount": zod.number(),
+  "isLiked": zod.boolean().optional(),
+  "ratingAvg": zod.number().optional(),
+  "ratingCount": zod.number().optional(),
+  "userRating": zod.number().nullish(),
+  "user": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "name": zod.string(),
+  "profession": zod.string(),
+  "location": zod.string().nullish(),
+  "bio": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "skills": zod.array(zod.string()).optional(),
+  "socialLinks": zod.object({
+
+}).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
+  "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
+  "followerCount": zod.number().optional(),
+  "followingCount": zod.number().optional(),
+  "videoCount": zod.number().optional(),
+  "createdAt": zod.coerce.date()
+}).optional(),
+  "createdAt": zod.coerce.date()
+})),
+  "collections": zod.array(zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "videoCount": zod.number(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+export const GetMyPortfolioResponse = zod.object({
+  "id": zod.number(),
+  "ownerId": zod.number(),
+  "handle": zod.string(),
+  "displayName": zod.string(),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "bannerUrl": zod.string().nullish(),
+  "isPublished": zod.boolean(),
+  "accentColor": zod.string(),
+  "layout": zod.enum(['grid', 'list', 'cinematic'])
+})
+
+
+export const updateMyPortfolioBodyHandleMin = 2;
+
+
+
+
+export const UpdateMyPortfolioBody = zod.object({
+  "handle": zod.string().min(updateMyPortfolioBodyHandleMin).optional(),
+  "displayName": zod.string().min(1).optional(),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "bannerUrl": zod.string().nullish(),
+  "isPublished": zod.boolean().optional(),
+  "accentColor": zod.string().optional(),
+  "layout": zod.enum(['grid', 'list', 'cinematic']).optional()
+})
+
+export const UpdateMyPortfolioResponse = zod.object({
+  "id": zod.number(),
+  "ownerId": zod.number(),
+  "handle": zod.string(),
+  "displayName": zod.string(),
+  "bio": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "bannerUrl": zod.string().nullish(),
+  "isPublished": zod.boolean(),
+  "accentColor": zod.string(),
+  "layout": zod.enum(['grid', 'list', 'cinematic'])
+})
+
+
+/**
+ * @summary Get an embeddable portfolio video
+ */
+export const GetPortfolioEmbedParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+export const GetPortfolioEmbedResponse = zod.object({
+  "id": zod.number(),
+  "title": zod.string(),
+  "streamUid": zod.string().nullable(),
+  "videoUrl": zod.string().nullable(),
+  "thumbnailUrl": zod.string().nullable(),
+  "whiteLabel": zod.boolean(),
+  "customLogoUrl": zod.string().nullish()
+})
+
+
+/**
  * @summary List the current user's collections
  */
 export const ListCollectionsResponse = zod.object({
@@ -1106,6 +1323,14 @@ export const GetCollectionResponse = zod.object({
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
   "isFeatured": zod.boolean().optional(),
+  "isPortfolioPiece": zod.boolean().optional(),
+  "portfolioTitle": zod.string().nullish(),
+  "portfolioDescription": zod.string().nullish(),
+  "clientCredit": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "allowEmbedding": zod.boolean().optional(),
+  "whiteLabel": zod.boolean().optional(),
+  "customLogoUrl": zod.string().nullish(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -1588,6 +1813,14 @@ export const GetFeedResponse = zod.object({
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
   "isFeatured": zod.boolean().optional(),
+  "isPortfolioPiece": zod.boolean().optional(),
+  "portfolioTitle": zod.string().nullish(),
+  "portfolioDescription": zod.string().nullish(),
+  "clientCredit": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "allowEmbedding": zod.boolean().optional(),
+  "whiteLabel": zod.boolean().optional(),
+  "customLogoUrl": zod.string().nullish(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),
@@ -1786,6 +2019,14 @@ export const GetFeaturedContentResponse = zod.object({
   "credits": zod.string().nullish(),
   "downloadFormats": zod.array(zod.string()).optional(),
   "isFeatured": zod.boolean().optional(),
+  "isPortfolioPiece": zod.boolean().optional(),
+  "portfolioTitle": zod.string().nullish(),
+  "portfolioDescription": zod.string().nullish(),
+  "clientCredit": zod.string().nullish(),
+  "publishedAt": zod.coerce.date().nullish(),
+  "allowEmbedding": zod.boolean().optional(),
+  "whiteLabel": zod.boolean().optional(),
+  "customLogoUrl": zod.string().nullish(),
   "viewCount": zod.number(),
   "likeCount": zod.number(),
   "isLiked": zod.boolean().optional(),

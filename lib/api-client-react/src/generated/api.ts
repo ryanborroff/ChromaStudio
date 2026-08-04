@@ -56,7 +56,11 @@ import type {
   MessageList,
   OwnerApprovalInput,
   PlatformStats,
+  Portfolio,
+  PortfolioEmbed,
+  PortfolioInput,
   PublicDelivery,
+  PublicPortfolio,
   RateInput,
   RateResult,
   ReviewComment,
@@ -2268,6 +2272,296 @@ export const useCreateComment = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getCreateCommentMutationOptions(options));
     }
+
+export const getGetPublicPortfolioUrl = (handle: string,) => {
+
+
+
+
+  return `/api/portfolio/${handle}`
+}
+
+/**
+ * @summary Get a published public portfolio
+ */
+export const getPublicPortfolio = async (handle: string, options?: RequestInit): Promise<PublicPortfolio> => {
+
+  return customFetch<PublicPortfolio>(getGetPublicPortfolioUrl(handle),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPublicPortfolioQueryKey = (handle: string,) => {
+    return [
+    `/api/portfolio/${handle}`
+    ] as const;
+    }
+
+
+export const getGetPublicPortfolioQueryOptions = <TData = Awaited<ReturnType<typeof getPublicPortfolio>>, TError = ErrorType<void>>(handle: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicPortfolio>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPublicPortfolioQueryKey(handle);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPublicPortfolio>>> = ({ signal }) => getPublicPortfolio(handle, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(handle), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPublicPortfolio>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPublicPortfolioQueryResult = NonNullable<Awaited<ReturnType<typeof getPublicPortfolio>>>
+export type GetPublicPortfolioQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get a published public portfolio
+ */
+
+export function useGetPublicPortfolio<TData = Awaited<ReturnType<typeof getPublicPortfolio>>, TError = ErrorType<void>>(
+ handle: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPublicPortfolio>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPublicPortfolioQueryOptions(handle,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getGetMyPortfolioUrl = () => {
+
+
+
+
+  return `/api/portfolio/me`
+}
+
+export const getMyPortfolio = async ( options?: RequestInit): Promise<Portfolio> => {
+
+  return customFetch<Portfolio>(getGetMyPortfolioUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetMyPortfolioQueryKey = () => {
+    return [
+    `/api/portfolio/me`
+    ] as const;
+    }
+
+
+export const getGetMyPortfolioQueryOptions = <TData = Awaited<ReturnType<typeof getMyPortfolio>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyPortfolio>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetMyPortfolioQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getMyPortfolio>>> = ({ signal }) => getMyPortfolio({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getMyPortfolio>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetMyPortfolioQueryResult = NonNullable<Awaited<ReturnType<typeof getMyPortfolio>>>
+export type GetMyPortfolioQueryError = ErrorType<unknown>
+
+
+
+export function useGetMyPortfolio<TData = Awaited<ReturnType<typeof getMyPortfolio>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getMyPortfolio>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetMyPortfolioQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUpdateMyPortfolioUrl = () => {
+
+
+
+
+  return `/api/portfolio/me`
+}
+
+export const updateMyPortfolio = async (portfolioInput: PortfolioInput, options?: RequestInit): Promise<Portfolio> => {
+
+  return customFetch<Portfolio>(getUpdateMyPortfolioUrl(),
+  {
+    ...options,
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      portfolioInput,)
+  }
+);}
+
+
+
+
+export const getUpdateMyPortfolioMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMyPortfolio>>, TError,{data: BodyType<PortfolioInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateMyPortfolio>>, TError,{data: BodyType<PortfolioInput>}, TContext> => {
+
+const mutationKey = ['updateMyPortfolio'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateMyPortfolio>>, {data: BodyType<PortfolioInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  updateMyPortfolio(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateMyPortfolioMutationResult = NonNullable<Awaited<ReturnType<typeof updateMyPortfolio>>>
+    export type UpdateMyPortfolioMutationBody = BodyType<PortfolioInput>
+    export type UpdateMyPortfolioMutationError = ErrorType<unknown>
+
+    export const useUpdateMyPortfolio = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateMyPortfolio>>, TError,{data: BodyType<PortfolioInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof updateMyPortfolio>>,
+        TError,
+        {data: BodyType<PortfolioInput>},
+        TContext
+      > => {
+      return useMutation(getUpdateMyPortfolioMutationOptions(options));
+    }
+
+export const getGetPortfolioEmbedUrl = (id: number,) => {
+
+
+
+
+  return `/api/embeds/videos/${id}`
+}
+
+/**
+ * @summary Get an embeddable portfolio video
+ */
+export const getPortfolioEmbed = async (id: number, options?: RequestInit): Promise<PortfolioEmbed> => {
+
+  return customFetch<PortfolioEmbed>(getGetPortfolioEmbedUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetPortfolioEmbedQueryKey = (id: number,) => {
+    return [
+    `/api/embeds/videos/${id}`
+    ] as const;
+    }
+
+
+export const getGetPortfolioEmbedQueryOptions = <TData = Awaited<ReturnType<typeof getPortfolioEmbed>>, TError = ErrorType<void>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPortfolioEmbed>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetPortfolioEmbedQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getPortfolioEmbed>>> = ({ signal }) => getPortfolioEmbed(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getPortfolioEmbed>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetPortfolioEmbedQueryResult = NonNullable<Awaited<ReturnType<typeof getPortfolioEmbed>>>
+export type GetPortfolioEmbedQueryError = ErrorType<void>
+
+
+/**
+ * @summary Get an embeddable portfolio video
+ */
+
+export function useGetPortfolioEmbed<TData = Awaited<ReturnType<typeof getPortfolioEmbed>>, TError = ErrorType<void>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getPortfolioEmbed>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetPortfolioEmbedQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getListCollectionsUrl = () => {
 
