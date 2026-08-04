@@ -38,11 +38,20 @@ app.use(
 // The SPA and API are same-origin behind the Replit proxy, so cross-origin
 // credentialed requests are limited to our own domains rather than reflected
 // back with `origin: true` (which is unsafe when combined with credentials).
-const allowedOrigins = (process.env.REPLIT_DOMAINS?.split(",") ?? [])
-  .map((d) => `https://${d.trim()}`)
+const allowedOrigins = [
+  ...(process.env.FRONTEND_URL?.split(",") ?? []),
+  ...(process.env.APP_URL?.split(",") ?? []),
+  ...(process.env.REPLIT_DOMAINS?.split(",").map(
+    (d) => `https://${d.trim()}`,
+  ) ?? []),
+]
+  .map((origin) => origin.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 app.use(
-  cors({ credentials: true, origin: allowedOrigins.length ? allowedOrigins : false }),
+  cors({
+    credentials: true,
+    origin: allowedOrigins.length ? allowedOrigins : false,
+  }),
 );
 // Capture raw body before JSON parsing so webhook signature verification works.
 app.use(
@@ -58,6 +67,8 @@ const SESSION_SECRET = process.env.SESSION_SECRET;
 if (!SESSION_SECRET) {
   throw new Error("SESSION_SECRET must be set");
 }
+const sessionSameSite =
+  process.env.SESSION_COOKIE_SAMESITE === "none" ? "none" : "lax";
 
 const PgSession = connectPgSimple(session);
 
@@ -83,7 +94,7 @@ app.use(
       // session on the callback response, which is then sent on the same-site
       // redirect to /feed. Apple relies on signed id_token verification rather
       // than session-stored OAuth state (a lax cookie can't survive the POST).
-      sameSite: "lax",
+      sameSite: sessionSameSite,
       maxAge: 1000 * 60 * 60 * 24 * 30,
     },
   }),
@@ -99,7 +110,9 @@ app.use(passport.session());
 if (process.env.NODE_ENV === "development") {
   app.use("/api/dev", devAuthToggleRouter);
   app.use(devAutoLogin);
-  logger.warn("dev auth helpers enabled — auto-login as demo user (use /api/dev/logout to sign out)");
+  logger.warn(
+    "dev auth helpers enabled — auto-login as demo user (use /api/dev/logout to sign out)",
+  );
 }
 
 app.use("/api", router);

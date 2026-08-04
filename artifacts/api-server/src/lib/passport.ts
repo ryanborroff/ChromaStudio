@@ -1,5 +1,8 @@
 import passport from "passport";
-import { Strategy as GoogleStrategy, type Profile } from "passport-google-oauth20";
+import {
+  Strategy as GoogleStrategy,
+  type Profile,
+} from "passport-google-oauth20";
 import { Strategy as AppleStrategy } from "passport-apple";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
@@ -7,19 +10,22 @@ import { eq } from "drizzle-orm";
 type DbUser = typeof usersTable.$inferSelect;
 
 export function isGoogleConfigured(): boolean {
-  return Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET);
+  return Boolean(
+    process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET,
+  );
 }
 
 export function isAppleConfigured(): boolean {
   return Boolean(
     process.env.APPLE_CLIENT_ID &&
-      process.env.APPLE_TEAM_ID &&
-      process.env.APPLE_KEY_ID &&
-      process.env.APPLE_PRIVATE_KEY,
+    process.env.APPLE_TEAM_ID &&
+    process.env.APPLE_KEY_ID &&
+    process.env.APPLE_PRIVATE_KEY,
   );
 }
 
 function baseUrl(): string {
+  if (process.env.APP_URL) return process.env.APP_URL.replace(/\/+$/, "");
   const host = process.env.REPLIT_DOMAINS?.split(",")[0]?.trim();
   return host ? `https://${host}` : "";
 }
@@ -103,7 +109,13 @@ async function findOrCreateAppleUser(
   const username = await generateUsername(email?.split("@")[0] || displayName);
   const [user] = await db
     .insert(usersTable)
-    .values({ appleId, email, username, name: displayName, profession: "Other" })
+    .values({
+      appleId,
+      email,
+      username,
+      name: displayName,
+      profession: "Other",
+    })
     .returning();
   return user;
 }
@@ -160,7 +172,10 @@ export function configurePassport(): void {
           clientID: process.env.APPLE_CLIENT_ID!,
           teamID: process.env.APPLE_TEAM_ID!,
           keyID: process.env.APPLE_KEY_ID!,
-          privateKeyString: process.env.APPLE_PRIVATE_KEY!.replace(/\\n/g, "\n"),
+          privateKeyString: process.env.APPLE_PRIVATE_KEY!.replace(
+            /\\n/g,
+            "\n",
+          ),
           callbackURL: `${baseUrl()}/api/auth/apple/callback`,
           scope: ["name", "email"],
           passReqToCallback: true,
@@ -178,10 +193,11 @@ export function configurePassport(): void {
                 const parsed = JSON.parse(rawUser) as {
                   name?: { firstName?: string; lastName?: string };
                 };
-                name = [parsed.name?.firstName, parsed.name?.lastName]
-                  .filter(Boolean)
-                  .join(" ")
-                  .trim() || null;
+                name =
+                  [parsed.name?.firstName, parsed.name?.lastName]
+                    .filter(Boolean)
+                    .join(" ")
+                    .trim() || null;
               } catch {
                 name = null;
               }
