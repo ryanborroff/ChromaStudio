@@ -23,6 +23,8 @@ import type {
   AddDeliveryFileInput,
   AdminFeaturedToggle,
   AdminListUsersParams,
+  ApprovalInput,
+  ApprovalResult,
   Collection,
   CollectionDetail,
   CollectionInput,
@@ -42,6 +44,7 @@ import type {
   FeaturedContent,
   FollowResult,
   GetFeedParams,
+  GuestReviewCommentInput,
   HealthStatus,
   LikeResult,
   ListUsersParams,
@@ -49,10 +52,18 @@ import type {
   Message,
   MessageInput,
   MessageList,
+  OwnerApprovalInput,
   PlatformStats,
   PublicDelivery,
   RateInput,
   RateResult,
+  ReviewComment,
+  ReviewCommentInput,
+  ReviewCommentList,
+  ReviewLink,
+  ReviewLinkInput,
+  ReviewSession,
+  ReviewUnlockInput,
   SharePublic,
   ShareSettings,
   ShareSettingsInput,
@@ -2502,7 +2513,7 @@ export const unlockSharedVideo = async (token: string,
 
 
 
-export const getUnlockSharedVideoMutationOptions = <TError = ErrorType<void>,
+export const getUnlockSharedVideoMutationOptions = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unlockSharedVideo>>, TError,{token: string;data: BodyType<ShareUnlockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
 ): UseMutationOptions<Awaited<ReturnType<typeof unlockSharedVideo>>, TError,{token: string;data: BodyType<ShareUnlockInput>}, TContext> => {
 
@@ -2531,12 +2542,12 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
 
     export type UnlockSharedVideoMutationResult = NonNullable<Awaited<ReturnType<typeof unlockSharedVideo>>>
     export type UnlockSharedVideoMutationBody = BodyType<ShareUnlockInput>
-    export type UnlockSharedVideoMutationError = ErrorType<void>
+    export type UnlockSharedVideoMutationError = ErrorType<unknown>
 
     /**
  * @summary Unlock a password-protected shared video (public)
  */
-export const useUnlockSharedVideo = <TError = ErrorType<void>,
+export const useUnlockSharedVideo = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unlockSharedVideo>>, TError,{token: string;data: BodyType<ShareUnlockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
  ): UseMutationResult<
         Awaited<ReturnType<typeof unlockSharedVideo>>,
@@ -2545,6 +2556,664 @@ export const useUnlockSharedVideo = <TError = ErrorType<void>,
         TContext
       > => {
       return useMutation(getUnlockSharedVideoMutationOptions(options));
+    }
+
+export const getCreateReviewLinkUrl = (id: number,) => {
+
+
+
+
+  return `/api/videos/${id}/review-link`
+}
+
+/**
+ * @summary Create a guest review link for a video group
+ */
+export const createReviewLink = async (id: number,
+    reviewLinkInput: ReviewLinkInput, options?: RequestInit): Promise<ReviewLink> => {
+
+  return customFetch<ReviewLink>(getCreateReviewLinkUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      reviewLinkInput,)
+  }
+);}
+
+
+
+
+export const getCreateReviewLinkMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReviewLink>>, TError,{id: number;data: BodyType<ReviewLinkInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createReviewLink>>, TError,{id: number;data: BodyType<ReviewLinkInput>}, TContext> => {
+
+const mutationKey = ['createReviewLink'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createReviewLink>>, {id: number;data: BodyType<ReviewLinkInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  createReviewLink(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateReviewLinkMutationResult = NonNullable<Awaited<ReturnType<typeof createReviewLink>>>
+    export type CreateReviewLinkMutationBody = BodyType<ReviewLinkInput>
+    export type CreateReviewLinkMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create a guest review link for a video group
+ */
+export const useCreateReviewLink = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createReviewLink>>, TError,{id: number;data: BodyType<ReviewLinkInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof createReviewLink>>,
+        TError,
+        {id: number;data: BodyType<ReviewLinkInput>},
+        TContext
+      > => {
+      return useMutation(getCreateReviewLinkMutationOptions(options));
+    }
+
+export const getListReviewCommentsUrl = (id: number,) => {
+
+
+
+
+  return `/api/videos/${id}/review-comments`
+}
+
+/**
+ * @summary List timestamped review comments for a video
+ */
+export const listReviewComments = async (id: number, options?: RequestInit): Promise<ReviewCommentList> => {
+
+  return customFetch<ReviewCommentList>(getListReviewCommentsUrl(id),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListReviewCommentsQueryKey = (id: number,) => {
+    return [
+    `/api/videos/${id}/review-comments`
+    ] as const;
+    }
+
+
+export const getListReviewCommentsQueryOptions = <TData = Awaited<ReturnType<typeof listReviewComments>>, TError = ErrorType<unknown>>(id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReviewComments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListReviewCommentsQueryKey(id);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listReviewComments>>> = ({ signal }) => listReviewComments(id, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(id), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listReviewComments>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListReviewCommentsQueryResult = NonNullable<Awaited<ReturnType<typeof listReviewComments>>>
+export type ListReviewCommentsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List timestamped review comments for a video
+ */
+
+export function useListReviewComments<TData = Awaited<ReturnType<typeof listReviewComments>>, TError = ErrorType<unknown>>(
+ id: number, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listReviewComments>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListReviewCommentsQueryOptions(id,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getPostOwnerReviewCommentUrl = (id: number,) => {
+
+
+
+
+  return `/api/videos/${id}/review-comments`
+}
+
+/**
+ * @summary Post an owner review comment
+ */
+export const postOwnerReviewComment = async (id: number,
+    reviewCommentInput: ReviewCommentInput, options?: RequestInit): Promise<ReviewComment> => {
+
+  return customFetch<ReviewComment>(getPostOwnerReviewCommentUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      reviewCommentInput,)
+  }
+);}
+
+
+
+
+export const getPostOwnerReviewCommentMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postOwnerReviewComment>>, TError,{id: number;data: BodyType<ReviewCommentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof postOwnerReviewComment>>, TError,{id: number;data: BodyType<ReviewCommentInput>}, TContext> => {
+
+const mutationKey = ['postOwnerReviewComment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postOwnerReviewComment>>, {id: number;data: BodyType<ReviewCommentInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  postOwnerReviewComment(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostOwnerReviewCommentMutationResult = NonNullable<Awaited<ReturnType<typeof postOwnerReviewComment>>>
+    export type PostOwnerReviewCommentMutationBody = BodyType<ReviewCommentInput>
+    export type PostOwnerReviewCommentMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Post an owner review comment
+ */
+export const usePostOwnerReviewComment = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postOwnerReviewComment>>, TError,{id: number;data: BodyType<ReviewCommentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof postOwnerReviewComment>>,
+        TError,
+        {id: number;data: BodyType<ReviewCommentInput>},
+        TContext
+      > => {
+      return useMutation(getPostOwnerReviewCommentMutationOptions(options));
+    }
+
+export const getResolveReviewCommentUrl = (id: number,
+    commentId: number,) => {
+
+
+
+
+  return `/api/videos/${id}/review-comments/${commentId}/resolve`
+}
+
+/**
+ * @summary Resolve an owner-visible review comment
+ */
+export const resolveReviewComment = async (id: number,
+    commentId: number, options?: RequestInit): Promise<ReviewComment> => {
+
+  return customFetch<ReviewComment>(getResolveReviewCommentUrl(id,commentId),
+  {
+    ...options,
+    method: 'POST'
+
+
+  }
+);}
+
+
+
+
+export const getResolveReviewCommentMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resolveReviewComment>>, TError,{id: number;commentId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof resolveReviewComment>>, TError,{id: number;commentId: number}, TContext> => {
+
+const mutationKey = ['resolveReviewComment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof resolveReviewComment>>, {id: number;commentId: number}> = (props) => {
+          const {id,commentId} = props ?? {};
+
+          return  resolveReviewComment(id,commentId,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type ResolveReviewCommentMutationResult = NonNullable<Awaited<ReturnType<typeof resolveReviewComment>>>
+
+    export type ResolveReviewCommentMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Resolve an owner-visible review comment
+ */
+export const useResolveReviewComment = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof resolveReviewComment>>, TError,{id: number;commentId: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof resolveReviewComment>>,
+        TError,
+        {id: number;commentId: number},
+        TContext
+      > => {
+      return useMutation(getResolveReviewCommentMutationOptions(options));
+    }
+
+export const getSetOwnerApprovalStatusUrl = (id: number,) => {
+
+
+
+
+  return `/api/videos/${id}/approval`
+}
+
+/**
+ * @summary Set approval status as the owner
+ */
+export const setOwnerApprovalStatus = async (id: number,
+    ownerApprovalInput: OwnerApprovalInput, options?: RequestInit): Promise<ApprovalResult> => {
+
+  return customFetch<ApprovalResult>(getSetOwnerApprovalStatusUrl(id),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      ownerApprovalInput,)
+  }
+);}
+
+
+
+
+export const getSetOwnerApprovalStatusMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setOwnerApprovalStatus>>, TError,{id: number;data: BodyType<OwnerApprovalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setOwnerApprovalStatus>>, TError,{id: number;data: BodyType<OwnerApprovalInput>}, TContext> => {
+
+const mutationKey = ['setOwnerApprovalStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setOwnerApprovalStatus>>, {id: number;data: BodyType<OwnerApprovalInput>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  setOwnerApprovalStatus(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetOwnerApprovalStatusMutationResult = NonNullable<Awaited<ReturnType<typeof setOwnerApprovalStatus>>>
+    export type SetOwnerApprovalStatusMutationBody = BodyType<OwnerApprovalInput>
+    export type SetOwnerApprovalStatusMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Set approval status as the owner
+ */
+export const useSetOwnerApprovalStatus = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setOwnerApprovalStatus>>, TError,{id: number;data: BodyType<OwnerApprovalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setOwnerApprovalStatus>>,
+        TError,
+        {id: number;data: BodyType<OwnerApprovalInput>},
+        TContext
+      > => {
+      return useMutation(getSetOwnerApprovalStatusMutationOptions(options));
+    }
+
+export const getGetReviewLinkUrl = (token: string,) => {
+
+
+
+
+  return `/api/review/${token}`
+}
+
+/**
+ * @summary Resolve a public guest review link
+ */
+export const getReviewLink = async (token: string, options?: RequestInit): Promise<ReviewSession> => {
+
+  return customFetch<ReviewSession>(getGetReviewLinkUrl(token),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getGetReviewLinkQueryKey = (token: string,) => {
+    return [
+    `/api/review/${token}`
+    ] as const;
+    }
+
+
+export const getGetReviewLinkQueryOptions = <TData = Awaited<ReturnType<typeof getReviewLink>>, TError = ErrorType<unknown>>(token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReviewLink>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getGetReviewLinkQueryKey(token);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof getReviewLink>>> = ({ signal }) => getReviewLink(token, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(token), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof getReviewLink>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type GetReviewLinkQueryResult = NonNullable<Awaited<ReturnType<typeof getReviewLink>>>
+export type GetReviewLinkQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary Resolve a public guest review link
+ */
+
+export function useGetReviewLink<TData = Awaited<ReturnType<typeof getReviewLink>>, TError = ErrorType<unknown>>(
+ token: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof getReviewLink>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getGetReviewLinkQueryOptions(token,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
+
+export const getUnlockReviewLinkUrl = (token: string,) => {
+
+
+
+
+  return `/api/review/${token}`
+}
+
+/**
+ * @summary Unlock a password-protected review link
+ */
+export const unlockReviewLink = async (token: string,
+    reviewUnlockInput: ReviewUnlockInput, options?: RequestInit): Promise<ReviewSession> => {
+
+  return customFetch<ReviewSession>(getUnlockReviewLinkUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      reviewUnlockInput,)
+  }
+);}
+
+
+
+
+export const getUnlockReviewLinkMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unlockReviewLink>>, TError,{token: string;data: BodyType<ReviewUnlockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof unlockReviewLink>>, TError,{token: string;data: BodyType<ReviewUnlockInput>}, TContext> => {
+
+const mutationKey = ['unlockReviewLink'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof unlockReviewLink>>, {token: string;data: BodyType<ReviewUnlockInput>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  unlockReviewLink(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UnlockReviewLinkMutationResult = NonNullable<Awaited<ReturnType<typeof unlockReviewLink>>>
+    export type UnlockReviewLinkMutationBody = BodyType<ReviewUnlockInput>
+    export type UnlockReviewLinkMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Unlock a password-protected review link
+ */
+export const useUnlockReviewLink = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof unlockReviewLink>>, TError,{token: string;data: BodyType<ReviewUnlockInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof unlockReviewLink>>,
+        TError,
+        {token: string;data: BodyType<ReviewUnlockInput>},
+        TContext
+      > => {
+      return useMutation(getUnlockReviewLinkMutationOptions(options));
+    }
+
+export const getPostGuestReviewCommentUrl = (token: string,) => {
+
+
+
+
+  return `/api/review/${token}/comments`
+}
+
+/**
+ * @summary Post a timestamped guest review comment
+ */
+export const postGuestReviewComment = async (token: string,
+    guestReviewCommentInput: GuestReviewCommentInput, options?: RequestInit): Promise<ReviewComment> => {
+
+  return customFetch<ReviewComment>(getPostGuestReviewCommentUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      guestReviewCommentInput,)
+  }
+);}
+
+
+
+
+export const getPostGuestReviewCommentMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postGuestReviewComment>>, TError,{token: string;data: BodyType<GuestReviewCommentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof postGuestReviewComment>>, TError,{token: string;data: BodyType<GuestReviewCommentInput>}, TContext> => {
+
+const mutationKey = ['postGuestReviewComment'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof postGuestReviewComment>>, {token: string;data: BodyType<GuestReviewCommentInput>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  postGuestReviewComment(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type PostGuestReviewCommentMutationResult = NonNullable<Awaited<ReturnType<typeof postGuestReviewComment>>>
+    export type PostGuestReviewCommentMutationBody = BodyType<GuestReviewCommentInput>
+    export type PostGuestReviewCommentMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Post a timestamped guest review comment
+ */
+export const usePostGuestReviewComment = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof postGuestReviewComment>>, TError,{token: string;data: BodyType<GuestReviewCommentInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof postGuestReviewComment>>,
+        TError,
+        {token: string;data: BodyType<GuestReviewCommentInput>},
+        TContext
+      > => {
+      return useMutation(getPostGuestReviewCommentMutationOptions(options));
+    }
+
+export const getSetGuestApprovalStatusUrl = (token: string,) => {
+
+
+
+
+  return `/api/review/${token}/approval`
+}
+
+/**
+ * @summary Approve the latest ready video or request changes
+ */
+export const setGuestApprovalStatus = async (token: string,
+    approvalInput: ApprovalInput, options?: RequestInit): Promise<ApprovalResult> => {
+
+  return customFetch<ApprovalResult>(getSetGuestApprovalStatusUrl(token),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      approvalInput,)
+  }
+);}
+
+
+
+
+export const getSetGuestApprovalStatusMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGuestApprovalStatus>>, TError,{token: string;data: BodyType<ApprovalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof setGuestApprovalStatus>>, TError,{token: string;data: BodyType<ApprovalInput>}, TContext> => {
+
+const mutationKey = ['setGuestApprovalStatus'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof setGuestApprovalStatus>>, {token: string;data: BodyType<ApprovalInput>}> = (props) => {
+          const {token,data} = props ?? {};
+
+          return  setGuestApprovalStatus(token,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SetGuestApprovalStatusMutationResult = NonNullable<Awaited<ReturnType<typeof setGuestApprovalStatus>>>
+    export type SetGuestApprovalStatusMutationBody = BodyType<ApprovalInput>
+    export type SetGuestApprovalStatusMutationError = ErrorType<void>
+
+    /**
+ * @summary Approve the latest ready video or request changes
+ */
+export const useSetGuestApprovalStatus = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof setGuestApprovalStatus>>, TError,{token: string;data: BodyType<ApprovalInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof setGuestApprovalStatus>>,
+        TError,
+        {token: string;data: BodyType<ApprovalInput>},
+        TContext
+      > => {
+      return useMutation(getSetGuestApprovalStatusMutationOptions(options));
     }
 
 export const getFollowUserUrl = (userId: number,) => {

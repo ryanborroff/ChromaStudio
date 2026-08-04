@@ -32,19 +32,48 @@ router.post("/webhooks/mux", (req, res, next) => {
       const event = req.body as {
         type?: string;
         data?: {
+          id?: string;
           passthrough?: string;
+          duration?: number;
+          errors?: { messages?: string[] };
           playback_ids?: Array<{ id: string; policy: string }>;
         };
       };
 
-      if (event.type === "video.asset.ready") {
+      if (!secret || !rawBody) {
+        res.status(503).json({ error: "Mux webhook verification is not configured" });
+        return;
+      }
+
+      if (event.type === "video.upload.asset_created") {
+        const passthrough = event.data?.passthrough;
+        if (passthrough && event.data?.id) {
+          await db
+            .update(videosTable)
+            .set({ streamAssetId: event.data.id, streamStatus: "processing" })
+            .where(eq(videosTable.streamUid, passthrough));
+        }
+      } else if (event.type === "video.asset.ready") {
         const passthrough = event.data?.passthrough;
         const playbackId = event.data?.playback_ids?.[0]?.id;
 
         if (passthrough && playbackId) {
           await db
             .update(videosTable)
-            .set({ streamPlaybackId: playbackId, streamStatus: "ready" })
+            .set({
+              streamPlaybackId: playbackId,
+              streamStatus: "ready",
+              duration: event.data?.duration ?? undefined,
+              thumbnailUrl: `https://image.mux.com/${playbackId}/thumbnail.jpg`,
+            })
+            .where(eq(videosTable.streamUid, passthrough));
+        }
+      } else if (event.type === "video.asset.errored") {
+        const passthrough = event.data?.passthrough;
+        if (passthrough) {
+          await db
+            .update(videosTable)
+            .set({ streamStatus: "error" })
             .where(eq(videosTable.streamUid, passthrough));
         }
       }

@@ -798,6 +798,223 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SharePublic"
+
+  /videos/{id}/review-link:
+    post:
+      operationId: createReviewLink
+      tags: [review]
+      summary: Create a guest review link for a video group
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewLinkInput"
+      responses:
+        "201":
+          description: Review link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewLink"
+  /videos/{id}/review-comments:
+    get:
+      operationId: listReviewComments
+      tags: [review]
+      summary: List timestamped review comments for a video
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Review comments
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewCommentList"
+    post:
+      operationId: postOwnerReviewComment
+      tags: [review]
+      summary: Post an owner review comment
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewCommentInput"
+      responses:
+        "201":
+          description: Review comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewComment"
+
+  /videos/{id}/review-comments/{commentId}/resolve:
+    post:
+      operationId: resolveReviewComment
+      tags: [review]
+      summary: Resolve an owner-visible review comment
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Resolved review comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewComment"
+
+  /videos/{id}/approval:
+    post:
+      operationId: setOwnerApprovalStatus
+      tags: [review]
+      summary: Set approval status as the owner
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OwnerApprovalInput"
+      responses:
+        "200":
+          description: Updated approval status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApprovalResult"
+
+  /review/{token}:
+    get:
+      operationId: getReviewLink
+      tags: [review]
+      summary: Resolve a public guest review link
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Review link metadata and latest ready video
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewSession"
+    post:
+      operationId: unlockReviewLink
+      tags: [review]
+      summary: Unlock a password-protected review link
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ReviewUnlockInput"
+      responses:
+        "200":
+          description: Review session
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewSession"
+
+  /review/{token}/comments:
+    post:
+      operationId: postGuestReviewComment
+      tags: [review]
+      summary: Post a timestamped guest review comment
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GuestReviewCommentInput"
+      responses:
+        "201":
+          description: Review comment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewComment"
+
+  /review/{token}/approval:
+    post:
+      operationId: setGuestApprovalStatus
+      tags: [review]
+      summary: Approve the latest ready video or request changes
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ApprovalInput"
+      responses:
+        "200":
+          description: Updated approval status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApprovalResult"
         "401":
           description: Incorrect password
         "404":
@@ -1337,7 +1554,23 @@ components:
           type: ["string", "null"]
         streamProvider:
           type: ["string", "null"]
+        streamAssetId:
+          type: ["string", "null"]
         streamPlaybackId:
+          type: ["string", "null"]
+        duration:
+          type: ["number", "null"]
+        reviewGroupId:
+          type: ["string", "null"]
+        versionNumber:
+          type: integer
+        approvalStatus:
+          type: string
+          enum: [pending, approved, changes_requested]
+        approvalDecidedAt:
+          type: ["string", "null"]
+          format: date-time
+        approvalDecidedBy:
           type: ["string", "null"]
         privacy:
           type: string
@@ -1394,6 +1627,8 @@ components:
         videoUrl:
           type: string
         thumbnailUrl:
+          type: string
+        reviewGroupId:
           type: string
         streamUid:
           type: string
@@ -1637,6 +1872,175 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/Comment"
+
+    ReviewLinkInput:
+      type: object
+      required: [allowDownload, allowComments]
+      properties:
+        projectId:
+          type: integer
+        expiresInDays:
+          type: integer
+          minimum: 1
+          maximum: 365
+        password:
+          type: string
+          minLength: 1
+        allowDownload:
+          type: boolean
+        allowComments:
+          type: boolean
+
+    ReviewLink:
+      type: object
+      required: [token, url, allowDownload, allowComments, hasPassword]
+      properties:
+        token:
+          type: string
+        url:
+          type: string
+        allowDownload:
+          type: boolean
+        allowComments:
+          type: boolean
+        hasPassword:
+          type: boolean
+        expiresAt:
+          type: ["string", "null"]
+          format: date-time
+
+    ReviewCommentInput:
+      type: object
+      required: [timecodeSeconds, body]
+      properties:
+        timecodeSeconds:
+          type: number
+          minimum: 0
+        body:
+          type: string
+          minLength: 1
+        parentCommentId:
+          type: ["integer", "null"]
+
+    GuestReviewCommentInput:
+      allOf:
+        - $ref: "#/components/schemas/ReviewCommentInput"
+        - type: object
+          required: [authorName]
+          properties:
+            authorName:
+              type: string
+              minLength: 1
+            password:
+              type: string
+
+    ReviewComment:
+      type: object
+      required: [id, videoId, groupId, timecodeSeconds, body, authorType, authorName, resolved, createdAt]
+      properties:
+        id:
+          type: integer
+        videoId:
+          type: integer
+        groupId:
+          type: string
+        timecodeSeconds:
+          type: number
+        body:
+          type: string
+        authorType:
+          type: string
+          enum: [owner, guest]
+        authorName:
+          type: string
+        parentCommentId:
+          type: ["integer", "null"]
+        resolved:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    ReviewCommentList:
+      type: object
+      required: [comments]
+      properties:
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewComment"
+
+    ReviewSession:
+      type: object
+      required: [title, requiresPassword, allowDownload, allowComments, approvalStatus, comments]
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        thumbnailUrl:
+          type: ["string", "null"]
+        requiresPassword:
+          type: boolean
+        allowDownload:
+          type: boolean
+        allowComments:
+          type: boolean
+        approvalStatus:
+          type: string
+          enum: [pending, approved, changes_requested]
+        streamProvider:
+          type: ["string", "null"]
+        streamPlaybackId:
+          type: ["string", "null"]
+        streamUid:
+          type: ["string", "null"]
+        videoUrl:
+          type: ["string", "null"]
+        downloadFormats:
+          type: array
+          items:
+            type: string
+        comments:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReviewComment"
+
+    ReviewUnlockInput:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+
+    ApprovalInput:
+      type: object
+      required: [status, authorName]
+      properties:
+        status:
+          type: string
+          enum: [approved, changes_requested]
+        authorName:
+          type: string
+          minLength: 1
+        password:
+          type: string
+
+    OwnerApprovalInput:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [approved, changes_requested]
+
+    ApprovalResult:
+      type: object
+      required: [approvalStatus]
+      properties:
+        approvalStatus:
+          type: string
+          enum: [approved, changes_requested]
 
     # ── Follow schemas ────────────────────────────────────────────────────────
     FollowResult:
