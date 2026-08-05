@@ -66,7 +66,7 @@ A premium, cinematic professional filmmaker platform for video hosting, networki
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- **Git workflow**: Always work on the `replit/dev` branch. Never commit directly to `main`. Open a GitHub PR from `replit/dev` → `main` for every batch of changes and let the user merge.
 
 ## Gotchas
 
