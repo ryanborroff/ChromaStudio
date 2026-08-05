@@ -29,3 +29,15 @@ channel = "stable-25_05"
 [userenv.shared]
 PUBLIC_APP_URL = "https://web-foundation-ryanfborroff.replit.app"
 VITE_DEMO_MODE = "true"
+
+[[ports]]
+localPort = 8080
+externalPort = 8080
+
+[[ports]]
+localPort = 8081
+externalPort = 80
+
+[[ports]]
+localPort = 20649
+externalPort = 3000
