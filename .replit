@@ -38,3 +38,4 @@ channel = "stable-25_05"
 
 [userenv.shared]
 PUBLIC_APP_URL = "https://web-foundation-ryanfborroff.replit.app"
+VITE_DEMO_MODE = "true"
