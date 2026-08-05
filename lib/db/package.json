@@ -8,8 +8,8 @@
     "./schema": "./src/schema/index.ts"
   },
   "scripts": {
-    "push": "drizzle-kit push --config ./drizzle.config.ts",
-    "push-force": "drizzle-kit push --force --config ./drizzle.config.ts"
+    "push": "psql $DATABASE_URL -c 'SELECT 1' && drizzle-kit push --config ./drizzle.config.ts",
+    "push-force": "psql $DATABASE_URL -c 'SELECT 1' && drizzle-kit push --force --config ./drizzle.config.ts"
   },
   "dependencies": {
     "drizzle-orm": "catalog:",
