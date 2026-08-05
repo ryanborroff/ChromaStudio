@@ -102,12 +102,14 @@ export function Pricing() {
               className="text-transparent bg-clip-text"
               style={{ backgroundImage: "linear-gradient(135deg, hsl(0 80% 65%) 0%, hsl(20 90% 65%) 100%)" }}
             >
-              need
+              needs
             </span>
           </h1>
           <p className="text-lg text-white/50 font-medium leading-relaxed">
-            Every plan is metered in video-hours. Host your footage and stream it to
-            clients and film fans. Pick the plan that fits how much you shoot and share.
+            Every plan includes hosting and streaming – so no paying for storage you
+            don't need. Upload your footage, share it with clients for review, and
+            showcase finished work. All in one plan, built around how much you actually
+            shoot and deliver each month.
           </p>
         </div>
       </section>
