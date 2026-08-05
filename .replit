@@ -1,12 +1,14 @@
-modules = ["nodejs-24", "python-3.11", "postgresql-16"]
+modules = ["nodejs-24"]
 
 [deployment]
-router = "application"
-deploymentTarget = "autoscale"
+build = ["sh", "-c", "pnpm install && pnpm --filter @workspace/chroma run build"]
+publicDir = "artifacts/chroma/dist/public"
+deploymentTarget = "static"
+run = ""
 
-[deployment.postBuild]
-args = ["pnpm", "store", "prune"]
-env = { "CI" = "true" }
+[[deployment.rewrites]]
+from = "/*"
+to = "/index.html"
 
 [workflows]
 runButton = "Project"
@@ -18,18 +20,6 @@ expertMode = true
 [postMerge]
 path = "scripts/post-merge.sh"
 timeoutMs = 20000
-
-[[ports]]
-localPort = 8080
-externalPort = 80
-
-[[ports]]
-localPort = 8081
-externalPort = 8081
-
-[[ports]]
-localPort = 20649
-externalPort = 3000
 
 [nix]
 channel = "stable-25_05"
