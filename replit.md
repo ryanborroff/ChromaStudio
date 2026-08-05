@@ -66,7 +66,7 @@ A premium, cinematic professional filmmaker platform for video hosting, networki
 
 ## User preferences
 
-_Populate as you build — explicit user instructions worth remembering across sessions._
+- **Git workflow**: Work on `main` directly. Pull Devin's latest merged PRs before starting (`git pull origin main`). Commit and push Replit progress to `main` before handing off to Devin. Short-lived local branches are fine for experiments; merge back to `main` when done. Never commit secrets to tracked files.
 
 ## Gotchas
 
