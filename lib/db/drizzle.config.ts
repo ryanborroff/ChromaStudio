@@ -11,4 +11,7 @@ export default defineConfig({
   dbCredentials: {
     url: process.env.DATABASE_URL,
   },
+  // user_sessions is created via raw SQL by connect-pg-simple — exclude it
+  // so drizzle-kit doesn't try to drop it on push
+  tablesFilter: ["!user_sessions"],
 });
