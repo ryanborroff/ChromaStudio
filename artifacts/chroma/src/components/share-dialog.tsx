@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useUpdateVideoShare } from "@workspace/api-client-react";
+import { useCreateReviewLink, useUpdateVideoShare } from "@workspace/api-client-react";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/useAuth";
 import { Link } from "wouter";
-import { Copy, Link2, Code2, Loader2, Lock, Sparkles } from "lucide-react";
+import { Copy, Link2, Code2, Loader2, Lock, Sparkles, MessageSquare } from "lucide-react";
 
 interface ShareDialogProps {
   open: boolean;
@@ -35,6 +35,10 @@ export function ShareDialog({ open, onOpenChange, video, onChanged }: ShareDialo
     hasSharePassword: video.hasSharePassword,
   });
   const [password, setPassword] = useState("");
+  const [reviewPassword, setReviewPassword] = useState("");
+  const [reviewLink, setReviewLink] = useState("");
+  const [allowReviewComments, setAllowReviewComments] = useState(true);
+  const [allowReviewDownload, setAllowReviewDownload] = useState(false);
 
   const mutation = useUpdateVideoShare({
     mutation: {
@@ -48,6 +52,15 @@ export function ShareDialog({ open, onOpenChange, video, onChanged }: ShareDialo
         onChanged?.();
       },
       onError: () => toast({ title: "Could not update sharing", variant: "destructive" }),
+    },
+  });
+  const reviewMutation = useCreateReviewLink({
+    mutation: {
+      onSuccess: (res) => {
+        setReviewLink(res.url);
+        setReviewPassword("");
+      },
+      onError: () => toast({ title: "Could not create review link", variant: "destructive" }),
     },
   });
 
@@ -157,7 +170,7 @@ export function ShareDialog({ open, onOpenChange, video, onChanged }: ShareDialo
                     {mutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "Set"}
                   </Button>
                 </div>
-                {settings.hasSharePassword && (
+              {settings.hasSharePassword && (
                   <Button
                     type="button"
                     variant="ghost"
@@ -168,6 +181,59 @@ export function ShareDialog({ open, onOpenChange, video, onChanged }: ShareDialo
                   >
                     Remove password
                   </Button>
+                )}
+              </div>
+
+              <div className="space-y-3 pt-1 border-t border-border/40">
+                <Label className="text-xs text-muted-foreground flex items-center gap-1.5">
+                  <MessageSquare className="h-3.5 w-3.5" /> Client review link
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Guests can review without signing in, leave timestamped feedback, and approve or request changes.
+                </p>
+                <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" checked={allowReviewComments} onChange={(event) => setAllowReviewComments(event.target.checked)} />
+                    Comments
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" checked={allowReviewDownload} onChange={(event) => setAllowReviewDownload(event.target.checked)} />
+                    Downloads
+                  </label>
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    type="password"
+                    value={reviewPassword}
+                    onChange={(event) => setReviewPassword(event.target.value)}
+                    placeholder="Optional review password"
+                    className="bg-input border-border text-white"
+                  />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    disabled={reviewMutation.isPending}
+                    onClick={() =>
+                      reviewMutation.mutate({
+                        id: video.id,
+                        data: {
+                          password: reviewPassword || undefined,
+                          allowComments: allowReviewComments,
+                          allowDownload: allowReviewDownload,
+                        },
+                      })
+                    }
+                  >
+                    {reviewMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Create"}
+                  </Button>
+                </div>
+                {reviewLink && (
+                  <div className="flex gap-2">
+                    <Input readOnly value={reviewLink} className="bg-input border-border text-white text-xs" />
+                    <Button type="button" size="icon" variant="secondary" onClick={() => copy(reviewLink, "Review link")}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
                 )}
               </div>
             </>

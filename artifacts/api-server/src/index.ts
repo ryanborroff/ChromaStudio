@@ -1,6 +1,7 @@
 import app from "./app";
 import { logger } from "./lib/logger";
 import { clearDevSessions } from "./lib/devAuth";
+import { startUploadSweep } from "./lib/uploadSweep";
 
 const rawPort = process.env["PORT"];
 
@@ -17,6 +18,7 @@ if (Number.isNaN(port) || port <= 0) {
 }
 
 async function start(): Promise<void> {
+  startUploadSweep();
   // In development the app starts signed out: clear stale sessions before we
   // accept traffic so the very first request can't race ahead of the wipe.
   if (process.env.NODE_ENV === "development") {

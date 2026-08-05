@@ -19,6 +19,7 @@ export const muxProvider: StreamingProvider = {
       cors_origin: "*",
       new_asset_settings: {
         playback_policy: ["public"],
+        mp4_support: "standard",
         passthrough: uid,
       },
     });
@@ -30,6 +31,15 @@ export const muxProvider: StreamingProvider = {
     // Mux cleanup requires the Mux asset ID, which only arrives via webhook
     // (video.asset.ready). Cleanup of abandoned uploads is best handled via
     // the Mux dashboard or a periodic job. This is intentionally a no-op.
+  },
+
+  async createExportUrl(
+    _uid: string,
+    playbackId?: string | null,
+  ): Promise<string | null> {
+    return playbackId
+      ? `https://stream.mux.com/${encodeURIComponent(playbackId)}/high.mp4`
+      : null;
   },
 };
 

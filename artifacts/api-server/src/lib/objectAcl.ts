@@ -1,5 +1,5 @@
 import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
-import { r2Client, R2_BUCKET } from "./r2Client";
+import { getR2Client, getR2Bucket } from "./r2Client";
 
 export interface R2ObjectRef {
   key: string;
@@ -77,9 +77,9 @@ export async function setObjectAclPolicy(
   ref: R2ObjectRef,
   aclPolicy: ObjectAclPolicy,
 ): Promise<void> {
-  await r2Client.send(
+  await getR2Client().send(
     new PutObjectCommand({
-      Bucket: R2_BUCKET,
+      Bucket: getR2Bucket(),
       Key: `${ref.key}.acl.json`,
       Body: JSON.stringify(aclPolicy),
       ContentType: "application/json",
@@ -95,9 +95,9 @@ export async function getObjectAclPolicy(
   ref: R2ObjectRef,
 ): Promise<ObjectAclPolicy | null> {
   try {
-    const result = await r2Client.send(
+    const result = await getR2Client().send(
       new GetObjectCommand({
-        Bucket: R2_BUCKET,
+        Bucket: getR2Bucket(),
         Key: `${ref.key}.acl.json`,
       }),
     );

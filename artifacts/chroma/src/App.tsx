@@ -30,9 +30,17 @@ import { TermsOfService } from "@/pages/terms";
 import { Onboarding } from "@/pages/onboarding";
 import { ComingSoon } from "@/pages/coming-soon";
 import { AdminDashboard } from "@/pages/admin";
+import { ReviewPage } from "@/pages/review-page";
+import { StorageConfidence } from "@/pages/storage-confidence";
 import {
-  Radio, Clapperboard, History, FolderOpen,
-  Code2, BarChart3, ShoppingBag, ShieldCheck, KeyRound,
+  Radio,
+  Clapperboard,
+  History,
+  FolderOpen,
+  Code2,
+  BarChart3,
+  ShoppingBag,
+  ShieldCheck,
 } from "lucide-react";
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
@@ -49,7 +57,11 @@ function ProtectedRoute({ component: Component, ...rest }: any) {
       {(params: Record<string, string>) => {
         const { isSignedIn, isLoaded } = useAuth();
         if (!isLoaded) return null;
-        return isSignedIn ? <Component params={params} /> : <Redirect to="/sign-in" />;
+        return isSignedIn ? (
+          <Component params={params} />
+        ) : (
+          <Redirect to="/sign-in" />
+        );
       }}
     </Route>
   );
@@ -81,7 +93,11 @@ function AppRoutes() {
             icon={Radio}
             title="Streaming"
             description="Broadcast premieres, Q&As and ticketed events to your audience in real time."
-            features={["Ticketed live events", "Pay-per-view & free streams", "Automatic replays after the broadcast"]}
+            features={[
+              "Ticketed live events",
+              "Pay-per-view & free streams",
+              "Automatic replays after the broadcast",
+            ]}
           />
         </Route>
         <Route path="/cinema">
@@ -89,7 +105,11 @@ function AppRoutes() {
             icon={Clapperboard}
             title="Cinema Events"
             description="Host scheduled online screenings and premieres with a true cinema feel."
-            features={["Timed screenings & countdowns", "Ticketing and capacity limits", "Audience chat during the show"]}
+            features={[
+              "Timed screenings & countdowns",
+              "Ticketing and capacity limits",
+              "Audience chat during the show",
+            ]}
           />
         </Route>
         <Route path="/live/replays">
@@ -97,38 +117,66 @@ function AppRoutes() {
             icon={History}
             title="Replays"
             description="Catch up on past live streams and cinema events on demand."
-            features={["Full replay library", "Chapter markers", "Viewer analytics per replay"]}
+            features={[
+              "Full replay library",
+              "Chapter markers",
+              "Viewer analytics per replay",
+            ]}
           />
         </Route>
 
         {/* Studio — creator workspace */}
-        <ProtectedRoute path="/studio/portfolio" component={() => (
-          <ComingSoon
-            icon={FolderOpen}
-            title="Portfolio Collections"
-            description="Organise your work into reels and categories with drag-and-drop."
-            features={["Reels & themed collections", "Drag-and-drop ordering", "Featured work on your profile"]}
-          />
-        )} />
+        <ProtectedRoute
+          path="/studio/portfolio"
+          component={() => (
+            <ComingSoon
+              icon={FolderOpen}
+              title="Portfolio Collections"
+              description="Organise your work into reels and categories with drag-and-drop."
+              features={[
+                "Reels & themed collections",
+                "Drag-and-drop ordering",
+                "Featured work on your profile",
+              ]}
+            />
+          )}
+        />
         <ProtectedRoute path="/studio/storage" component={Library} />
         <ProtectedRoute path="/studio/delivery" component={Deliveries} />
-        <ProtectedRoute path="/studio/delivery/:id" component={DeliveryManage} />
-        <ProtectedRoute path="/studio/embeds" component={() => (
-          <ComingSoon
-            icon={Code2}
-            title="Website Embedding"
-            description="Embed your players and galleries on any external website."
-            features={["Embeddable video players", "Gallery & reel embeds", "Custom branding controls"]}
-          />
-        )} />
-        <ProtectedRoute path="/studio/analytics" component={() => (
-          <ComingSoon
-            icon={BarChart3}
-            title="Analytics Dashboard"
-            description="A full creator dashboard for views, audience and revenue."
-            features={["Views, watch time & retention", "Audience & traffic sources", "Revenue & payout tracking"]}
-          />
-        )} />
+        <ProtectedRoute
+          path="/studio/delivery/:id"
+          component={DeliveryManage}
+        />
+        <ProtectedRoute
+          path="/studio/embeds"
+          component={() => (
+            <ComingSoon
+              icon={Code2}
+              title="Website Embedding"
+              description="Embed your players and galleries on any external website."
+              features={[
+                "Embeddable video players",
+                "Gallery & reel embeds",
+                "Custom branding controls",
+              ]}
+            />
+          )}
+        />
+        <ProtectedRoute
+          path="/studio/analytics"
+          component={() => (
+            <ComingSoon
+              icon={BarChart3}
+              title="Analytics Dashboard"
+              description="A full creator dashboard for views, audience and revenue."
+              features={[
+                "Views, watch time & retention",
+                "Audience & traffic sources",
+                "Revenue & payout tracking",
+              ]}
+            />
+          )}
+        />
 
         {/* Store */}
         <Route path="/store">
@@ -136,7 +184,11 @@ function AppRoutes() {
             icon={ShoppingBag}
             title="Download Shop"
             description="Sell and buy LUTs, presets, project files and other creator assets."
-            features={["LUTs, presets & project files", "Instant secure downloads", "Creator payouts"]}
+            features={[
+              "LUTs, presets & project files",
+              "Instant secure downloads",
+              "Creator payouts",
+            ]}
           />
         </Route>
 
@@ -148,14 +200,10 @@ function AppRoutes() {
         <ProtectedRoute path="/admin" component={AdminDashboard} />
 
         {/* Account security */}
-        <ProtectedRoute path="/account/security" component={() => (
-          <ComingSoon
-            icon={KeyRound}
-            title="Account & Security"
-            description="Manage your password, email verification and account security."
-            features={["Password reset", "Email verification", "Active sessions & devices"]}
-          />
-        )} />
+        <ProtectedRoute
+          path="/account/security"
+          component={StorageConfidence}
+        />
 
         <Route component={NotFound} />
       </Switch>
@@ -170,6 +218,7 @@ function App() {
         <WouterRouter base={basePath}>
           <Switch>
             <Route path="/embed/:token" component={EmbedPlayer} />
+            <Route path="/review/:token" component={ReviewPage} />
             <Route>
               <AppRoutes />
             </Route>

@@ -13,7 +13,9 @@ export interface VideoInput {
   description?: string;
   videoUrl?: string;
   thumbnailUrl?: string;
+  reviewGroupId?: string;
   streamUid?: string;
+  fileSizeBytes?: bigint;
   privacy?: VideoInputPrivacy;
   tags?: string[];
   credits?: string;

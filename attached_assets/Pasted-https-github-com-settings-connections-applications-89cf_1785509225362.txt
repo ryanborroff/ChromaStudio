@@ -1,0 +1,41 @@
+https://github.com/settings/connections/applications/89cf50f02ac6aaed3484
+⠋ For which GitHub repository would you like to set up a GitHub workflow? (format: user/repository)
+/ryanborroff/ChromaStudioryanborroff/ChromaStudio
+
+⚠  The provided authorization cannot be used with this repository. If this repository is in an organization, did you remember to grant access?
+
+i  Action required: Visit this URL to ensure access has been granted to the appropriate organization(s) for the Firebase CLI GitHub OAuth App:
+https://github.com/settings/connections/applications/89cf50f02ac6aaed3484
+✔ For which GitHub repository would you like to set up a GitHub workflow? (format: user/repository)
+ryanborroff/ChromaStudio
+
+✔  Created service account github-action-1219036726 with Firebase Hosting admin permissions.
+✔  Uploaded service account JSON to GitHub as secret FIREBASE_SERVICE_ACCOUNT_KITCHEN_WI.
+i  You can manage your secrets at https://github.com/ryanborroff/ChromaStudio/settings/secrets.
+
+✔ Set up the workflow to run a build script before every deploy? Yes
+✔ What script should be run before every deploy? npm ci && npm run build
+
+✔  Created workflow file /Users/ryanborroff/.github/workflows/firebase-hosting-pull-request.yml
+✔ Set up automatic deployment to your site's live channel when a PR is merged? Yes
+✔ What is the name of the GitHub branch associated with your site's live channel? main
+
+✔  Created workflow file /Users/ryanborroff/.github/workflows/firebase-hosting-merge.yml
+
+i  Action required: Visit this URL to revoke authorization for the Firebase CLI GitHub OAuth App:
+https://github.com/settings/connections/applications/89cf50f02ac6aaed3484
+i  Action required: Push any new workflow file(s) to your repo
+✔  Wrote public/index.html
+
+=== Agent Skills Setup
+If you are using an AI coding agent, Firebase Agent Skills make it an expert at Firebase.
+✔ Would you like to install agent skills for Firebase? Yes
+i  Installing Agent skills in the background...
+✔  Agent skills installation started
+
+✔  Wrote configuration info to firebase.json
+✔  Wrote project information to .firebaserc
+✔  Wrote .gitignore
+
+✔  Firebase initialization complete!
+

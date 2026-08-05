@@ -20,4 +20,13 @@ export interface VideoUpdate {
   tags?: string[];
   credits?: string;
   downloadFormats?: string[];
+  /**
+     * @minimum 0
+     * @maximum 100
+     */
+  uploadProgressPercent?: number;
+  /** @nullable */
+  uploadError?: string | null;
+  retryCount?: number;
+  streamStatus?: string;
 }
