@@ -1,64 +1,61 @@
 /**
- * Nav smoke tests — Task #18
+ * Nav smoke tests — flat top nav + contextual sidebar
  *
- * Verifies that every previously-linked route is still reachable from at least
- * one nav surface after the sidebar deduplication.
+ * Verifies every route is reachable from at least one nav surface.
  *
  * Routes under test:
- *   /explore, /feed, /live, /cinema, /live/replays,
+ *   /feed, /live, /cinema, /live/replays,
  *   /studio/portfolio, /studio/storage, /studio/delivery,
- *   /studio/embeds, /studio/analytics, /store, /pricing
+ *   /studio/embeds, /studio/analytics,
+ *   /store, /pricing, /explore?genre=Documentary
  *
  * Nav surfaces covered:
- *   • Top-nav direct links & group dropdowns (desktop ≥768 px)
- *   • Mobile Sheet (viewport 390 px wide)
- *   • Studio sidebar (visible on /studio/* for signed-in users)
+ *   • Desktop top-nav flat links  (viewport ≥1280px)
+ *   • Desktop contextual sidebar  (viewport ≥1280px — lg breakpoint)
+ *   • Mobile Sheet                (viewport 390px)
  *
- * Auth setup (dev environment only):
- *   • Signed-in:  GET /api/dev/login  — sets demo user session
- *   • Signed-out: GET /api/dev/logout — clears session
+ * data-testid map (artifacts/chroma/src/components/layout.tsx):
  *
- * data-testid map (from artifacts/chroma/src/components/layout.tsx):
+ *  Desktop top-nav (flat, no dropdowns):
+ *    link-watch      → /feed
+ *    link-live       → /live
+ *    link-studio     → /studio/portfolio  (signed-in only)
+ *    link-shop       → /store
+ *    link-pricing    → /pricing
  *
- *   Top-nav triggers
- *     link-view              → /explore
- *     link-feed              → /feed          (signed-in)
- *     nav-group-live         → Live dropdown
- *     nav-group-studio       → Studio dropdown (signed-in)
- *     nav-group-shop         → Shop dropdown
- *     link-pricing           → /pricing
+ *  Contextual sidebar (visible at lg when in that section):
+ *    Watch section:
+ *      sidebar-link-feed                   → /feed
+ *      sidebar-link-genre-documentary      → /explore?genre=Documentary
+ *    Live section:
+ *      sidebar-link-streaming              → /live
+ *      sidebar-link-cinema-events          → /cinema
+ *      sidebar-link-replays                → /live/replays
+ *    Studio section (signed-in):
+ *      sidebar-link-portfolio-collections  → /studio/portfolio
+ *      sidebar-link-media-library          → /studio/storage
+ *      sidebar-link-client-delivery        → /studio/delivery
+ *      sidebar-link-website-embedding      → /studio/embeds
+ *      sidebar-link-analytics              → /studio/analytics
  *
- *   Top-nav dropdown items
- *     nav-link-streaming           → /live
- *     nav-link-cinema-events       → /cinema
- *     nav-link-replays             → /live/replays
- *     nav-link-portfolio-collections → /studio/portfolio
- *     nav-link-media-library       → /studio/storage
- *     nav-link-client-delivery     → /studio/delivery
- *     nav-link-website-embedding   → /studio/embeds
- *     nav-link-analytics           → /studio/analytics
- *     nav-link-download-shop       → /store
+ *  Mobile sheet top-level links (always visible in drawer):
+ *    mobile-link-watch   → /feed
+ *    mobile-link-live    → /live
+ *    mobile-link-studio  → /studio/portfolio  (signed-in only)
+ *    mobile-link-shop    → /store
+ *    mobile-link-pricing → /pricing
  *
- *   Mobile Sheet links
- *     mobile-link-watch              → /explore
- *     mobile-link-feed               → /feed           (signed-in)
- *     mobile-link-streaming          → /live
- *     mobile-link-cinema-events      → /cinema
- *     mobile-link-replays            → /live/replays
- *     mobile-link-portfolio-collections → /studio/portfolio (signed-in)
- *     mobile-link-media-library      → /studio/storage  (signed-in)
- *     mobile-link-client-delivery    → /studio/delivery (signed-in)
- *     mobile-link-website-embedding  → /studio/embeds   (signed-in)
- *     mobile-link-analytics          → /studio/analytics(signed-in)
- *     mobile-link-download-shop      → /store
- *     mobile-link-pricing            → /pricing
- *
- *   Studio sidebar (on /studio/* signed-in, lg screen)
- *     sidebar-link-portfolio-collections → /studio/portfolio
- *     sidebar-link-media-library         → /studio/storage
- *     sidebar-link-client-delivery       → /studio/delivery
- *     sidebar-link-website-embedding     → /studio/embeds
- *     sidebar-link-analytics             → /studio/analytics
+ *  Mobile sheet sub-items (only visible when already in that section):
+ *    Live section:
+ *      mobile-link-streaming          → /live
+ *      mobile-link-cinema-events      → /cinema
+ *      mobile-link-replays            → /live/replays
+ *    Studio section (signed-in):
+ *      mobile-link-portfolio-collections → /studio/portfolio
+ *      mobile-link-media-library         → /studio/storage
+ *      mobile-link-client-delivery       → /studio/delivery
+ *      mobile-link-website-embedding     → /studio/embeds
+ *      mobile-link-analytics             → /studio/analytics
  */
 
 import { test, expect, type Page } from "@playwright/test";
@@ -69,7 +66,6 @@ import { test, expect, type Page } from "@playwright/test";
 
 async function signIn(page: Page) {
   await page.goto("/api/dev/login");
-  // Dev toggle redirects to /
   await page.waitForURL(/\//);
 }
 
@@ -78,31 +74,24 @@ async function signOut(page: Page) {
   await page.waitForURL(/\//);
 }
 
-/** Open a top-nav dropdown and click the item with the given testid. */
-async function clickDropdownItem(
-  page: Page,
-  groupTestId: string,
-  itemTestId: string,
-) {
-  await page.click(`[data-testid="${groupTestId}"]`);
-  await page.waitForSelector(`[data-testid="${itemTestId}"]`, { state: "visible" });
-  await page.click(`[data-testid="${itemTestId}"]`);
+/** Click a top-nav flat link. */
+async function clickTopNav(page: Page, testid: string) {
+  await page.click(`[data-testid="${testid}"]`);
 }
 
-/** Open the mobile sheet (hamburger) and click the item with the given testid. */
+/** Open mobile sheet and click an item. */
 async function clickMobileSheetItem(page: Page, itemTestId: string) {
-  const trigger = page.getByTestId("btn-mobile-menu");
-  await trigger.click();
+  await page.getByTestId("btn-mobile-menu").click();
   const link = page.getByTestId(itemTestId);
   await link.waitFor({ state: "visible" });
   await link.click();
 }
 
 // ---------------------------------------------------------------------------
-// Signed-out: top-nav (desktop)
+// Signed-out: top-nav flat links (desktop)
 // ---------------------------------------------------------------------------
 
-test.describe("signed-out / top-nav (desktop)", () => {
+test.describe("signed-out / top-nav flat links (desktop)", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
   test.beforeEach(async ({ page }) => {
@@ -110,42 +99,32 @@ test.describe("signed-out / top-nav (desktop)", () => {
     await page.goto("/");
   });
 
-  test("/explore reachable via Watch link", async ({ page }) => {
-    await page.click('[data-testid="link-view"]');
-    await expect(page).toHaveURL(/\/explore/);
+  test("Watch link → /feed", async ({ page }) => {
+    await clickTopNav(page, "link-watch");
+    await expect(page).toHaveURL(/\/feed/);
   });
 
-  test("/live reachable via Live › Streaming", async ({ page }) => {
-    await clickDropdownItem(page, "nav-group-live", "nav-link-streaming");
+  test("Live link → /live", async ({ page }) => {
+    await clickTopNav(page, "link-live");
     await expect(page).toHaveURL(/\/live($|[^/])/);
   });
 
-  test("/cinema reachable via Live › Cinema Events", async ({ page }) => {
-    await clickDropdownItem(page, "nav-group-live", "nav-link-cinema-events");
-    await expect(page).toHaveURL(/\/cinema/);
-  });
-
-  test("/live/replays reachable via Live › Replays", async ({ page }) => {
-    await clickDropdownItem(page, "nav-group-live", "nav-link-replays");
-    await expect(page).toHaveURL(/\/live\/replays/);
-  });
-
-  test("/store reachable via Shop › Download Shop", async ({ page }) => {
-    await clickDropdownItem(page, "nav-group-shop", "nav-link-download-shop");
+  test("Shop link → /store", async ({ page }) => {
+    await clickTopNav(page, "link-shop");
     await expect(page).toHaveURL(/\/store/);
   });
 
-  test("/pricing reachable via Pricing link", async ({ page }) => {
-    await page.click('[data-testid="link-pricing"]');
+  test("Pricing link → /pricing", async ({ page }) => {
+    await clickTopNav(page, "link-pricing");
     await expect(page).toHaveURL(/\/pricing/);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Signed-in: top-nav (desktop)
+// Signed-in: top-nav flat links (desktop)
 // ---------------------------------------------------------------------------
 
-test.describe("signed-in / top-nav (desktop)", () => {
+test.describe("signed-in / top-nav flat links (desktop)", () => {
   test.use({ viewport: { width: 1280, height: 800 } });
 
   test.beforeEach(async ({ page }) => {
@@ -153,72 +132,101 @@ test.describe("signed-in / top-nav (desktop)", () => {
     await page.goto("/");
   });
 
-  test("/feed reachable via Feed link", async ({ page }) => {
-    await page.click('[data-testid="link-feed"]');
+  test("Watch link → /feed", async ({ page }) => {
+    await clickTopNav(page, "link-watch");
     await expect(page).toHaveURL(/\/feed/);
   });
 
-  test("/studio/portfolio reachable via Studio › Portfolio Collections", async ({
-    page,
-  }) => {
-    await clickDropdownItem(
-      page,
-      "nav-group-studio",
-      "nav-link-portfolio-collections",
-    );
+  test("Studio link → /studio/portfolio", async ({ page }) => {
+    await clickTopNav(page, "link-studio");
+    await expect(page).toHaveURL(/\/studio\/portfolio/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Signed-out: contextual sidebar (desktop)
+// Navigate to a section first so its sidebar appears, then click sub-items.
+// ---------------------------------------------------------------------------
+
+test.describe("signed-out / contextual sidebar (desktop)", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test.beforeEach(async ({ page }) => {
+    await signOut(page);
+  });
+
+  test("Watch sidebar: /feed via sidebar-link-feed", async ({ page }) => {
+    await page.goto("/feed");
+    await page.getByTestId("sidebar-link-feed").click();
+    await expect(page).toHaveURL(/\/feed/);
+  });
+
+  test("Watch sidebar: genre link → /explore?genre=Documentary", async ({ page }) => {
+    await page.goto("/feed");
+    await page.getByTestId("sidebar-link-genre-documentary").click();
+    await expect(page).toHaveURL(/\/explore/);
+  });
+
+  test("Live sidebar: /cinema via sidebar-link-cinema-events", async ({ page }) => {
+    await page.goto("/live");
+    await page.getByTestId("sidebar-link-cinema-events").click();
+    await expect(page).toHaveURL(/\/cinema/);
+  });
+
+  test("Live sidebar: /live/replays via sidebar-link-replays", async ({ page }) => {
+    await page.goto("/live");
+    await page.getByTestId("sidebar-link-replays").click();
+    await expect(page).toHaveURL(/\/live\/replays/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Signed-in: contextual sidebar — Studio section (desktop)
+// ---------------------------------------------------------------------------
+
+test.describe("signed-in / Studio sidebar (desktop)", () => {
+  test.use({ viewport: { width: 1280, height: 800 } });
+
+  test.beforeEach(async ({ page }) => {
+    await signIn(page);
+    await page.goto("/studio/portfolio");
+  });
+
+  test("sidebar renders on /studio/* route", async ({ page }) => {
+    await expect(page.getByTestId("sidebar-link-portfolio-collections")).toBeVisible();
+  });
+
+  test("/studio/portfolio via sidebar-link-portfolio-collections", async ({ page }) => {
+    await page.getByTestId("sidebar-link-portfolio-collections").click();
     await expect(page).toHaveURL(/\/studio\/portfolio/);
   });
 
-  test("/studio/storage reachable via Studio › Media Library", async ({
-    page,
-  }) => {
-    await clickDropdownItem(
-      page,
-      "nav-group-studio",
-      "nav-link-media-library",
-    );
+  test("/studio/storage via sidebar-link-media-library", async ({ page }) => {
+    await page.getByTestId("sidebar-link-media-library").click();
     await expect(page).toHaveURL(/\/studio\/storage/);
   });
 
-  test("/studio/delivery reachable via Studio › Client Delivery", async ({
-    page,
-  }) => {
-    await clickDropdownItem(
-      page,
-      "nav-group-studio",
-      "nav-link-client-delivery",
-    );
+  test("/studio/delivery via sidebar-link-client-delivery", async ({ page }) => {
+    await page.getByTestId("sidebar-link-client-delivery").click();
     await expect(page).toHaveURL(/\/studio\/delivery/);
   });
 
-  test("/studio/embeds reachable via Studio › Website Embedding", async ({
-    page,
-  }) => {
-    await clickDropdownItem(
-      page,
-      "nav-group-studio",
-      "nav-link-website-embedding",
-    );
+  test("/studio/embeds via sidebar-link-website-embedding", async ({ page }) => {
+    await page.getByTestId("sidebar-link-website-embedding").click();
     await expect(page).toHaveURL(/\/studio\/embeds/);
   });
 
-  test("/studio/analytics reachable via Studio › Analytics", async ({
-    page,
-  }) => {
-    await clickDropdownItem(
-      page,
-      "nav-group-studio",
-      "nav-link-analytics",
-    );
+  test("/studio/analytics via sidebar-link-analytics", async ({ page }) => {
+    await page.getByTestId("sidebar-link-analytics").click();
     await expect(page).toHaveURL(/\/studio\/analytics/);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Signed-out: mobile Sheet
+// Signed-out: mobile Sheet — top-level links
 // ---------------------------------------------------------------------------
 
-test.describe("signed-out / mobile Sheet", () => {
+test.describe("signed-out / mobile Sheet top-level links", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test.beforeEach(async ({ page }) => {
@@ -226,42 +234,56 @@ test.describe("signed-out / mobile Sheet", () => {
     await page.goto("/");
   });
 
-  test("/explore reachable via mobile Watch", async ({ page }) => {
+  test("mobile Watch → /feed", async ({ page }) => {
     await clickMobileSheetItem(page, "mobile-link-watch");
-    await expect(page).toHaveURL(/\/explore/);
+    await expect(page).toHaveURL(/\/feed/);
   });
 
-  test("/live reachable via mobile Streaming", async ({ page }) => {
-    await clickMobileSheetItem(page, "mobile-link-streaming");
+  test("mobile Live → /live", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-live");
     await expect(page).toHaveURL(/\/live($|[^/])/);
   });
 
-  test("/cinema reachable via mobile Cinema Events", async ({ page }) => {
-    await clickMobileSheetItem(page, "mobile-link-cinema-events");
-    await expect(page).toHaveURL(/\/cinema/);
-  });
-
-  test("/live/replays reachable via mobile Replays", async ({ page }) => {
-    await clickMobileSheetItem(page, "mobile-link-replays");
-    await expect(page).toHaveURL(/\/live\/replays/);
-  });
-
-  test("/store reachable via mobile Download Shop", async ({ page }) => {
-    await clickMobileSheetItem(page, "mobile-link-download-shop");
+  test("mobile Shop → /store", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-shop");
     await expect(page).toHaveURL(/\/store/);
   });
 
-  test("/pricing reachable via mobile Pricing", async ({ page }) => {
+  test("mobile Pricing → /pricing", async ({ page }) => {
     await clickMobileSheetItem(page, "mobile-link-pricing");
     await expect(page).toHaveURL(/\/pricing/);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Signed-in: mobile Sheet
+// Signed-out: mobile Sheet — Live sub-items
+// Navigate to /live first so the Live section's sub-items appear in the drawer.
 // ---------------------------------------------------------------------------
 
-test.describe("signed-in / mobile Sheet", () => {
+test.describe("signed-out / mobile Sheet Live sub-items", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
+
+  test.beforeEach(async ({ page }) => {
+    await signOut(page);
+    await page.goto("/live");
+  });
+
+  test("mobile Cinema Events → /cinema", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-cinema-events");
+    await expect(page).toHaveURL(/\/cinema/);
+  });
+
+  test("mobile Replays → /live/replays", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-replays");
+    await expect(page).toHaveURL(/\/live\/replays/);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Signed-in: mobile Sheet — top-level links
+// ---------------------------------------------------------------------------
+
+test.describe("signed-in / mobile Sheet top-level links", () => {
   test.use({ viewport: { width: 390, height: 844 } });
 
   test.beforeEach(async ({ page }) => {
@@ -269,89 +291,52 @@ test.describe("signed-in / mobile Sheet", () => {
     await page.goto("/");
   });
 
-  test("/feed reachable via mobile Feed", async ({ page }) => {
-    await clickMobileSheetItem(page, "mobile-link-feed");
+  test("mobile Watch → /feed", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-watch");
     await expect(page).toHaveURL(/\/feed/);
   });
 
-  test("/studio/portfolio reachable via mobile Portfolio Collections", async ({
-    page,
-  }) => {
-    await clickMobileSheetItem(page, "mobile-link-portfolio-collections");
+  test("mobile Studio → /studio/portfolio", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-studio");
     await expect(page).toHaveURL(/\/studio\/portfolio/);
-  });
-
-  test("/studio/storage reachable via mobile Media Library", async ({
-    page,
-  }) => {
-    await clickMobileSheetItem(page, "mobile-link-media-library");
-    await expect(page).toHaveURL(/\/studio\/storage/);
-  });
-
-  test("/studio/delivery reachable via mobile Client Delivery", async ({
-    page,
-  }) => {
-    await clickMobileSheetItem(page, "mobile-link-client-delivery");
-    await expect(page).toHaveURL(/\/studio\/delivery/);
-  });
-
-  test("/studio/embeds reachable via mobile Website Embedding", async ({
-    page,
-  }) => {
-    await clickMobileSheetItem(page, "mobile-link-website-embedding");
-    await expect(page).toHaveURL(/\/studio\/embeds/);
-  });
-
-  test("/studio/analytics reachable via mobile Analytics", async ({
-    page,
-  }) => {
-    await clickMobileSheetItem(page, "mobile-link-analytics");
-    await expect(page).toHaveURL(/\/studio\/analytics/);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Signed-in: Studio sidebar (desktop lg, on a /studio/* route)
+// Signed-in: mobile Sheet — Studio sub-items
+// Navigate to a /studio/* page first so Studio sub-items appear in the drawer.
 // ---------------------------------------------------------------------------
 
-test.describe("signed-in / Studio sidebar", () => {
-  // Sidebar only appears at lg breakpoint (≥1024 px)
-  test.use({ viewport: { width: 1280, height: 800 } });
+test.describe("signed-in / mobile Sheet Studio sub-items", () => {
+  test.use({ viewport: { width: 390, height: 844 } });
 
   test.beforeEach(async ({ page }) => {
     await signIn(page);
-    // Start on any studio page so the sidebar renders
     await page.goto("/studio/portfolio");
   });
 
-  test("sidebar renders on /studio/* route", async ({ page }) => {
-    await expect(
-      page.getByTestId("sidebar-link-portfolio-collections"),
-    ).toBeVisible();
-  });
-
-  test("/studio/portfolio reachable via sidebar", async ({ page }) => {
-    await page.getByTestId("sidebar-link-portfolio-collections").click();
+  test("mobile Portfolio Collections → /studio/portfolio", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-portfolio-collections");
     await expect(page).toHaveURL(/\/studio\/portfolio/);
   });
 
-  test("/studio/storage reachable via sidebar", async ({ page }) => {
-    await page.getByTestId("sidebar-link-media-library").click();
+  test("mobile Media Library → /studio/storage", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-media-library");
     await expect(page).toHaveURL(/\/studio\/storage/);
   });
 
-  test("/studio/delivery reachable via sidebar", async ({ page }) => {
-    await page.getByTestId("sidebar-link-client-delivery").click();
+  test("mobile Client Delivery → /studio/delivery", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-client-delivery");
     await expect(page).toHaveURL(/\/studio\/delivery/);
   });
 
-  test("/studio/embeds reachable via sidebar", async ({ page }) => {
-    await page.getByTestId("sidebar-link-website-embedding").click();
+  test("mobile Website Embedding → /studio/embeds", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-website-embedding");
     await expect(page).toHaveURL(/\/studio\/embeds/);
   });
 
-  test("/studio/analytics reachable via sidebar", async ({ page }) => {
-    await page.getByTestId("sidebar-link-analytics").click();
+  test("mobile Analytics → /studio/analytics", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-analytics");
     await expect(page).toHaveURL(/\/studio\/analytics/);
   });
 });
