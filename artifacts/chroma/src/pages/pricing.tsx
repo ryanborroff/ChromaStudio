@@ -137,10 +137,10 @@ export function Pricing() {
             </span>
           </h1>
           <p className="text-lg text-white/50 font-medium leading-relaxed">
-            Every plan includes hosting and streaming — no paying for storage you
-            don't need. Upload footage, share it for client review, and showcase
-            finished work, all in one plan. Finally, a platform built around how
-            much you actually shoot and deliver each month.
+            Every plan includes hosting and streaming – so no paying for storage you
+            don't need. Upload your footage, share it with clients for review, and
+            showcase finished work. All in one plan, built around how much you actually
+            shoot and deliver each month.
           </p>
         </div>
       </section>
