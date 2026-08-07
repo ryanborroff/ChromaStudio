@@ -268,8 +268,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <span className="font-black text-base tracking-tight text-white">ChromaStudio</span>
           </Link>
 
-          {/* Top-level nav links */}
-          <nav className="hidden md:flex items-center gap-0.5">
+          {/* Top-level nav links — shown only on mid-size viewports where the
+              left sidebar is hidden. */}
+          <nav className="hidden md:flex lg:hidden items-center gap-0.5">
             {isSignedIn && (
               <Link
                 href="/feed"
