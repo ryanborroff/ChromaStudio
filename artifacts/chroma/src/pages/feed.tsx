@@ -13,7 +13,7 @@ export function Feed() {
     discoverParams,
     {
       query: {
-        enabled: !isLoading && (feedData?.videos.length ?? 0) === 0,
+        enabled: !isLoading && (feedData?.videos?.length ?? 0) === 0,
         queryKey: getListVideosQueryKey(discoverParams),
       },
     },
@@ -76,7 +76,7 @@ export function Feed() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
-        ) : discoverData && discoverData.videos.length > 0 ? (
+        ) : discoverData && (discoverData.videos?.length ?? 0) > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {discoverData.videos.map((video) => (
               <VideoCard key={video.id} video={video} />
