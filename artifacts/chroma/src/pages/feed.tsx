@@ -13,7 +13,7 @@ export function Feed() {
     discoverParams,
     {
       query: {
-        enabled: !isLoading && (feedData?.videos.length ?? 0) === 0,
+        enabled: !isLoading && (feedData?.videos?.length ?? 0) === 0,
         queryKey: getListVideosQueryKey(discoverParams),
       },
     },
