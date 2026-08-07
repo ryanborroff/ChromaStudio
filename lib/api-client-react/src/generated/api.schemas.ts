@@ -789,6 +789,10 @@ collectionId?: string;
 category?: VideoCategory;
 search?: string;
 tags?: string;
+/**
+ * Filter by genre tag (case-insensitive match against video tags).
+ */
+genre?: string;
 sort?: ListVideosSort;
 /**
  * When true, only return featured videos.

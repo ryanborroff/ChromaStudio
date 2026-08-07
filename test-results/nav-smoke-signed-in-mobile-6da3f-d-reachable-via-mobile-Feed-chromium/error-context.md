@@ -9,6 +9,8 @@
 - Name: nav-smoke.spec.ts >> signed-in / mobile Sheet >> /feed reachable via mobile Feed
 - Location: tests/e2e/nav-smoke.spec.ts:272:7
 
+<<<<<<< ours — heading `Error details` (S+F, confidence: low)
+// hint: Structural and logic conflict. Both design and behavior differ.
 # Error details
 
 ```
@@ -22,3 +24,18 @@ Error: browserType.launch: Executable doesn't exist at /home/runner/workspace/.c
 ║ <3 Playwright Team                                         ║
 ╚════════════════════════════════════════════════════════════╝
 ```
+=======
+# Error details
+
+```
+Error: browserType.launch: Executable doesn't exist at /home/runner/workspace/.cache/ms-playwright/chromium_headless_shell-1234/chrome-headless-shell-linux64/chrome-headless-shell
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     pnpm exec playwright install                           ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+```
+>>>>>>> theirs — heading `Error details` (S+F, confidence: low)

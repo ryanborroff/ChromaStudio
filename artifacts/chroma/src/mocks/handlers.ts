@@ -24,6 +24,7 @@ export const handlers = [
     const search = url.searchParams.get("search")?.toLowerCase() ?? "";
     const sort = url.searchParams.get("sort") ?? "featured";
     const featuredOnly = url.searchParams.get("featured") === "true";
+    const genre = url.searchParams.get("genre")?.toLowerCase() ?? "";
 
     let videos = [...DEMO_VIDEOS];
 
@@ -35,6 +36,10 @@ export const handlers = [
           v.tags.some((t) => t.includes(search)) ||
           v.user.name.toLowerCase().includes(search),
       );
+    }
+
+    if (genre) {
+      videos = videos.filter((v) => v.tags.includes(genre));
     }
 
     if (featuredOnly) {

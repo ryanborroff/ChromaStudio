@@ -110,6 +110,7 @@ router.get("/videos", async (req, res): Promise<void> => {
     category,
     search,
     tags,
+    genre,
     sort = "newest",
     featured,
     limit = "20",
@@ -136,6 +137,7 @@ router.get("/videos", async (req, res): Promise<void> => {
     conditions.push(eq(videosTable.collectionId, parseInt(collectionId)));
   }
   if (category) conditions.push(eq(videosTable.category, category));
+  if (genre) conditions.push(sql`${genre.toLowerCase()} = ANY(${videosTable.tags})`);
   if (featured === "true") conditions.push(eq(videosTable.isFeatured, true));
   if (search) {
     conditions.push(

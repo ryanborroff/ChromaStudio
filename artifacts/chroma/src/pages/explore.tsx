@@ -1,9 +1,9 @@
 import { useState, Fragment } from "react";
-import { Link } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import { useListVideos, getListVideosQueryKey } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/video-card";
 import { EmptyState } from "@/components/empty-state";
-import { Loader2, Search, SlidersHorizontal, Grid3X3, List, Check, ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronDown, Star } from "lucide-react";
+import { Loader2, Search, SlidersHorizontal, Grid3X3, List, Check, ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronDown, Star, X } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
 import {
   DropdownMenu,
@@ -11,6 +11,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+const GENRE_TAGS = ["Documentary", "Narrative", "Experimental", "Commercial", "Music Video"];
 
 const SORT_OPTIONS = [
   { value: "featured", label: "Trending" },
@@ -40,10 +42,31 @@ export function Explore() {
   const [view, setView] = useState<"grid" | "list">("grid");
   const isCommunity = sort === "community_rated" || sort === "community_rated_asc";
 
-  // True when any filter/search is active (affects empty-state variant)
-  const hasFilters = !!debouncedSearch || sort !== "featured";
+  // Read genre from URL query param (?genre=Documentary)
+  const searchString = useSearch();
+  const [, navigate] = useLocation();
+  const urlGenre = new URLSearchParams(searchString).get("genre") ?? undefined;
 
-  const showFeaturedStrip = sort === "featured" && !debouncedSearch;
+  const activeGenre = urlGenre && GENRE_TAGS.includes(urlGenre) ? urlGenre : undefined;
+
+  function handleGenreClick(tag: string) {
+    if (activeGenre === tag) {
+      navigate("/explore");
+    } else {
+      navigate(`/explore?genre=${encodeURIComponent(tag)}`);
+    }
+  }
+
+  function clearAllFilters() {
+    setSearch("");
+    setSort("featured");
+    navigate("/explore");
+  }
+
+  // True when any filter/search is active (affects empty-state variant)
+  const hasFilters = !!debouncedSearch || sort !== "featured" || !!activeGenre;
+
+  const showFeaturedStrip = sort === "featured" && !debouncedSearch && !activeGenre;
 
   const { data: featuredData } = useListVideos(
     { featured: true, limit: 6 },
@@ -56,8 +79,8 @@ export function Explore() {
   );
 
   const { data, isLoading } = useListVideos(
-    { search: debouncedSearch || undefined, sort },
-    { query: { queryKey: getListVideosQueryKey({ search: debouncedSearch || undefined, sort }) } }
+    { search: debouncedSearch || undefined, sort, genre: activeGenre },
+    { query: { queryKey: getListVideosQueryKey({ search: debouncedSearch || undefined, sort, genre: activeGenre }) } }
   );
 
   const featuredVideos = featuredData?.videos ?? [];
@@ -210,6 +233,28 @@ export function Explore() {
         </div>
       </div>
 
+      {/* Genre filter pills */}
+      <div
+        className="flex items-center gap-2 px-6 py-2 overflow-x-auto"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+      >
+        {GENRE_TAGS.map(tag => {
+          const isActive = activeGenre === tag;
+          return (
+            <button
+              key={tag}
+              onClick={() => handleGenreClick(tag)}
+              className={pillClass(isActive)}
+              style={pillStyle(isActive)}
+              data-testid={`genre-pill-${tag.toLowerCase().replace(/\s+/g, "-")}`}
+            >
+              {isActive && <X className="w-3 h-3 opacity-70" />}
+              {tag}
+            </button>
+          );
+        })}
+      </div>
+
       {/* Content */}
       <div className="p-6 flex-1 space-y-10">
         {/* Featured Picks strip — only on Trending tab, no active search */}
@@ -251,7 +296,7 @@ export function Explore() {
               description="Try a different search term or clear your filters."
               action={
                 <button
-                  onClick={() => { setSearch(""); setSort("featured"); }}
+                  onClick={clearAllFilters}
                   className="text-[13px] font-medium px-5 py-[9px] rounded-lg transition-colors hover:bg-white/5"
                   style={{ background: "transparent", color: "#f2f2f2", border: "0.5px solid #3a3a38" }}
                 >
