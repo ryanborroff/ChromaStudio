@@ -99,6 +99,11 @@ function AppRoutes() {
         <Route path="/deliver/:token" component={DeliveryPage} />
 
         {/* Live & cinema events */}
+        {/* /studio bare path → canonical starting page */}
+        <Route path="/studio">
+          <Redirect to="/studio/portfolio" />
+        </Route>
+
         <Route path="/live">
           <ComingSoon
             icon={Radio}
