@@ -3,8 +3,10 @@ import { queryClient } from "@/lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Loader2 } from "lucide-react";
 import NotFound from "@/pages/not-found";
 import { Layout } from "@/components/layout";
+import { ErrorBoundary } from "@/components/error-boundary";
 import { useAuth } from "@/lib/useAuth";
 
 // Pages
@@ -45,9 +47,17 @@ import {
 
 const basePath = import.meta.env.BASE_URL.replace(/\/$/, "");
 
+function AuthLoader() {
+  return (
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+    </div>
+  );
+}
+
 function HomeRedirect() {
   const { isSignedIn, isLoaded } = useAuth();
-  if (!isLoaded) return null;
+  if (!isLoaded) return null; // Home page has its own hero — no spinner needed here
   return isSignedIn ? <Redirect to="/feed" /> : <Home />;
 }
 
@@ -56,7 +66,7 @@ function ProtectedRoute({ component: Component, ...rest }: any) {
     <Route {...rest}>
       {(params: Record<string, string>) => {
         const { isSignedIn, isLoaded } = useAuth();
-        if (!isLoaded) return null;
+        if (!isLoaded) return <AuthLoader />;
         return isSignedIn ? (
           <Component params={params} />
         ) : (
@@ -69,6 +79,7 @@ function ProtectedRoute({ component: Component, ...rest }: any) {
 
 function AppRoutes() {
   return (
+    <ErrorBoundary>
     <Layout>
       <Switch>
         <Route path="/" component={HomeRedirect} />
@@ -208,6 +219,7 @@ function AppRoutes() {
         <Route component={NotFound} />
       </Switch>
     </Layout>
+    </ErrorBoundary>
   );
 }
 
