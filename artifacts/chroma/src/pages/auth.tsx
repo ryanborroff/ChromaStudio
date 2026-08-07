@@ -170,6 +170,14 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
               {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {isSignUp ? "Create account" : "Sign in"}
             </Button>
+
+            {!isSignUp && (
+              <div className="text-center mt-3">
+                <a href="/forgot-password" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Forgot your password?
+                </a>
+              </div>
+            )}
           </form>
 
           <p className="text-sm text-muted-foreground mt-6">
