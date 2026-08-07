@@ -205,9 +205,11 @@ export const handlers = [
   // ── Storage ───────────────────────────────────────────────────────────────
   http.get("*/api/storage/usage", () =>
     HttpResponse.json({
-      usedBytes: 0,
-      limitBytes: 10_737_418_240,
-      fileCount: 0,
+      totalBytesUsed: 0,
+      videoCount: 0,
+      planStorageLimitBytes: 100 * 1024 * 1024 * 1024,
+      usagePercent: 0,
+      warning: false,
     }),
   ),
 
@@ -238,6 +240,6 @@ export const handlers = [
 
   // ── Exports ───────────────────────────────────────────────────────────────
   http.get("*/api/exports", () =>
-    HttpResponse.json({ exports: [], total: 0 }),
+    HttpResponse.json([]),
   ),
 ];

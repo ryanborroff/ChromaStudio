@@ -1,1 +1,2 @@
 - [Prod vs dev demo user](prod-demo-user.md) — production deploy has a separate DB, so demo/seed users from dev (e.g. id 1) won't exist; find-or-create by a stable identifier.
+- [API mock contracts](api-mock-contracts.md) — demo MSW handlers must mirror generated client/OpenAPI response shapes.
