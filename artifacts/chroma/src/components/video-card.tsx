@@ -79,7 +79,7 @@ export function VideoCard({ video, showAuthor = true }: VideoCardProps) {
         <div className="flex flex-col flex-1 min-w-0">
           <Link
             href={`/videos/${video.id}`}
-            className="font-semibold text-sm text-white/90 leading-tight truncate hover:text-primary transition-colors tracking-tight"
+            className="font-medium text-sm text-[#f2f2f2] leading-tight truncate hover:text-primary transition-colors tracking-tight"
             data-testid={`video-title-${video.id}`}
           >
             {video.title}
@@ -89,7 +89,7 @@ export function VideoCard({ video, showAuthor = true }: VideoCardProps) {
             <div className="flex items-center gap-1.5 mt-0.5">
               <Link
                 href={`/profile/${video.user.username}`}
-                className="text-xs text-white/40 hover:text-white/70 transition-colors truncate"
+                className="text-xs text-[#9a9a94] hover:text-white/70 transition-colors truncate"
                 data-testid={`video-author-name-${video.id}`}
               >
                 {video.user.name}
@@ -97,7 +97,7 @@ export function VideoCard({ video, showAuthor = true }: VideoCardProps) {
               {video.user.profession && (
                 <>
                   <span className="text-white/20 text-xs">·</span>
-                  <span className="text-xs text-white/25 truncate">{video.user.profession}</span>
+                  <span className="text-xs text-[#9a9a94] truncate">{video.user.profession}</span>
                 </>
               )}
             </div>
@@ -110,7 +110,7 @@ export function VideoCard({ video, showAuthor = true }: VideoCardProps) {
               ratingCount={video.ratingCount ?? 0}
               userRating={video.userRating ?? null}
             />
-            <span className="text-xs text-white/25 shrink-0" data-testid={`video-date-${video.id}`}>
+            <span className="text-xs text-[#9a9a94] shrink-0" data-testid={`video-date-${video.id}`}>
               {format(new Date(video.createdAt), "MMM d, yyyy")}
             </span>
           </div>

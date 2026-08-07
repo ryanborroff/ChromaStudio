@@ -65,6 +65,42 @@ const NAV_TAIL: NavItem[] = [
 
 const GENRE_TAGS = ["Documentary", "Narrative", "Experimental", "Commercial", "Music Video"];
 
+type SidebarItemProps = {
+  href: string;
+  label: string;
+  icon: LucideIcon;
+  active: boolean;
+  testid?: string;
+};
+
+function SidebarItem({ href, label, icon: Icon, active, testid }: SidebarItemProps) {
+  return (
+    <Link
+      href={href}
+      className={`group flex items-center gap-[10px] px-[10px] py-2 rounded-lg cursor-pointer transition-colors ${active ? "bg-[#1c1c1a]" : "hover:bg-[#1a1a1a]"}`}
+      data-testid={testid}
+    >
+      <Icon className={`w-[17px] h-[17px] transition-colors ${active ? "text-[#e0631f]" : "text-[#9a9a94] group-hover:text-[#e0e0dc]"}`} />
+      <span className={`text-[13px] transition-colors ${active ? "font-medium text-[#f2f2f2]" : "text-[#b5b5b0] group-hover:text-[#e0e0dc]"}`}>
+        {label}
+      </span>
+    </Link>
+  );
+}
+
+function SidebarSection({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-7">
+      <p className="px-3 text-[11px] font-medium text-[#6b6b66] uppercase tracking-[0.04em] mb-[10px]">
+        {label}
+      </p>
+      <div className="space-y-1">
+        {children}
+      </div>
+    </div>
+  );
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -403,26 +439,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
           )}
 
           {!isSignedIn && (
-            <>
-            <Link
-              href="/sign-in"
-              className="text-sm font-medium text-white/50 hover:text-white px-3 py-1 rounded-md hover:bg-white/5 transition-all"
-              data-testid="link-sign-in"
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/sign-up"
-              className="text-sm font-semibold px-4 py-1.5 rounded-lg text-white transition-all"
-              style={{
-                background: "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)",
-                boxShadow: "0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12)",
-              }}
-              data-testid="btn-join"
-            >
-              Join ChromaStudio
-            </Link>
-            </>
+            <div className="auth-actions flex items-center gap-2">
+              <Link
+                href="/sign-in"
+                className="text-[13px] font-medium text-[#e0e0dc] px-4 py-[9px] rounded-lg border-[0.5px] border-[#3a3a38] bg-transparent hover:border-[#55554f] hover:bg-[#1a1a1a] transition-all"
+                data-testid="link-sign-in"
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/sign-up"
+                className="text-[13px] font-medium px-5 py-[9px] rounded-lg text-white bg-[#e0631f] hover:bg-[#c8551a] transition-all"
+                data-testid="btn-join"
+              >
+                Join ChromaStudio
+              </Link>
+            </div>
           )}
         </div>
       </header>
@@ -438,70 +470,71 @@ export function Layout({ children }: { children: React.ReactNode }) {
               borderRight: "1px solid rgba(255,255,255,0.06)",
             }}
           >
-            <p className="px-3 text-[10px] font-semibold text-white/25 uppercase tracking-widest mb-1">Library</p>
-
-            {isSignedIn && (
-              <Link
-                href="/feed"
-                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${location === "/feed" ? "bg-white/10 text-white" : "text-white/40 hover:text-white/75 hover:bg-white/5"}`}
-                data-testid="sidebar-link-feed"
-              >
-                <Rss className={`w-4 h-4 ${location === "/feed" ? "text-primary" : ""}`} />
-                Feed
-              </Link>
-            )}
-
-            {[NAV_VIEW, ...NAV_TAIL].map(item => {
-              const Icon = item.icon;
-              const active = location.startsWith(item.href);
-              return (
-                <Link
+            <SidebarSection label="Library">
+              {isSignedIn && (
+                <SidebarItem
+                  href="/feed"
+                  label="Feed"
+                  icon={Rss}
+                  active={location === "/feed"}
+                  testid="sidebar-link-feed"
+                />
+              )}
+              <SidebarItem
+                href={NAV_LIBRARY.href}
+                label={NAV_LIBRARY.label}
+                icon={NAV_LIBRARY.icon}
+                active={location.startsWith(NAV_LIBRARY.href)}
+                testid="sidebar-link-library"
+              />
+              <SidebarItem
+                href={NAV_VIEW.href}
+                label={NAV_VIEW.label}
+                icon={NAV_VIEW.icon}
+                active={location.startsWith(NAV_VIEW.href)}
+                testid="sidebar-link-watch"
+              />
+              {NAV_TAIL.map(item => (
+                <SidebarItem
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${active ? "bg-white/10 text-white" : "text-white/40 hover:text-white/75 hover:bg-white/5"}`}
-                  data-testid={`sidebar-link-${item.label.toLowerCase()}`}
-                >
-                  <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
-                  {item.label}
-                </Link>
-              );
-            })}
+                  label={item.label}
+                  icon={item.icon}
+                  active={location.startsWith(item.href)}
+                  testid={`sidebar-link-${item.label.toLowerCase()}`}
+                />
+              ))}
+            </SidebarSection>
 
             {NAV_GROUPS.map(group => {
               if (group.signedInOnly && !isSignedIn) return null;
               return (
-                <div key={group.label}>
-                  <p className="px-3 mt-5 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">{group.label}</p>
-                  {group.items.map(item => {
-                    const Icon = item.icon;
-                    const active = location.startsWith(item.href);
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${active ? "bg-white/10 text-white" : "text-white/40 hover:text-white/75 hover:bg-white/5"}`}
-                        data-testid={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
-                      >
-                        <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                </div>
+                <SidebarSection key={group.label} label={group.label}>
+                  {group.items.map(item => (
+                    <SidebarItem
+                      key={item.href}
+                      href={item.href}
+                      label={item.label}
+                      icon={item.icon}
+                      active={location.startsWith(item.href)}
+                      testid={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+                    />
+                  ))}
+                </SidebarSection>
               );
             })}
 
-            <p className="px-3 mt-5 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">Discover</p>
-
-            {GENRE_TAGS.map(tag => (
-              <button
-                key={tag}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-white/35 hover:text-white/65 hover:bg-white/5 transition-all mb-0.5"
-              >
-                <span className="w-2 h-2 rounded-full bg-white/15 ml-1 flex-shrink-0" />
-                {tag}
-              </button>
-            ))}
+            <SidebarSection label="Discover">
+              {GENRE_TAGS.map(tag => (
+                <button
+                  key={tag}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-[#1a1a1a] transition-colors"
+                >
+                  <span className="w-2 h-2 rounded-full bg-white/15 ml-1 flex-shrink-0" />
+                  {tag}
+                </button>
+              ))}
+            </SidebarSection>
 
             <div className="mt-auto px-1">
               <Link

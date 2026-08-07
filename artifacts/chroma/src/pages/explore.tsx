@@ -1,9 +1,9 @@
 import { useState, Fragment } from "react";
 import { useListVideos, getListVideosQueryKey } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/video-card";
-import { EmptyState } from "@/components/empty-state";
-import { Loader2, Search, SlidersHorizontal, Grid3X3, List, Check, ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronDown, Star } from "lucide-react";
+import { Search, SlidersHorizontal, Grid3X3, List, Check, ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronDown, Star, Film } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
+import { Link } from "wouter";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +17,57 @@ const SORT_OPTIONS = [
   { value: "most_viewed", label: "Most Viewed" },
   { value: "newest", label: "Newest" },
 ] as const;
+
+function pillClass(active: boolean) {
+  return `text-[13px] font-medium px-4 py-[7px] rounded-[20px] cursor-pointer transition-colors duration-150 ease-[ease] ${
+    active
+      ? "bg-[#f2f2f2] text-[#111111]"
+      : "bg-transparent text-[#b5b5b0] border-[0.5px] border-[#3a3a38] hover:border-[#55554f] hover:text-[#e0e0dc]"
+  }`;
+}
+
+function VideoSkeletonCard() {
+  return (
+    <div className="flex flex-col gap-2.5">
+      <div className="skeleton-shimmer relative aspect-video rounded-lg bg-[#1a1a1a] overflow-hidden" />
+      <div className="h-3 rounded bg-[#1a1a1a] w-4/5" />
+      <div className="h-[10px] rounded bg-[#1a1a1a] w-[45%]" />
+    </div>
+  );
+}
+
+function ExploreEmptyState({ hasFilters, onClear }: { hasFilters: boolean; onClear: () => void }) {
+  return (
+    <div className="border-[0.5px] border-[#262624] rounded-xl px-8 py-12 text-center">
+      <div className="w-14 h-14 rounded-full bg-[#241a12] flex items-center justify-center text-[#e08a3c] mx-auto mb-4">
+        {hasFilters ? <Search className="w-[26px] h-[26px]" /> : <Film className="w-[26px] h-[26px]" />}
+      </div>
+      <h3 className="text-[18px] font-medium text-[#f2f2f2] mb-1.5">
+        {hasFilters ? "No matches found" : "Be the first to publish"}
+      </h3>
+      <p className="text-sm text-[#9a9a94] leading-snug max-w-[340px] mx-auto mb-5">
+        {hasFilters
+          ? "Try a different search term or clear your filters."
+          : "Trending work will appear here once creators start uploading. Upload yours to kick things off."}
+      </p>
+      {hasFilters ? (
+        <button
+          onClick={onClear}
+          className="inline-block bg-transparent text-[#f2f2f2] text-[13px] font-medium px-5 py-[9px] rounded-lg border-[0.5px] border-[#3a3a38] hover:border-[#55554f] hover:bg-[#1a1a1a] transition-colors"
+        >
+          Clear filters
+        </button>
+      ) : (
+        <Link
+          href="/videos/upload"
+          className="inline-block bg-[#e0631f] text-white text-[13px] font-medium px-5 py-[9px] rounded-lg hover:bg-[#c8551a] transition-colors"
+        >
+          Upload a video
+        </Link>
+      )}
+    </div>
+  );
+}
 
 export function Explore() {
   const [search, setSearch] = useState("");
@@ -48,6 +99,9 @@ export function Explore() {
     ? (data?.videos ?? []).filter(v => !featuredIds.has(v.id))
     : (data?.videos ?? []);
 
+  const hasFilters = search.trim() !== "" || sort !== "featured";
+  const showEmpty = !isLoading && mainVideos.length === 0 && (!showFeaturedStrip || featuredVideos.length === 0);
+
   return (
     <div className="flex flex-col flex-1 min-h-0">
       {/* macOS-style sticky toolbar */}
@@ -61,8 +115,8 @@ export function Explore() {
         }}
       >
         <div>
-          <h1 className="text-[15px] font-semibold text-white tracking-tight">Explore</h1>
-          <p className="text-xs text-white/35 font-medium">Discover exceptional work.</p>
+          <h1 className="text-[28px] font-medium text-[#f2f2f2] mb-1">Explore</h1>
+          <p className="text-sm font-normal text-[#9a9a94]">Discover exceptional work.</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -73,7 +127,7 @@ export function Explore() {
                 <DropdownMenu key="community_rated">
                   <DropdownMenuTrigger asChild>
                     <button
-                      className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-all ${isCommunity ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
+                      className={`flex items-center gap-1 ${pillClass(isCommunity)}`}
                       data-testid="btn-community-rated"
                     >
                       Community Rated
@@ -103,7 +157,7 @@ export function Explore() {
                 <button
                   key={opt.value}
                   onClick={() => setSort(opt.value)}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${sort === opt.value ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
+                  className={pillClass(sort === opt.value)}
                 >
                   {opt.label}
                 </button>
@@ -112,17 +166,16 @@ export function Explore() {
           </div>
 
           {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+          <div
+            className="flex items-center gap-2 bg-[#1a1a1a] border-[0.5px] border-[#3a3a38] rounded-lg px-3 py-[6px] min-w-[200px] focus-within:border-[#e0631f] focus-within:shadow-[0_0_0_1px_rgba(224,99,31,0.3)] transition-[border-color,box-shadow] duration-150"
+          >
+            <Search className="w-4 h-4 text-[#888888]" />
             <input
+              type="text"
               placeholder="Search…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-8 h-8 w-44 md:w-56 text-sm rounded-lg outline-none text-white/80 placeholder:text-white/25 focus:ring-1 focus:ring-primary/40 transition-all"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.1)",
-              }}
+              className="bg-transparent border-0 outline-none text-[#f2f2f2] text-[13px] w-full placeholder:text-[#888888]"
               data-testid="input-search-videos"
             />
           </div>
@@ -177,8 +230,8 @@ export function Explore() {
 
           <button
             onClick={() => setView(view === "grid" ? "list" : "grid")}
-            aria-label={view === "grid" ? "Switch to list view" : "Switch to grid view"}
-            title={view === "grid" ? "Switch to list view" : "Switch to grid view"}
+            aria-label="Toggle layout"
+            title="Toggle layout"
             className="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg text-white transition-all"
             style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
             data-testid="button-view-toggle"
@@ -207,9 +260,13 @@ export function Explore() {
 
         {/* Main grid */}
         {isLoading ? (
-          <div className="flex items-center justify-center min-h-[40vh]">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          </div>
+          <section aria-label="Loading videos">
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <VideoSkeletonCard key={i} />
+              ))}
+            </div>
+          </section>
         ) : mainVideos.length > 0 ? (
           <section>
             {showFeaturedStrip && featuredVideos.length > 0 && (
@@ -221,10 +278,13 @@ export function Explore() {
               ))}
             </div>
           </section>
-        ) : !showFeaturedStrip || featuredVideos.length === 0 ? (
-          <EmptyState
-            title="No videos found"
-            description="We couldn't find any videos matching your search criteria. Try adjusting your filters."
+        ) : showEmpty ? (
+          <ExploreEmptyState
+            hasFilters={hasFilters}
+            onClear={() => {
+              setSearch("");
+              setSort("featured");
+            }}
           />
         ) : null}
       </div>
