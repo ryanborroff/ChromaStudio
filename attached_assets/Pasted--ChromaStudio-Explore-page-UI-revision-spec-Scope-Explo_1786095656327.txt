@@ -1,0 +1,227 @@
+# ChromaStudio Explore page — UI revision spec
+
+Scope: Explore page (`/explore`) — filter bar, search input, empty state, sidebar navigation. Dark theme only.
+
+---
+
+## 1. Filter pills (Trending / Community Rated / Most Viewed / Newest)
+
+Problem: active and inactive states are nearly indistinguishable — inactive pills read as disabled rather than clickable.
+
+```css
+.filter-pill {
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 16px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.filter-pill--active {
+  background: #f2f2f2;
+  color: #111111;
+  border: none;
+}
+
+.filter-pill--inactive {
+  background: transparent;
+  color: #b5b5b0;
+  border: 0.5px solid #3a3a38;
+}
+
+.filter-pill--inactive:hover {
+  border-color: #55554f;
+  color: #e0e0dc;
+}
+```
+
+---
+
+## 2. Search input
+
+Problem: same grey box treatment as the filter pills, reads as another filter rather than a search field.
+
+```css
+.search-input-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #1a1a1a;
+  border: 0.5px solid #3a3a38;
+  border-radius: 8px;
+  padding: 6px 12px;
+  min-width: 200px;
+}
+
+.search-input-wrap:focus-within {
+  border-color: #e0631f;
+  box-shadow: 0 0 0 1px rgba(224, 99, 31, 0.3);
+}
+
+.search-input-wrap input {
+  background: transparent;
+  border: none;
+  color: #f2f2f2;
+  font-size: 13px;
+  outline: none;
+  width: 100%;
+}
+
+.search-input-wrap input::placeholder {
+  color: #888888;
+}
+
+.search-input-wrap .icon {
+  font-size: 16px;
+  color: #888888;
+}
+```
+
+Markup note: icon (`ti-search`) sits inline before the `<input>`, not as a separate button.
+
+---
+
+## 3. Empty state
+
+Problem: copy says "Try adjusting your filters" even when no filters are set — wrong message for a genuinely empty catalogue. Visual is a lone icon and text floating in a large void, reads as broken/error rather than an invitation.
+
+Two variants needed:
+
+**A. Zero content (no videos exist yet)**
+- Headline: "Be the first to publish"
+- Body: "Trending work will appear here once creators start uploading. Upload yours to kick things off."
+- CTA button: "Upload a video"
+
+**B. Filtered search, zero results**
+- Headline: "No matches found"
+- Body: "Try a different search term or clear your filters."
+- CTA: "Clear filters" (ghost button, not primary)
+
+```css
+.empty-state {
+  border: 0.5px solid #262624;
+  border-radius: 12px;
+  padding: 3rem 2rem;
+  text-align: center;
+}
+
+.empty-state__icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #241a12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1rem;
+}
+
+.empty-state__icon {
+  font-size: 26px;
+  color: #e08a3c;
+}
+
+.empty-state__title {
+  color: #f2f2f2;
+  font-size: 18px;
+  font-weight: 500;
+  margin: 0 0 6px;
+}
+
+.empty-state__body {
+  color: #9a9a94;
+  font-size: 14px;
+  line-height: 1.5;
+  max-width: 340px;
+  margin: 0 auto 20px;
+}
+
+.empty-state__cta {
+  background: #e0631f;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 20px;
+  border-radius: 8px;
+  border: none;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.empty-state__cta--ghost {
+  background: transparent;
+  color: #f2f2f2;
+  border: 0.5px solid #3a3a38;
+}
+```
+
+Logic: render variant A only when the unfiltered library is empty; render variant B when filters/search are active and return zero results. Do not show "adjusting your filters" copy when no filters are applied.
+
+---
+
+## 4. Sidebar navigation grouping
+
+Problem: LIBRARY / LIVE / SHOP / DISCOVER section labels share identical weight and spacing with no separation, so the sidebar reads as one continuous list rather than four groups. Active item ("Watch") is distinguished only by icon color, easy to miss.
+
+```css
+.sidebar-section {
+  margin-bottom: 28px; /* was ~12px equivalent — this is the main fix */
+}
+
+.sidebar-section__label {
+  color: #6b6b66;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin: 0 0 10px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.sidebar-item .icon {
+  font-size: 17px;
+  color: #9a9a94;
+}
+
+.sidebar-item .label {
+  color: #b5b5b0;
+  font-size: 13px;
+}
+
+.sidebar-item--active {
+  background: #1c1c1a;
+}
+
+.sidebar-item--active .icon {
+  color: #e0631f;
+}
+
+.sidebar-item--active .label {
+  color: #f2f2f2;
+  font-weight: 500;
+}
+```
+
+Key change: 28px between section groups vs. near-uniform spacing currently. Active item gets a filled pill background, not just an icon color change.
+
+---
+
+## 5. Misc
+
+- Verify the small orange glyph in the bottom-right corner of the Explore page — appears to be a stray brand mark/watermark unrelated to the "Join ChromaStudio" CTA. Confirm intentional or remove.
+- Grid/list toggle icon next to the search bar has no label or tooltip. Add `title="Toggle layout"` or an accessible tooltip until it has enough functional weight to be self-evident.
+
+---
+
+## Reference visuals
+
+Rendered mockups of the filter bar + empty state, and the sidebar grouping, were shared inline in this conversation for visual reference alongside the CSS above.
