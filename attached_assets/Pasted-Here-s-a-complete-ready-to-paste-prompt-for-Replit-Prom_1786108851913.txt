@@ -1,0 +1,63 @@
+Here's a complete, ready-to-paste prompt for Replit:
+
+---
+
+**Prompt for Replit:**
+
+I need to refactor the navigation structure of this app. Please implement the following changes:
+
+## 1. Top Navigation Bar
+Replace the current top nav (which has dropdown menus) with simple, flat links — no dropdowns, no flyouts, no hover menus. Just five links:
+
+- **Watch** → routes to `/feed` (default landing view — see note below)
+- **Live** → routes to `/live`
+- **Studio** → routes to `/studio/portfolio`
+- **Shop** → routes to `/store`
+- **Pricing** → routes to `/pricing`
+
+Each link should show an active/highlighted state when the user is on that section or any of its sub-pages (e.g. being on `/studio/analytics` should still highlight "Studio" in the top nav).
+
+## 2. Left Sidebar — Contextual, Not Static
+The left sidebar must dynamically change its contents based on which top-nav section is currently active. It is no longer a fixed, always-the-same list. Implement it as follows:
+
+**When active section = Watch:**
+- Feed → `/feed`
+- Discover *(section label, not a link)*
+  - Documentary → `/explore?genre=Documentary`
+  - Narrative → `/explore?genre=Narrative`
+  - Experimental → `/explore?genre=Experimental`
+  - Commercial → `/explore?genre=Commercial`
+  - Music Video → `/explore?genre=Music%20Video`
+
+**When active section = Live:**
+- Streaming → `/live`
+- Cinema Events → `/cinema`
+- Replays → `/live/replays`
+
+**When active section = Studio:**
+- Portfolio Collections → `/studio/portfolio`
+- Media Library → `/studio/storage`
+- Client Delivery → `/studio/delivery`
+- Website Embedding → `/studio/embeds`
+- Analytics → `/studio/analytics`
+
+**When active section = Shop:**
+- No sidebar at all. Content area should expand to fill the space where the sidebar would normally sit (no empty gutter).
+
+**When active section = Pricing:**
+- No sidebar at all. Same full-width treatment as Shop.
+
+## 3. Layout Behavior
+- The page content area must gracefully reflow between "with sidebar" (Watch/Live/Studio) and "without sidebar" (Shop/Pricing) states — no fixed-width gaps or awkward empty space when the sidebar is absent.
+- Sidebar sub-items should show an active/highlighted state when that specific sub-page is currently open.
+- This should work responsively — on mobile, the sidebar can collapse into a menu/drawer pattern of your choice, but the same contextual logic (only show sub-items relevant to the active top-nav section) must still apply.
+
+## 4. Remove Duplication
+- Delete all dropdown/flyout menu code currently attached to the top nav items for Live, Studio, and Shop — that sub-navigation now lives exclusively in the sidebar.
+- Do not have any destination reachable via two different nav paths. Each page should be reachable through exactly one navigational route: top nav → (optional) sidebar.
+
+## 5. Landing Pages
+- `/studio` should redirect or default to `/studio/portfolio` since Studio is now a plain top-nav link with no dropdown to choose a starting sub-page.
+- `/feed` is the default landing page for "Watch" — confirm this is an acceptable default, or let me know if `/explore` (Discover) should be the default instead.
+
+Please implement this across the existing routing and nav components, keeping existing URLs intact (don't change any of the underlying page routes — only the navigation structure and UI around them).
