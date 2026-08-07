@@ -173,13 +173,13 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           </form>
 
           <p className="text-sm text-muted-foreground mt-6">
-            {isSignUp ? "Already have an account? " : "New to ChromaStudio? "}
+            {isSignUp ? "Already have an account? " : "Don't have an account? "}
             <a
               href={isSignUp ? "/sign-in" : "/sign-up"}
               className="text-primary hover:underline"
               data-testid="link-toggle-mode"
             >
-              {isSignUp ? "Sign in" : "Create one"}
+              {isSignUp ? "Sign in" : "Join Chroma Studio."}
             </a>
           </p>
 
