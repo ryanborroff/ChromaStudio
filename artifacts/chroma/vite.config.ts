@@ -67,6 +67,14 @@ export default defineConfig(async ({ command }) => {
       fs: {
         strict: true,
       },
+      // Proxy /api to the API server so Playwright tests (which hit the Vite
+      // dev server directly) can reach the backend without the Replit proxy.
+      proxy: {
+        "/api": {
+          target: `http://localhost:${process.env.API_PORT ?? "8080"}`,
+          changeOrigin: true,
+        },
+      },
     },
     preview: {
       port,
