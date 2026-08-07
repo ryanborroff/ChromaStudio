@@ -1,9 +1,28 @@
+// =============================================================================
+// NAV ITEM LOCATIONS — canonical source of truth after deduplication
+//
+//  Item                     Top Nav        Studio Sidebar   Mobile Sheet
+//  ─────────────────────────────────────────────────────────────────────
+//  Watch (/explore)         ✓ center       —                ✓
+//  Feed (/feed)             ✓ center*      —                ✓*
+//  Live group               ✓ dropdown     —                ✓
+//  Studio group             ✓ dropdown*    ✓ (sole loc)     ✓*
+//  Shop group               ✓ dropdown     —                ✓
+//  Pricing (/pricing)       ✓ tail         —                ✓
+//  Media Library            Studio drop    ✓ Studio sidebar —
+//  Analytics                Studio drop    ✓ Studio sidebar —
+//  Upload (/videos/upload)  ✓ right*       —                ✓*
+//
+//  * = signed-in only
+//  Studio Sidebar is shown only on /studio/* routes.
+// =============================================================================
+
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth, logout } from "@/lib/useAuth";
 import {
   Film, LogOut, Settings, User as UserIcon,
-  Grid3X3, Users, Clapperboard, Sparkles, Rss,
+  Grid3X3, Clapperboard, Sparkles, Rss,
   Tag, Menu, ChevronDown,
   Radio, History, FolderOpen, Cloud, Send, Code2, BarChart3,
   ShoppingBag, ShieldCheck, KeyRound, type LucideIcon,
@@ -29,7 +48,6 @@ type NavItem = { href: string; label: string; icon: LucideIcon; desc?: string };
 type NavGroup = { label: string; signedInOnly?: boolean; items: NavItem[] };
 
 const NAV_VIEW: NavItem = { href: "/explore", label: "Watch", icon: Grid3X3 };
-const NAV_LIBRARY: NavItem = { href: "/studio/storage", label: "Library", icon: Clapperboard };
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -59,6 +77,9 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
+// Studio group extracted for sidebar use
+const STUDIO_GROUP = NAV_GROUPS.find(g => g.label === "Studio")!;
+
 const NAV_TAIL: NavItem[] = [
   { href: "/pricing", label: "Pricing", icon: Tag },
 ];
@@ -71,7 +92,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { user, isSignedIn } = useAuth();
 
   const isHome = location === "/";
-  const showSidebar = !isHome && !location.startsWith("/sign");
+  // Sidebar is shown only on Studio pages and only for signed-in users
+  const showSidebar = isSignedIn && location.startsWith("/studio");
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col dark" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif' }}>
@@ -86,7 +108,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           borderBottom: "1px solid rgba(255,255,255,0.07)",
         }}
       >
-        {/* Left — traffic lights + logo + nav */}
+        {/* Left — mobile trigger + logo + nav */}
         <div className="flex items-center gap-3 sm:gap-5">
           {/* Mobile menu trigger */}
           <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
@@ -111,9 +133,21 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </SheetTitle>
               </SheetHeader>
 
+              {/* Mobile Sheet — mirrors top navbar global items only */}
               <div className="flex flex-col py-3 px-2 overflow-y-auto h-[calc(100dvh-3rem)]">
-                <p className="px-3 text-[10px] font-semibold text-white/25 uppercase tracking-widest mb-1">Library</p>
 
+                {/* Watch */}
+                <Link
+                  href={NAV_VIEW.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-0.5 ${location.startsWith(NAV_VIEW.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                  data-testid={`mobile-link-${NAV_VIEW.label.toLowerCase()}`}
+                >
+                  <NAV_VIEW.icon className={`w-4 h-4 ${location.startsWith(NAV_VIEW.href) ? "text-primary" : ""}`} />
+                  {NAV_VIEW.label}
+                </Link>
+
+                {/* Feed — signed-in only */}
                 {isSignedIn && (
                   <Link
                     href="/feed"
@@ -126,45 +160,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </Link>
                 )}
 
-                <Link
-                  href={NAV_LIBRARY.href}
-                  onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-0.5 ${location.startsWith(NAV_LIBRARY.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
-                  data-testid="mobile-link-library"
-                >
-                  <Clapperboard className={`w-4 h-4 ${location.startsWith(NAV_LIBRARY.href) ? "text-primary" : ""}`} />
-                  {NAV_LIBRARY.label}
-                </Link>
-
-                {[NAV_VIEW, ...NAV_TAIL].map(item => {
-                  const Icon = item.icon;
-                  const active = location.startsWith(item.href);
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      onClick={() => setMobileOpen(false)}
-                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all mb-0.5 ${active ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
-                      data-testid={`mobile-link-${item.label.toLowerCase()}`}
-                    >
-                      <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
-                      {item.label}
-                    </Link>
-                  );
-                })}
-
-                {isSignedIn && (
-                  <Link
-                    href="/videos/upload"
-                    onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all mb-0.5"
-                    data-testid="mobile-btn-upload"
-                  >
-                    <Film className="w-4 h-4" />
-                    Upload
-                  </Link>
-                )}
-
+                {/* Nav groups: Live, Studio (signed-in), Shop */}
                 {NAV_GROUPS.map(group => {
                   if (group.signedInOnly && !isSignedIn) return null;
                   return (
@@ -190,17 +186,56 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   );
                 })}
 
-                <p className="px-3 mt-5 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">Discover</p>
-                {GENRE_TAGS.map(tag => (
-                  <button
-                    key={tag}
-                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-white/5 transition-all mb-0.5"
-                  >
-                    <span className="w-2 h-2 rounded-full bg-white/15 ml-1 flex-shrink-0" />
-                    {tag}
-                  </button>
-                ))}
+                {/* Pricing */}
+                {NAV_TAIL.map(item => {
+                  const Icon = item.icon;
+                  const active = location.startsWith(item.href);
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-all mt-4 mb-0.5 ${active ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+                      data-testid={`mobile-link-${item.label.toLowerCase()}`}
+                    >
+                      <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
+                      {item.label}
+                    </Link>
+                  );
+                })}
 
+                {/* Discover — genre filter links to /explore */}
+                <p className="px-3 mt-5 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">Discover</p>
+                {GENRE_TAGS.map(tag => {
+                  const href = `/explore?genre=${encodeURIComponent(tag)}`;
+                  return (
+                    <Link
+                      key={tag}
+                      href={href}
+                      onClick={() => setMobileOpen(false)}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-white/5 transition-all mb-0.5"
+                      data-testid={`mobile-link-genre-${tag.toLowerCase().replace(/\s+/g, "-")}`}
+                    >
+                      <span className="w-2 h-2 rounded-full bg-white/15 ml-1 flex-shrink-0" />
+                      {tag}
+                    </Link>
+                  );
+                })}
+
+                {/* Upload — signed-in */}
+                {isSignedIn && (
+                  <Link
+                    href="/videos/upload"
+                    onClick={() => setMobileOpen(false)}
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all mt-4 mb-0.5"
+                    data-testid="mobile-btn-upload"
+                  >
+                    <Film className="w-4 h-4" />
+                    Upload
+                  </Link>
+                )}
+
+                {/* Auth actions — signed-out */}
                 {!isSignedIn && (
                   <div className="mt-auto px-1 pt-4 flex flex-col gap-2">
                     <Link
@@ -234,6 +269,16 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Top-level nav links */}
           <nav className="hidden md:flex items-center gap-0.5">
+            {/* Watch */}
+            <Link
+              href={NAV_VIEW.href}
+              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${location.startsWith(NAV_VIEW.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
+              data-testid="link-view"
+            >
+              {NAV_VIEW.label}
+            </Link>
+
+            {/* Feed — signed-in only */}
             {isSignedIn && (
               <Link
                 href="/feed"
@@ -244,22 +289,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </Link>
             )}
 
-            <Link
-              href={NAV_VIEW.href}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${location.startsWith(NAV_VIEW.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
-              data-testid="link-view"
-            >
-              {NAV_VIEW.label}
-            </Link>
-
-            <Link
-              href={NAV_LIBRARY.href}
-              className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${location.startsWith(NAV_LIBRARY.href) ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"}`}
-              data-testid="link-library"
-            >
-              {NAV_LIBRARY.label}
-            </Link>
-
+            {/* Group dropdowns: Live, Studio (signed-in), Shop */}
             {NAV_GROUPS.map(group => {
               if (group.signedInOnly && !isSignedIn) return null;
               const active = group.items.some(i => location.startsWith(i.href));
@@ -298,6 +328,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               );
             })}
 
+            {/* Pricing — tail link */}
             {NAV_TAIL.map(item => (
               <Link
                 key={item.href}
@@ -377,12 +408,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   Management
                 </DropdownMenuLabel>
                 <DropdownMenuItem asChild className="cursor-pointer focus:bg-secondary focus:text-secondary-foreground">
-                  <Link href="/studio/analytics" className="flex items-center w-full" data-testid="menu-item-analytics">
-                    <BarChart3 className="mr-2 h-4 w-4" />
-                    <span>Analytics</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild className="cursor-pointer focus:bg-secondary focus:text-secondary-foreground">
                   <Link href="/admin" className="flex items-center w-full" data-testid="menu-item-admin">
                     <ShieldCheck className="mr-2 h-4 w-4" />
                     <span>Admin Dashboard</span>
@@ -429,6 +454,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Body — sidebar + content */}
       <div className={`flex flex-1 ${showSidebar ? "" : "flex-col"}`}>
+
+        {/* Studio sidebar — visible only on /studio/* for signed-in users */}
         {showSidebar && (
           <aside
             className="hidden lg:flex w-52 flex-shrink-0 flex-col py-4 px-2 sticky top-12 h-[calc(100vh-48px)] overflow-y-auto"
@@ -438,73 +465,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
               borderRight: "1px solid rgba(255,255,255,0.06)",
             }}
           >
-            <p className="px-3 text-[10px] font-semibold text-white/25 uppercase tracking-widest mb-1">Library</p>
+            <p className="px-3 mb-[10px] text-[11px] font-medium text-[#6b6b66] uppercase tracking-[0.04em]">Studio</p>
 
-            {isSignedIn && (
-              <Link
-                href="/feed"
-                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${location === "/feed" ? "bg-[#1c1c1a] text-white" : "text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5"}`}
-                data-testid="sidebar-link-feed"
-              >
-                <Rss className={`w-4 h-4 ${location === "/feed" ? "text-primary" : ""}`} />
-                Feed
-              </Link>
-            )}
-
-            {[NAV_VIEW, ...NAV_TAIL].map(item => {
+            {STUDIO_GROUP.items.map(item => {
               const Icon = item.icon;
               const active = location.startsWith(item.href);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${active ? "bg-[#1c1c1a] text-white" : "text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5"}`}
-                  data-testid={`sidebar-link-${item.label.toLowerCase()}`}
+                  className={`flex items-center gap-2.5 px-[10px] py-2 rounded-lg text-[13px] font-medium transition-all mb-0.5 ${active ? "bg-[#1c1c1a] text-white" : "text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5"}`}
+                  data-testid={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                 >
-                  <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
+                  <Icon className={`w-[17px] h-[17px] flex-shrink-0 ${active ? "text-primary" : "text-[#9a9a94]"}`} />
                   {item.label}
                 </Link>
               );
             })}
 
-            {NAV_GROUPS.map(group => {
-              if (group.signedInOnly && !isSignedIn) return null;
-              return (
-                <div key={group.label} className="mt-7">
-                  <p className="px-3 mb-[10px] text-[11px] font-medium text-[#6b6b66] uppercase tracking-[0.04em]">{group.label}</p>
-                  {group.items.map(item => {
-                    const Icon = item.icon;
-                    const active = location.startsWith(item.href);
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={`flex items-center gap-2.5 px-[10px] py-2 rounded-lg text-[13px] font-medium transition-all mb-0.5 ${active ? "bg-[#1c1c1a] text-white" : "text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5"}`}
-                        data-testid={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
-                      >
-                        <Icon className={`w-[17px] h-[17px] flex-shrink-0 ${active ? "text-primary" : "text-[#9a9a94]"}`} />
-                        {item.label}
-                      </Link>
-                    );
-                  })}
-                </div>
-              );
-            })}
-
-            <div className="mt-7">
-              <p className="px-3 mb-[10px] text-[11px] font-medium text-[#6b6b66] uppercase tracking-[0.04em]">Discover</p>
-            </div>
-
-            {GENRE_TAGS.map(tag => (
-              <button
-                key={tag}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5 transition-all mb-0.5"
-              >
-                <span className="w-2 h-2 rounded-full bg-white/15 ml-1 flex-shrink-0" />
-                {tag}
-              </button>
-            ))}
-
+            {/* Pro Membership CTA — links to /pricing but is not a duplicate nav item */}
             <div className="mt-auto px-1">
               <Link
                 href="/pricing"
