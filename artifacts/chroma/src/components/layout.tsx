@@ -443,7 +443,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {isSignedIn && (
               <Link
                 href="/feed"
-                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${location === "/feed" ? "bg-white/10 text-white" : "text-white/40 hover:text-white/75 hover:bg-white/5"}`}
+                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${location === "/feed" ? "bg-[#1c1c1a] text-white" : "text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5"}`}
                 data-testid="sidebar-link-feed"
               >
                 <Rss className={`w-4 h-4 ${location === "/feed" ? "text-primary" : ""}`} />
@@ -458,7 +458,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${active ? "bg-white/10 text-white" : "text-white/40 hover:text-white/75 hover:bg-white/5"}`}
+                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${active ? "bg-[#1c1c1a] text-white" : "text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5"}`}
                   data-testid={`sidebar-link-${item.label.toLowerCase()}`}
                 >
                   <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
@@ -470,8 +470,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             {NAV_GROUPS.map(group => {
               if (group.signedInOnly && !isSignedIn) return null;
               return (
-                <div key={group.label}>
-                  <p className="px-3 mt-5 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">{group.label}</p>
+                <div key={group.label} className="mt-7">
+                  <p className="px-3 mb-[10px] text-[11px] font-medium text-[#6b6b66] uppercase tracking-[0.04em]">{group.label}</p>
                   {group.items.map(item => {
                     const Icon = item.icon;
                     const active = location.startsWith(item.href);
@@ -479,10 +479,10 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       <Link
                         key={item.href}
                         href={item.href}
-                        className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${active ? "bg-white/10 text-white" : "text-white/40 hover:text-white/75 hover:bg-white/5"}`}
+                        className={`flex items-center gap-2.5 px-[10px] py-2 rounded-lg text-[13px] font-medium transition-all mb-0.5 ${active ? "bg-[#1c1c1a] text-white" : "text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5"}`}
                         data-testid={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
                       >
-                        <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
+                        <Icon className={`w-[17px] h-[17px] flex-shrink-0 ${active ? "text-primary" : "text-[#9a9a94]"}`} />
                         {item.label}
                       </Link>
                     );
@@ -491,12 +491,14 @@ export function Layout({ children }: { children: React.ReactNode }) {
               );
             })}
 
-            <p className="px-3 mt-5 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">Discover</p>
+            <div className="mt-7">
+              <p className="px-3 mb-[10px] text-[11px] font-medium text-[#6b6b66] uppercase tracking-[0.04em]">Discover</p>
+            </div>
 
             {GENRE_TAGS.map(tag => (
               <button
                 key={tag}
-                className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-white/35 hover:text-white/65 hover:bg-white/5 transition-all mb-0.5"
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5 transition-all mb-0.5"
               >
                 <span className="w-2 h-2 rounded-full bg-white/15 ml-1 flex-shrink-0" />
                 {tag}

@@ -1,4 +1,5 @@
 import { useState, Fragment } from "react";
+import { Link } from "wouter";
 import { useListVideos, getListVideosQueryKey } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/video-card";
 import { EmptyState } from "@/components/empty-state";
@@ -18,12 +19,29 @@ const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
 ] as const;
 
+// Shared pill class builder
+function pillClass(active: boolean) {
+  return [
+    "flex items-center gap-1 px-4 py-[7px] rounded-full text-[13px] font-medium transition-colors cursor-pointer",
+    active
+      ? "bg-[#f2f2f2] text-[#111111]"
+      : "bg-transparent text-[#b5b5b0] hover:text-[#e0e0dc]",
+  ].join(" ");
+}
+
+function pillStyle(active: boolean): React.CSSProperties | undefined {
+  return active ? undefined : { border: "0.5px solid #3a3a38" };
+}
+
 export function Explore() {
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebounce(search, 500);
   const [sort, setSort] = useState<"featured" | "newest" | "most_viewed" | "community_rated" | "community_rated_asc">("featured");
   const [view, setView] = useState<"grid" | "list">("grid");
   const isCommunity = sort === "community_rated" || sort === "community_rated_asc";
+
+  // True when any filter/search is active (affects empty-state variant)
+  const hasFilters = !!debouncedSearch || sort !== "featured";
 
   const showFeaturedStrip = sort === "featured" && !debouncedSearch;
 
@@ -67,13 +85,14 @@ export function Explore() {
 
         <div className="flex items-center gap-2">
           {/* Sort pills */}
-          <div className="hidden sm:flex items-center gap-1 mr-2">
-            {SORT_OPTIONS.map(opt => (
+          <div className="hidden sm:flex items-center gap-1.5 mr-2">
+            {SORT_OPTIONS.map(opt =>
               opt.value === "community_rated" ? (
                 <DropdownMenu key="community_rated">
                   <DropdownMenuTrigger asChild>
                     <button
-                      className={`flex items-center gap-1 px-3 py-1 rounded-md text-xs font-medium transition-all ${isCommunity ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
+                      className={pillClass(isCommunity)}
+                      style={pillStyle(isCommunity)}
                       data-testid="btn-community-rated"
                     >
                       Community Rated
@@ -103,26 +122,28 @@ export function Explore() {
                 <button
                   key={opt.value}
                   onClick={() => setSort(opt.value)}
-                  className={`px-3 py-1 rounded-md text-xs font-medium transition-all ${sort === opt.value ? "bg-white/10 text-white" : "text-white/40 hover:text-white/70 hover:bg-white/5"}`}
+                  className={pillClass(sort === opt.value)}
+                  style={pillStyle(sort === opt.value)}
                 >
                   {opt.label}
                 </button>
               )
-            ))}
+            )}
           </div>
 
-          {/* Search */}
-          <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30" />
+          {/* Search — distinct input styling with orange focus ring */}
+          <div
+            className="flex items-center gap-2 rounded-lg px-3 min-w-[200px] transition-colors focus-within:shadow-[0_0_0_1px_rgba(224,99,31,0.3)]"
+            style={{ background: "#1a1a1a", border: "0.5px solid #3a3a38" }}
+          >
+            <Search className="w-4 h-4 flex-shrink-0" style={{ color: "#888888" }} />
             <input
               placeholder="Search…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="pl-8 h-8 w-44 md:w-56 text-sm rounded-lg outline-none text-white/80 placeholder:text-white/25 focus:ring-1 focus:ring-primary/40 transition-all"
-              style={{
-                background: "rgba(255,255,255,0.06)",
-                border: "1px solid rgba(255,255,255,0.1)",
-              }}
+              className="bg-transparent border-none outline-none text-[13px] w-full py-[6px]"
+              style={{ color: "#f2f2f2" }}
+              placeholder-style={{ color: "#888888" }}
               data-testid="input-search-videos"
             />
           </div>
@@ -175,6 +196,7 @@ export function Explore() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Grid / list toggle */}
           <button
             onClick={() => setView(view === "grid" ? "list" : "grid")}
             aria-label={view === "grid" ? "Switch to list view" : "Switch to grid view"}
@@ -222,10 +244,37 @@ export function Explore() {
             </div>
           </section>
         ) : !showFeaturedStrip || featuredVideos.length === 0 ? (
-          <EmptyState
-            title="No videos found"
-            description="We couldn't find any videos matching your search criteria. Try adjusting your filters."
-          />
+          hasFilters ? (
+            /* Variant B: search/filter active, zero results */
+            <EmptyState
+              title="No matches found"
+              description="Try a different search term or clear your filters."
+              action={
+                <button
+                  onClick={() => { setSearch(""); setSort("featured"); }}
+                  className="text-[13px] font-medium px-5 py-[9px] rounded-lg transition-colors hover:bg-white/5"
+                  style={{ background: "transparent", color: "#f2f2f2", border: "0.5px solid #3a3a38" }}
+                >
+                  Clear filters
+                </button>
+              }
+            />
+          ) : (
+            /* Variant A: genuinely empty catalogue */
+            <EmptyState
+              title="Be the first to publish"
+              description="Trending work will appear here once creators start uploading. Upload yours to kick things off."
+              action={
+                <Link
+                  href="/videos/upload"
+                  className="inline-block text-[13px] font-medium px-5 py-[9px] rounded-lg text-white transition-opacity hover:opacity-90"
+                  style={{ background: "#e0631f" }}
+                >
+                  Upload a video
+                </Link>
+              }
+            />
+          )
         ) : null}
       </div>
     </div>
