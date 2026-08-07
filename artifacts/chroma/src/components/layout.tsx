@@ -22,7 +22,7 @@ import { Link, useLocation } from "wouter";
 import { useAuth, logout } from "@/lib/useAuth";
 import {
   Film, LogOut, Settings, User as UserIcon,
-  Grid3X3, Clapperboard, Sparkles, Rss,
+  Grid3X3, Users, Clapperboard, Sparkles, Rss,
   Tag, Menu, ChevronDown,
   Radio, History, FolderOpen, Cloud, Send, Code2, BarChart3,
   ShoppingBag, ShieldCheck, KeyRound, type LucideIcon,
@@ -48,6 +48,7 @@ type NavItem = { href: string; label: string; icon: LucideIcon; desc?: string };
 type NavGroup = { label: string; signedInOnly?: boolean; items: NavItem[] };
 
 const NAV_VIEW: NavItem = { href: "/explore", label: "Watch", icon: Grid3X3 };
+const NAV_LIBRARY: NavItem = { href: "/studio/storage", label: "Library", icon: Clapperboard };
 
 const NAV_GROUPS: NavGroup[] = [
   {
@@ -77,9 +78,6 @@ const NAV_GROUPS: NavGroup[] = [
   },
 ];
 
-// Studio group extracted for sidebar use
-const STUDIO_GROUP = NAV_GROUPS.find(g => g.label === "Studio")!;
-
 const NAV_TAIL: NavItem[] = [
   { href: "/pricing", label: "Pricing", icon: Tag },
 ];
@@ -92,8 +90,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const { user, isSignedIn } = useAuth();
 
   const isHome = location === "/";
-  // Sidebar is shown only on Studio pages and only for signed-in users
-  const showSidebar = isSignedIn && location.startsWith("/studio");
+  const showSidebar = !isHome && !location.startsWith("/sign");
 
   return (
     <div className="min-h-[100dvh] bg-background text-foreground flex flex-col dark" style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif' }}>
@@ -455,7 +452,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* Body — sidebar + content */}
       <div className={`flex flex-1 ${showSidebar ? "" : "flex-col"}`}>
 
-        {/* Studio sidebar — visible only on /studio/* for signed-in users */}
         {showSidebar && (
           <aside
             className="hidden lg:flex w-52 flex-shrink-0 flex-col py-4 px-2 sticky top-12 h-[calc(100vh-48px)] overflow-y-auto"
@@ -465,25 +461,75 @@ export function Layout({ children }: { children: React.ReactNode }) {
               borderRight: "1px solid rgba(255,255,255,0.06)",
             }}
           >
-            <p className="px-3 mb-[10px] text-[11px] font-medium text-[#6b6b66] uppercase tracking-[0.04em]">Studio</p>
+            <p className="px-3 text-[10px] font-semibold text-white/25 uppercase tracking-widest mb-1">Library</p>
 
-            {STUDIO_GROUP.items.map(item => {
+            {isSignedIn && (
+              <Link
+                href="/feed"
+                className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${location === "/feed" ? "bg-[#1c1c1a] text-white" : "text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5"}`}
+                data-testid="sidebar-link-feed"
+              >
+                <Rss className={`w-4 h-4 ${location === "/feed" ? "text-primary" : ""}`} />
+                Feed
+              </Link>
+            )}
+
+            {[NAV_VIEW, ...NAV_TAIL].map(item => {
               const Icon = item.icon;
               const active = location.startsWith(item.href);
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2.5 px-[10px] py-2 rounded-lg text-[13px] font-medium transition-all mb-0.5 ${active ? "bg-[#1c1c1a] text-white" : "text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5"}`}
-                  data-testid={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+                  className={`flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all mb-0.5 ${active ? "bg-[#1c1c1a] text-white" : "text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5"}`}
+                  data-testid={`sidebar-link-${item.label.toLowerCase()}`}
                 >
-                  <Icon className={`w-[17px] h-[17px] flex-shrink-0 ${active ? "text-primary" : "text-[#9a9a94]"}`} />
+                  <Icon className={`w-4 h-4 ${active ? "text-primary" : ""}`} />
                   {item.label}
                 </Link>
               );
             })}
 
-            {/* Pro Membership CTA — links to /pricing but is not a duplicate nav item */}
+            {NAV_GROUPS.map(group => {
+              if (group.signedInOnly && !isSignedIn) return null;
+              return (
+                <div key={group.label} className="mt-7">
+                  <p className="px-3 mb-[10px] text-[11px] font-medium text-[#6b6b66] uppercase tracking-[0.04em]">{group.label}</p>
+                  {group.items.map(item => {
+                    const Icon = item.icon;
+                    const active = location.startsWith(item.href);
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center gap-2.5 px-[10px] py-2 rounded-lg text-[13px] font-medium transition-all mb-0.5 ${active ? "bg-[#1c1c1a] text-white" : "text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5"}`}
+                        data-testid={`sidebar-link-${item.label.toLowerCase().replace(/\s+/g, "-")}`}
+                      >
+                        <Icon className={`w-[17px] h-[17px] flex-shrink-0 ${active ? "text-primary" : "text-[#9a9a94]"}`} />
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              );
+            })}
+
+            <div className="mt-7">
+              <p className="px-3 mb-[10px] text-[11px] font-medium text-[#6b6b66] uppercase tracking-[0.04em]">Discover</p>
+            </div>
+
+            {GENRE_TAGS.map(tag => (
+              <Link
+                key={tag}
+                href={`/explore?genre=${encodeURIComponent(tag)}`}
+                className="w-full flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5 transition-all mb-0.5"
+                data-testid={`sidebar-link-genre-${tag.toLowerCase().replace(/\s+/g, "-")}`}
+              >
+                <span className="w-2 h-2 rounded-full bg-white/15 ml-1 flex-shrink-0" />
+                {tag}
+              </Link>
+            ))}
+
             <div className="mt-auto px-1">
               <Link
                 href="/pricing"
