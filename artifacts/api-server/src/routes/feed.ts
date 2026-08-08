@@ -27,16 +27,16 @@ router.get("/feed", requireAuth, async (req, res): Promise<void> => {
       .from(videosTable)
       .where(sql`${videosTable.userId} = ANY(${followingIds}) AND ${videosTable.privacy} = 'public'`)
       .orderBy(desc(videosTable.createdAt))
-      .limit(Math.min(parseInt(limit) || 20, 100))
-      .offset(parseInt(offset))
+      .limit(Math.min(Math.max(parseInt(limit) || 20, 1), 100))
+      .offset(Math.max(parseInt(offset) || 0, 0))
       .catch(() =>
         db
           .select()
           .from(videosTable)
           .where(eq(videosTable.privacy, "public"))
           .orderBy(desc(videosTable.createdAt))
-          .limit(Math.min(parseInt(limit) || 20, 100))
-          .offset(parseInt(offset)),
+          .limit(Math.min(Math.max(parseInt(limit) || 20, 1), 100))
+          .offset(Math.max(parseInt(offset) || 0, 0)),
       );
   } else {
     // No follows yet — show featured first, then most-viewed public videos
@@ -45,8 +45,8 @@ router.get("/feed", requireAuth, async (req, res): Promise<void> => {
       .from(videosTable)
       .where(eq(videosTable.privacy, "public"))
       .orderBy(desc(videosTable.isFeatured), desc(videosTable.viewCount))
-      .limit(Math.min(parseInt(limit) || 20, 100))
-      .offset(parseInt(offset));
+      .limit(Math.min(Math.max(parseInt(limit) || 20, 1), 100))
+      .offset(Math.max(parseInt(offset) || 0, 0));
   }
 
   const enriched = await Promise.all(

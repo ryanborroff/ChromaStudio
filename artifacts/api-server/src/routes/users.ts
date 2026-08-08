@@ -107,8 +107,8 @@ router.get("/users", async (req, res): Promise<void> => {
     ? query.where(conditions.length === 1 ? conditions[0] : sql`${conditions[0]}`)
     : query
   )
-    .limit(Math.min(parseInt(limit) || 20, 100))
-    .offset(parseInt(offset));
+    .limit(Math.min(Math.max(parseInt(limit) || 20, 1), 100))
+    .offset(Math.max(parseInt(offset) || 0, 0));
 
   const [countRow] = await db.select({ count: sql<number>`count(*)::int` }).from(usersTable);
 
