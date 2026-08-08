@@ -165,7 +165,7 @@ router.get("/videos", async (req, res): Promise<void> => {
               ? desc(videosTable.isFeatured)
               : desc(videosTable.createdAt),
     )
-    .limit(parseInt(limit))
+    .limit(Math.min(parseInt(limit) || 20, 100))
     .offset(parseInt(offset));
 
   const [countRow] = await db
@@ -394,9 +394,12 @@ router.patch("/videos/:id", requireAuth, async (req, res): Promise<void> => {
       return;
     }
   }
+  // Strip fields that are set exclusively by internal webhook processing and
+  // must not be client-writable.
+  const { streamStatus, uploadProgressPercent, uploadError, retryCount, ...clientFields } = parsed.data;
   const [video] = await db
     .update(videosTable)
-    .set(parsed.data as Partial<typeof videosTable.$inferInsert>)
+    .set(clientFields as Partial<typeof videosTable.$inferInsert>)
     .where(
       sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id}`,
     )

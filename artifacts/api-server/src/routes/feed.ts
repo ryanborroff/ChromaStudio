@@ -27,7 +27,7 @@ router.get("/feed", requireAuth, async (req, res): Promise<void> => {
       .from(videosTable)
       .where(sql`${videosTable.userId} = ANY(${followingIds}) AND ${videosTable.privacy} = 'public'`)
       .orderBy(desc(videosTable.createdAt))
-      .limit(parseInt(limit))
+      .limit(Math.min(parseInt(limit) || 20, 100))
       .offset(parseInt(offset))
       .catch(() =>
         db
@@ -35,7 +35,7 @@ router.get("/feed", requireAuth, async (req, res): Promise<void> => {
           .from(videosTable)
           .where(eq(videosTable.privacy, "public"))
           .orderBy(desc(videosTable.createdAt))
-          .limit(parseInt(limit))
+          .limit(Math.min(parseInt(limit) || 20, 100))
           .offset(parseInt(offset)),
       );
   } else {
@@ -45,7 +45,7 @@ router.get("/feed", requireAuth, async (req, res): Promise<void> => {
       .from(videosTable)
       .where(eq(videosTable.privacy, "public"))
       .orderBy(desc(videosTable.isFeatured), desc(videosTable.viewCount))
-      .limit(parseInt(limit))
+      .limit(Math.min(parseInt(limit) || 20, 100))
       .offset(parseInt(offset));
   }
 
