@@ -9,9 +9,12 @@
 export interface Collection {
   id: number;
   userId: number;
+  /** @nullable */
+  parentId: number | null;
   name: string;
   /** @nullable */
   description?: string | null;
+  path: string;
   videoCount: number;
   createdAt: Date;
 }

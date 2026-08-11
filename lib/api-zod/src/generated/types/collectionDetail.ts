@@ -10,5 +10,7 @@ import type { Video } from './video';
 
 export interface CollectionDetail {
   collection: Collection;
+  subCollections?: Collection[];
+  breadcrumbs?: Collection[];
   videos: Video[];
 }

@@ -8,16 +8,20 @@ import { Link } from "wouter";
 export function Feed() {
   const { data: feedData, isLoading } = useGetFeed();
 
+  const feedVideos = Array.isArray(feedData?.videos) ? feedData.videos : [];
+
   const discoverParams = { sort: "featured" as const, limit: 8 };
   const { data: discoverData, isLoading: discoverLoading } = useListVideos(
     discoverParams,
     {
       query: {
-        enabled: !isLoading && (feedData?.videos?.length ?? 0) === 0,
+        enabled: !isLoading && feedVideos.length === 0,
         queryKey: getListVideosQueryKey(discoverParams),
       },
     },
   );
+
+  const discoverVideos = Array.isArray(discoverData?.videos) ? discoverData.videos : [];
 
   if (isLoading) {
     return (
@@ -27,9 +31,7 @@ export function Feed() {
     );
   }
 
-  const videos = feedData?.videos ?? [];
-
-  if (videos.length > 0) {
+  if (feedVideos.length > 0) {
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">
@@ -37,7 +39,7 @@ export function Feed() {
           <p className="text-muted-foreground mt-2 font-medium">Latest work from filmmakers you follow.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {videos.map((video) => (
+          {feedVideos.map((video) => (
             <VideoCard key={video.id} video={video} />
           ))}
         </div>
@@ -76,9 +78,9 @@ export function Feed() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
-        ) : discoverData && discoverData.videos.length > 0 ? (
+        ) : discoverVideos.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {discoverData.videos.map((video) => (
+            {discoverVideos.map((video) => (
               <VideoCard key={video.id} video={video} />
             ))}
           </div>

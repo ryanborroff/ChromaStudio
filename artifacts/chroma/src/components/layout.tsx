@@ -6,7 +6,7 @@ import {
   Grid3X3, Users, Clapperboard, Sparkles, Rss,
   Tag, Menu, ChevronDown,
   Radio, History, FolderOpen, Cloud, Send, Code2, BarChart3,
-  ShoppingBag, ShieldCheck, KeyRound, type LucideIcon,
+  ShieldCheck, KeyRound, type LucideIcon,
 } from "lucide-react";
 import {
   Sheet,
@@ -52,9 +52,9 @@ const NAV_GROUPS: NavGroup[] = [
     ],
   },
   {
-    label: "Shop",
+    label: "Community",
     items: [
-      { href: "/store", label: "Download Shop", icon: ShoppingBag, desc: "LUTs, presets & project files" },
+      { href: "/community", label: "Community", icon: Users, desc: "Connect with other filmmakers" },
     ],
   },
 ];

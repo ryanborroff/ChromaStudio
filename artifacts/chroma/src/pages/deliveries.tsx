@@ -171,8 +171,8 @@ export function Deliveries() {
       ) : (
         <EmptyState
           icon={<Send className="w-10 h-10" />}
-          title="No deliveries yet"
-          description="Create a delivery to upload files and send your client a private download link."
+          title="Nothing sent yet"
+          description="Upload your files whenever you're ready — we'll turn them into a link your client can open with one click."
         />
       )}
     </div>

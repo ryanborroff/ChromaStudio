@@ -43,11 +43,11 @@ function ExploreEmptyState({ hasFilters, onClear }: { hasFilters: boolean; onCle
         {hasFilters ? <Search className="w-[26px] h-[26px]" /> : <Film className="w-[26px] h-[26px]" />}
       </div>
       <h3 className="text-[18px] font-medium text-[#f2f2f2] mb-1.5">
-        {hasFilters ? "No matches found" : "Be the first to publish"}
+        {hasFilters ? "Couldn't find that one" : "Be the first to publish"}
       </h3>
       <p className="text-sm text-[#9a9a94] leading-snug max-w-[340px] mx-auto mb-5">
         {hasFilters
-          ? "Try a different search term or clear your filters."
+          ? "Try a different word, or browse what's trending."
           : "Trending work will appear here once creators start uploading. Upload yours to kick things off."}
       </p>
       {hasFilters ? (

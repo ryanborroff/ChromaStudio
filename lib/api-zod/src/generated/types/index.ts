@@ -13,6 +13,8 @@ export * from './approvalInput';
 export * from './approvalInputStatus';
 export * from './approvalResult';
 export * from './approvalResultApprovalStatus';
+export * from './bulkMoveVideosInput';
+export * from './bulkSetCategoryInput';
 export * from './collection';
 export * from './collectionDetail';
 export * from './collectionInput';

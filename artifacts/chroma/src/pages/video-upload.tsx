@@ -384,13 +384,19 @@ export function VideoUpload() {
             </div>
 
             {busy && (
-              <div className="space-y-2">
-                <Progress value={phase === "saving" ? 100 : progress} />
-                <p className="text-xs text-muted-foreground">
-                  {phase === "uploading"
-                    ? `Uploading… ${progress}%`
-                    : "Finishing up…"}
+              <div className="space-y-3 rounded-xl border border-border/40 bg-card/30 p-5 text-center">
+                <h3 className="text-lg font-semibold text-white">You're in</h3>
+                <p className="text-sm text-muted-foreground">
+                  Your video's uploading — we'll let you know the second it's ready.
                 </p>
+                <div className="space-y-2 pt-1">
+                  <Progress value={phase === "saving" ? 100 : progress} />
+                  <p className="text-xs text-muted-foreground">
+                    {phase === "uploading"
+                      ? `${progress}% uploaded`
+                      : "Finishing up…"}
+                  </p>
+                </div>
               </div>
             )}
 

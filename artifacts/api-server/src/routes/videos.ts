@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { randomUUID } from "node:crypto";
-import { eq, sql, desc, asc, ilike, or, and } from "drizzle-orm";
+import { eq, sql, desc, asc, ilike, or, and, inArray } from "drizzle-orm";
 import {
   db,
   videosTable,
@@ -31,13 +31,17 @@ import {
   RateVideoResponse,
   ListCommentsResponse,
   CreateVideoUploadUrlResponse,
+  BulkMoveVideosBody,
+  BulkSetVideoCategoryBody,
+  BulkMoveVideosResponse,
+  BulkSetVideoCategoryResponse,
 } from "@workspace/api-zod";
 import { getStreamingProvider } from "../lib/streaming/index.js";
 import { ObjectStorageService } from "../lib/objectStorage";
 
 const router: IRouter = Router();
 
-async function buildVideoResponse(
+export async function buildVideoResponse(
   video: typeof videosTable.$inferSelect,
   currentUserId?: number,
 ) {
@@ -553,6 +557,91 @@ router.post(
         userRating: rating,
       }),
     );
+  },
+);
+
+// POST /videos/bulk/move
+router.post(
+  "/videos/bulk/move",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const parsed = BulkMoveVideosBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.message });
+      return;
+    }
+    const user = await getCurrentUser(req);
+    const { ids, collectionId } = parsed.data;
+
+    if (collectionId != null) {
+      const [collection] = await db
+        .select()
+        .from(collectionsTable)
+        .where(
+          and(
+            eq(collectionsTable.id, collectionId),
+            eq(collectionsTable.userId, user.id),
+          ),
+        )
+        .limit(1);
+      if (!collection) {
+        res.status(400).json({ error: "Destination folder not found" });
+        return;
+      }
+    }
+
+    await db
+      .update(videosTable)
+      .set({ collectionId })
+      .where(
+        and(eq(videosTable.userId, user.id), inArray(videosTable.id, ids)),
+      );
+
+    const moved = await db
+      .select()
+      .from(videosTable)
+      .where(
+        and(eq(videosTable.userId, user.id), inArray(videosTable.id, ids)),
+      )
+      .orderBy(desc(videosTable.createdAt));
+    const enriched = await Promise.all(
+      moved.map((v) => buildVideoResponse(v, user.id)),
+    );
+    res.json(BulkMoveVideosResponse.parse({ videos: enriched }));
+  },
+);
+
+// POST /videos/bulk/category
+router.post(
+  "/videos/bulk/category",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const parsed = BulkSetVideoCategoryBody.safeParse(req.body);
+    if (!parsed.success) {
+      res.status(400).json({ error: parsed.error.message });
+      return;
+    }
+    const user = await getCurrentUser(req);
+    const { ids, category } = parsed.data;
+
+    await db
+      .update(videosTable)
+      .set({ category })
+      .where(
+        and(eq(videosTable.userId, user.id), inArray(videosTable.id, ids)),
+      );
+
+    const updated = await db
+      .select()
+      .from(videosTable)
+      .where(
+        and(eq(videosTable.userId, user.id), inArray(videosTable.id, ids)),
+      )
+      .orderBy(desc(videosTable.createdAt));
+    const enriched = await Promise.all(
+      updated.map((v) => buildVideoResponse(v, user.id)),
+    );
+    res.json(BulkSetVideoCategoryResponse.parse({ videos: enriched }));
   },
 );
 

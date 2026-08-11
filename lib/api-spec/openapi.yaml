@@ -701,6 +701,44 @@ paths:
               schema:
                 $ref: "#/components/schemas/RateResult"
 
+  /videos/bulk/move:
+    post:
+      operationId: bulkMoveVideos
+      tags: [videos]
+      summary: Move multiple videos to a folder
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkMoveVideosInput"
+      responses:
+        "200":
+          description: Moved
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoList"
+
+  /videos/bulk/category:
+    post:
+      operationId: bulkSetVideoCategory
+      tags: [videos]
+      summary: Set the category on multiple videos
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BulkSetCategoryInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoList"
+
   /videos/{id}/comments:
     get:
       operationId: listComments
@@ -1820,6 +1858,28 @@ components:
       type: string
       enum: [reel, rushes, other]
 
+    BulkMoveVideosInput:
+      type: object
+      required: [ids, collectionId]
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+        collectionId:
+          type: ["integer", "null"]
+
+    BulkSetCategoryInput:
+      type: object
+      required: [ids, category]
+      properties:
+        ids:
+          type: array
+          items:
+            type: integer
+        category:
+          $ref: "#/components/schemas/VideoCategory"
+
     StorageUsage:
       type: object
       required:
@@ -1898,16 +1958,20 @@ components:
     # ── Collection schemas ────────────────────────────────────────────────────
     Collection:
       type: object
-      required: [id, userId, name, videoCount, createdAt]
+      required: [id, userId, parentId, name, path, videoCount, createdAt]
       properties:
         id:
           type: integer
         userId:
           type: integer
+        parentId:
+          type: ["integer", "null"]
         name:
           type: string
         description:
           type: ["string", "null"]
+        path:
+          type: string
         videoCount:
           type: integer
         createdAt:
@@ -1923,6 +1987,8 @@ components:
           minLength: 1
         description:
           type: string
+        parentId:
+          type: ["integer", "null"]
 
     CollectionUpdate:
       type: object
@@ -1932,6 +1998,8 @@ components:
           minLength: 1
         description:
           type: ["string", "null"]
+        parentId:
+          type: ["integer", "null"]
 
     CollectionList:
       type: object
@@ -1948,6 +2016,14 @@ components:
       properties:
         collection:
           $ref: "#/components/schemas/Collection"
+        subCollections:
+          type: array
+          items:
+            $ref: "#/components/schemas/Collection"
+        breadcrumbs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Collection"
         videos:
           type: array
           items:

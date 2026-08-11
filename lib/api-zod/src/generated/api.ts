@@ -979,6 +979,168 @@ export const RateVideoResponse = zod.object({
 
 
 /**
+ * @summary Move multiple videos to a folder
+ */
+export const BulkMoveVideosBody = zod.object({
+  "ids": zod.array(zod.number()),
+  "collectionId": zod.number().nullable()
+})
+
+export const BulkMoveVideosResponse = zod.object({
+  "videos": zod.array(zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "streamStatus": zod.string().nullish(),
+  "streamProvider": zod.string().nullish(),
+  "streamAssetId": zod.string().nullish(),
+  "streamPlaybackId": zod.string().nullish(),
+  "duration": zod.number().nullish(),
+  "fileSizeBytes": zod.number().nullish(),
+  "uploadProgressPercent": zod.number().optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
+  "reviewGroupId": zod.string().nullish(),
+  "versionNumber": zod.number().optional(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
+  "approvalDecidedAt": zod.coerce.date().nullish(),
+  "approvalDecidedBy": zod.string().nullish(),
+  "privacy": zod.enum(['public', 'private', 'password_protected']),
+  "category": zod.enum(['reel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
+  "shareEnabled": zod.boolean().optional(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean().optional(),
+  "tags": zod.array(zod.string()).optional(),
+  "credits": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
+  "isFeatured": zod.boolean().optional(),
+  "viewCount": zod.number(),
+  "likeCount": zod.number(),
+  "isLiked": zod.boolean().optional(),
+  "ratingAvg": zod.number().optional(),
+  "ratingCount": zod.number().optional(),
+  "userRating": zod.number().nullish(),
+  "user": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "name": zod.string(),
+  "profession": zod.string(),
+  "location": zod.string().nullish(),
+  "bio": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "skills": zod.array(zod.string()).optional(),
+  "socialLinks": zod.object({
+
+}).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
+  "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
+  "followerCount": zod.number().optional(),
+  "followingCount": zod.number().optional(),
+  "videoCount": zod.number().optional(),
+  "createdAt": zod.coerce.date()
+}).optional(),
+  "createdAt": zod.coerce.date()
+})),
+  "total": zod.number()
+})
+
+
+/**
+ * @summary Set the category on multiple videos
+ */
+export const BulkSetVideoCategoryBody = zod.object({
+  "ids": zod.array(zod.number()),
+  "category": zod.enum(['reel', 'rushes', 'other'])
+})
+
+export const BulkSetVideoCategoryResponse = zod.object({
+  "videos": zod.array(zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "streamStatus": zod.string().nullish(),
+  "streamProvider": zod.string().nullish(),
+  "streamAssetId": zod.string().nullish(),
+  "streamPlaybackId": zod.string().nullish(),
+  "duration": zod.number().nullish(),
+  "fileSizeBytes": zod.number().nullish(),
+  "uploadProgressPercent": zod.number().optional(),
+  "uploadError": zod.string().nullish(),
+  "retryCount": zod.number().optional(),
+  "reviewGroupId": zod.string().nullish(),
+  "versionNumber": zod.number().optional(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']).optional(),
+  "approvalDecidedAt": zod.coerce.date().nullish(),
+  "approvalDecidedBy": zod.string().nullish(),
+  "privacy": zod.enum(['public', 'private', 'password_protected']),
+  "category": zod.enum(['reel', 'rushes', 'other']).optional(),
+  "collectionId": zod.number().nullish(),
+  "shareEnabled": zod.boolean().optional(),
+  "shareToken": zod.string().nullish(),
+  "hasSharePassword": zod.boolean().optional(),
+  "tags": zod.array(zod.string()).optional(),
+  "credits": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
+  "isFeatured": zod.boolean().optional(),
+  "viewCount": zod.number(),
+  "likeCount": zod.number(),
+  "isLiked": zod.boolean().optional(),
+  "ratingAvg": zod.number().optional(),
+  "ratingCount": zod.number().optional(),
+  "userRating": zod.number().nullish(),
+  "user": zod.object({
+  "id": zod.number(),
+  "username": zod.string(),
+  "name": zod.string(),
+  "profession": zod.string(),
+  "location": zod.string().nullish(),
+  "bio": zod.string().nullish(),
+  "website": zod.string().nullish(),
+  "avatarUrl": zod.string().nullish(),
+  "coverUrl": zod.string().nullish(),
+  "skills": zod.array(zod.string()).optional(),
+  "socialLinks": zod.object({
+
+}).passthrough().nullish(),
+  "credits": zod.array(zod.object({
+  "title": zod.string().describe('Film or project title'),
+  "role": zod.string().describe('Role on the project (e.g. Director, Editor)'),
+  "year": zod.string().optional().describe('Year of the project')
+})).optional(),
+  "isAdmin": zod.boolean().optional(),
+  "plan": zod.string().optional().describe('Subscription tier (\"free\" or a paid plan such as \"creator\"\/\"studio\").'),
+  "isFollowing": zod.boolean().optional(),
+  "endorsementCount": zod.number().optional(),
+  "followerCount": zod.number().optional(),
+  "followingCount": zod.number().optional(),
+  "videoCount": zod.number().optional(),
+  "createdAt": zod.coerce.date()
+}).optional(),
+  "createdAt": zod.coerce.date()
+})),
+  "total": zod.number()
+})
+
+
+/**
  * @summary Get comments for a video
  */
 export const ListCommentsParams = zod.object({
@@ -1046,8 +1208,10 @@ export const ListCollectionsResponse = zod.object({
   "collections": zod.array(zod.object({
   "id": zod.number(),
   "userId": zod.number(),
+  "parentId": zod.number().nullable(),
   "name": zod.string(),
   "description": zod.string().nullish(),
+  "path": zod.string(),
   "videoCount": zod.number(),
   "createdAt": zod.coerce.date()
 }))
@@ -1062,7 +1226,8 @@ export const ListCollectionsResponse = zod.object({
 
 export const CreateCollectionBody = zod.object({
   "name": zod.string().min(1),
-  "description": zod.string().optional()
+  "description": zod.string().optional(),
+  "parentId": zod.number().nullish()
 })
 
 
@@ -1077,11 +1242,33 @@ export const GetCollectionResponse = zod.object({
   "collection": zod.object({
   "id": zod.number(),
   "userId": zod.number(),
+  "parentId": zod.number().nullable(),
   "name": zod.string(),
   "description": zod.string().nullish(),
+  "path": zod.string(),
   "videoCount": zod.number(),
   "createdAt": zod.coerce.date()
 }),
+  "subCollections": zod.array(zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "parentId": zod.number().nullable(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "path": zod.string(),
+  "videoCount": zod.number(),
+  "createdAt": zod.coerce.date()
+})).optional(),
+  "breadcrumbs": zod.array(zod.object({
+  "id": zod.number(),
+  "userId": zod.number(),
+  "parentId": zod.number().nullable(),
+  "name": zod.string(),
+  "description": zod.string().nullish(),
+  "path": zod.string(),
+  "videoCount": zod.number(),
+  "createdAt": zod.coerce.date()
+})).optional(),
   "videos": zod.array(zod.object({
   "id": zod.number(),
   "userId": zod.number(),
@@ -1165,14 +1352,17 @@ export const UpdateCollectionParams = zod.object({
 
 export const UpdateCollectionBody = zod.object({
   "name": zod.string().min(1).optional(),
-  "description": zod.string().nullish()
+  "description": zod.string().nullish(),
+  "parentId": zod.number().nullish()
 })
 
 export const UpdateCollectionResponse = zod.object({
   "id": zod.number(),
   "userId": zod.number(),
+  "parentId": zod.number().nullable(),
   "name": zod.string(),
   "description": zod.string().nullish(),
+  "path": zod.string(),
   "videoCount": zod.number(),
   "createdAt": zod.coerce.date()
 })
