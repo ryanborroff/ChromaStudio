@@ -41,9 +41,6 @@ export default defineConfig(async ({ command }) => {
                 root: path.resolve(import.meta.dirname, ".."),
               }),
             ),
-            await import("@replit/vite-plugin-dev-banner").then((m) =>
-              m.devBanner(),
-            ),
           ]
         : []),
     ],

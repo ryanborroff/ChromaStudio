@@ -7,7 +7,7 @@
  *   /feed, /live, /cinema, /live/replays,
  *   /studio/portfolio, /studio/storage, /studio/delivery,
  *   /studio/embeds, /studio/analytics,
- *   /store, /pricing, /explore?genre=Documentary
+ *   /community, /pricing, /explore?genre=Documentary
  *
  * Nav surfaces covered:
  *   • Desktop top-nav flat links  (viewport ≥1280px)
@@ -20,7 +20,7 @@
  *    link-watch      → /feed
  *    link-live       → /live
  *    link-studio     → /studio/portfolio  (signed-in only)
- *    link-shop       → /store
+ *    link-community  → /community
  *    link-pricing    → /pricing
  *
  *  Contextual sidebar (visible at lg when in that section):
@@ -39,11 +39,11 @@
  *      sidebar-link-analytics              → /studio/analytics
  *
  *  Mobile sheet top-level links (always visible in drawer):
- *    mobile-link-watch   → /feed
- *    mobile-link-live    → /live
- *    mobile-link-studio  → /studio/portfolio  (signed-in only)
- *    mobile-link-shop    → /store
- *    mobile-link-pricing → /pricing
+ *    mobile-link-watch     → /feed
+ *    mobile-link-live      → /live
+ *    mobile-link-studio    → /studio/portfolio  (signed-in only)
+ *    mobile-link-community → /community
+ *    mobile-link-pricing   → /pricing
  *
  *  Mobile sheet sub-items (only visible when already in that section):
  *    Live section:
@@ -109,9 +109,9 @@ test.describe("signed-out / top-nav flat links (desktop)", () => {
     await expect(page).toHaveURL(/\/live($|[^/])/);
   });
 
-  test("Shop link → /store", async ({ page }) => {
-    await clickTopNav(page, "link-shop");
-    await expect(page).toHaveURL(/\/store/);
+  test("Community link → /community", async ({ page }) => {
+    await clickTopNav(page, "link-community");
+    await expect(page).toHaveURL(/\/community/);
   });
 
   test("Pricing link → /pricing", async ({ page }) => {
@@ -244,9 +244,9 @@ test.describe("signed-out / mobile Sheet top-level links", () => {
     await expect(page).toHaveURL(/\/live($|[^/])/);
   });
 
-  test("mobile Shop → /store", async ({ page }) => {
-    await clickMobileSheetItem(page, "mobile-link-shop");
-    await expect(page).toHaveURL(/\/store/);
+  test("mobile Community → /community", async ({ page }) => {
+    await clickMobileSheetItem(page, "mobile-link-community");
+    await expect(page).toHaveURL(/\/community/);
   });
 
   test("mobile Pricing → /pricing", async ({ page }) => {

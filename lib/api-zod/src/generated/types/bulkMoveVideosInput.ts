@@ -6,11 +6,8 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export interface CollectionUpdate {
-  /** @minLength 1 */
-  name?: string;
+export interface BulkMoveVideosInput {
+  ids: number[];
   /** @nullable */
-  description?: string | null;
-  /** @nullable */
-  parentId?: number | null;
+  collectionId: number | null;
 }

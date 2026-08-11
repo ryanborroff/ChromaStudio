@@ -292,8 +292,8 @@ export function Explore() {
           hasFilters ? (
             /* Variant B: search/filter active, zero results */
             <EmptyState
-              title="No matches found"
-              description="Try a different search term or clear your filters."
+              title="Couldn't find that one"
+              description="Try a different word, or browse what's trending."
               action={
                 <button
                   onClick={clearAllFilters}

@@ -5,11 +5,9 @@
  * ChromaStudio - Professional Filmmaker Platform API
  * OpenAPI spec version: 0.1.0
  */
+import type { VideoCategory } from './videoCategory';
 
-export interface CollectionInput {
-  /** @minLength 1 */
-  name: string;
-  description?: string;
-  /** @nullable */
-  parentId?: number | null;
+export interface BulkSetCategoryInput {
+  ids: number[];
+  category: VideoCategory;
 }

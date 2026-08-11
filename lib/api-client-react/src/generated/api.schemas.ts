@@ -272,6 +272,17 @@ export interface VideoUpdate {
   streamStatus?: string;
 }
 
+export interface BulkMoveVideosInput {
+  ids: number[];
+  /** @nullable */
+  collectionId: number | null;
+}
+
+export interface BulkSetCategoryInput {
+  ids: number[];
+  category: VideoCategory;
+}
+
 export interface StorageUsage {
   totalBytesUsed: number;
   videoCount: number;
@@ -333,9 +344,12 @@ export interface ExportJob {
 export interface Collection {
   id: number;
   userId: number;
+  /** @nullable */
+  parentId: number | null;
   name: string;
   /** @nullable */
   description?: string | null;
+  path: string;
   videoCount: number;
   createdAt: string;
 }
@@ -344,6 +358,8 @@ export interface CollectionInput {
   /** @minLength 1 */
   name: string;
   description?: string;
+  /** @nullable */
+  parentId?: number | null;
 }
 
 export interface CollectionUpdate {
@@ -351,6 +367,8 @@ export interface CollectionUpdate {
   name?: string;
   /** @nullable */
   description?: string | null;
+  /** @nullable */
+  parentId?: number | null;
 }
 
 export interface CollectionList {
@@ -359,6 +377,8 @@ export interface CollectionList {
 
 export interface CollectionDetail {
   collection: Collection;
+  subCollections?: Collection[];
+  breadcrumbs?: Collection[];
   videos: Video[];
 }
 

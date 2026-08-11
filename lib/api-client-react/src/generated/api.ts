@@ -25,6 +25,8 @@ import type {
   AdminListUsersParams,
   ApprovalInput,
   ApprovalResult,
+  BulkMoveVideosInput,
+  BulkSetCategoryInput,
   Collection,
   CollectionDetail,
   CollectionInput,
@@ -2195,6 +2197,148 @@ export const useRateVideo = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getRateVideoMutationOptions(options));
+    }
+
+export const getBulkMoveVideosUrl = () => {
+
+
+
+
+  return `/api/videos/bulk/move`
+}
+
+/**
+ * @summary Move multiple videos to a folder
+ */
+export const bulkMoveVideos = async (bulkMoveVideosInput: BulkMoveVideosInput, options?: RequestInit): Promise<VideoList> => {
+
+  return customFetch<VideoList>(getBulkMoveVideosUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      bulkMoveVideosInput,)
+  }
+);}
+
+
+
+
+export const getBulkMoveVideosMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkMoveVideos>>, TError,{data: BodyType<BulkMoveVideosInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof bulkMoveVideos>>, TError,{data: BodyType<BulkMoveVideosInput>}, TContext> => {
+
+const mutationKey = ['bulkMoveVideos'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkMoveVideos>>, {data: BodyType<BulkMoveVideosInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  bulkMoveVideos(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BulkMoveVideosMutationResult = NonNullable<Awaited<ReturnType<typeof bulkMoveVideos>>>
+    export type BulkMoveVideosMutationBody = BodyType<BulkMoveVideosInput>
+    export type BulkMoveVideosMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Move multiple videos to a folder
+ */
+export const useBulkMoveVideos = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkMoveVideos>>, TError,{data: BodyType<BulkMoveVideosInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof bulkMoveVideos>>,
+        TError,
+        {data: BodyType<BulkMoveVideosInput>},
+        TContext
+      > => {
+      return useMutation(getBulkMoveVideosMutationOptions(options));
+    }
+
+export const getBulkSetVideoCategoryUrl = () => {
+
+
+
+
+  return `/api/videos/bulk/category`
+}
+
+/**
+ * @summary Set the category on multiple videos
+ */
+export const bulkSetVideoCategory = async (bulkSetCategoryInput: BulkSetCategoryInput, options?: RequestInit): Promise<VideoList> => {
+
+  return customFetch<VideoList>(getBulkSetVideoCategoryUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      bulkSetCategoryInput,)
+  }
+);}
+
+
+
+
+export const getBulkSetVideoCategoryMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkSetVideoCategory>>, TError,{data: BodyType<BulkSetCategoryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof bulkSetVideoCategory>>, TError,{data: BodyType<BulkSetCategoryInput>}, TContext> => {
+
+const mutationKey = ['bulkSetVideoCategory'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof bulkSetVideoCategory>>, {data: BodyType<BulkSetCategoryInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  bulkSetVideoCategory(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type BulkSetVideoCategoryMutationResult = NonNullable<Awaited<ReturnType<typeof bulkSetVideoCategory>>>
+    export type BulkSetVideoCategoryMutationBody = BodyType<BulkSetCategoryInput>
+    export type BulkSetVideoCategoryMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Set the category on multiple videos
+ */
+export const useBulkSetVideoCategory = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof bulkSetVideoCategory>>, TError,{data: BodyType<BulkSetCategoryInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof bulkSetVideoCategory>>,
+        TError,
+        {data: BodyType<BulkSetCategoryInput>},
+        TContext
+      > => {
+      return useMutation(getBulkSetVideoCategoryMutationOptions(options));
     }
 
 export const getListCommentsUrl = (id: number,) => {

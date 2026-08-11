@@ -3,6 +3,7 @@ import {
   DEMO_USER,
   DEMO_AUTHORS,
   DEMO_VIDEOS,
+  DEMO_COLLECTIONS,
   DEMO_COMMENTS,
   DEMO_PLATFORM_STATS,
 } from "./data";
@@ -22,8 +23,10 @@ export const handlers = [
   http.get("*/api/videos", ({ request }) => {
     const url = new URL(request.url);
     const search = url.searchParams.get("search")?.toLowerCase() ?? "";
-    const sort = url.searchParams.get("sort") ?? "featured";
+    const sort = url.searchParams.get("sort") ?? "newest";
     const featuredOnly = url.searchParams.get("featured") === "true";
+    const collectionId = url.searchParams.get("collectionId");
+    const category = url.searchParams.get("category");
     const genre = url.searchParams.get("genre")?.toLowerCase() ?? "";
 
     let videos = [...DEMO_VIDEOS];
@@ -44,6 +47,17 @@ export const handlers = [
 
     if (featuredOnly) {
       videos = videos.filter((v) => v.isFeatured);
+    }
+
+    if (collectionId === "none") {
+      videos = videos.filter((v) => v.collectionId == null);
+    } else if (collectionId) {
+      const id = Number(collectionId);
+      videos = videos.filter((v) => v.collectionId === id);
+    }
+
+    if (category) {
+      videos = videos.filter((v) => v.category === category);
     }
 
     if (sort === "featured") {
@@ -70,7 +84,7 @@ export const handlers = [
   }),
 
   // ── Videos — feed ───────────────────────────────────────────────────────
-  http.get("*/api/videos/feed", () => {
+  http.get("*/api/feed", () => {
     // Return videos from followed authors (Andrés and Kai)
     const feedVideos = DEMO_VIDEOS.filter((v) => v.user.isFollowing);
     return HttpResponse.json({ videos: feedVideos, total: feedVideos.length });
@@ -198,9 +212,145 @@ export const handlers = [
   ),
 
   // ── Collections ───────────────────────────────────────────────────────────
-  http.get("*/api/collections", () =>
-    HttpResponse.json({ collections: [], total: 0 }),
-  ),
+  http.get("*/api/collections", () => {
+    const withCount = DEMO_COLLECTIONS.map((c) => ({
+      ...c,
+      videoCount: DEMO_VIDEOS.filter((v) => v.collectionId === c.id).length,
+    }));
+    return HttpResponse.json({ collections: withCount });
+  }),
+
+  http.post("*/api/collections", async ({ request }) => {
+    const body = (await request.json()) as {
+      name: string;
+      description?: string | null;
+      parentId?: number | null;
+    };
+    const parent =
+      body.parentId == null ? null : DEMO_COLLECTIONS.find((c) => c.id === body.parentId);
+    const id = Date.now();
+    const path = parent ? `${parent.path}${id}/` : `/${id}/`;
+    const collection = {
+      id,
+      userId: DEMO_USER.id,
+      parentId: body.parentId ?? null,
+      name: body.name,
+      description: body.description ?? null,
+      path,
+      videoCount: 0,
+      createdAt: new Date().toISOString(),
+    };
+    DEMO_COLLECTIONS.push(collection);
+    return HttpResponse.json(collection, { status: 201 });
+  }),
+
+  http.get("*/api/collections/:id", ({ params }) => {
+    const id = Number(params.id);
+    const collection = DEMO_COLLECTIONS.find((c) => c.id === id);
+    if (!collection) return HttpResponse.json({ error: "Not found" }, { status: 404 });
+
+    const subCollections = DEMO_COLLECTIONS.filter((c) => c.parentId === id);
+    const breadcrumbIds = collection.path
+      .split("/")
+      .filter((s) => s.length > 0)
+      .map((s) => Number(s));
+    const breadcrumbs = breadcrumbIds
+      .map((bid) => DEMO_COLLECTIONS.find((c) => c.id === bid))
+      .filter((c): c is typeof DEMO_COLLECTIONS[number] => c != null);
+    const videos = DEMO_VIDEOS.filter((v) => v.collectionId === id).sort(
+      (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
+    return HttpResponse.json({
+      collection: {
+        ...collection,
+        videoCount: DEMO_VIDEOS.filter((v) => v.collectionId === id).length,
+      },
+      subCollections: subCollections.map((c) => ({
+        ...c,
+        videoCount: DEMO_VIDEOS.filter((v) => v.collectionId === c.id).length,
+      })),
+      breadcrumbs: breadcrumbs.map((c) => ({
+        ...c,
+        videoCount: DEMO_VIDEOS.filter((v) => v.collectionId === c.id).length,
+      })),
+      videos,
+    });
+  }),
+
+  http.patch("*/api/collections/:id", async ({ params, request }) => {
+    const id = Number(params.id);
+    const collection = DEMO_COLLECTIONS.find((c) => c.id === id);
+    if (!collection) return HttpResponse.json({ error: "Not found" }, { status: 404 });
+    const body = (await request.json()) as {
+      name?: string;
+      description?: string | null;
+      parentId?: number | null;
+    };
+
+    if (body.name != null) collection.name = body.name;
+    if (body.description !== undefined) collection.description = body.description;
+    if (body.parentId !== undefined) {
+      const newParent =
+        body.parentId == null ? null : DEMO_COLLECTIONS.find((c) => c.id === body.parentId);
+      if (body.parentId != null && !newParent) {
+        return HttpResponse.json({ error: "Parent not found" }, { status: 400 });
+      }
+      if (newParent && newParent.path.startsWith(collection.path)) {
+        return HttpResponse.json({ error: "Invalid move" }, { status: 400 });
+      }
+      const oldPath = collection.path;
+      collection.parentId = body.parentId;
+      collection.path = newParent ? `${newParent.path}${id}/` : `/${id}/`;
+
+      for (const c of DEMO_COLLECTIONS) {
+        if (c.path.startsWith(oldPath) && c.id !== id) {
+          c.path = c.path.replace(oldPath, collection.path);
+        }
+      }
+    }
+
+    return HttpResponse.json(collection);
+  }),
+
+  http.delete("*/api/collections/:id", ({ params }) => {
+    const id = Number(params.id);
+    const target = DEMO_COLLECTIONS.find((c) => c.id === id);
+    if (!target) return HttpResponse.json({ error: "Not found" }, { status: 404 });
+    const descendants = DEMO_COLLECTIONS.filter((c) => c.path.startsWith(target.path));
+    const ids = new Set(descendants.map((c) => c.id));
+    for (let i = DEMO_COLLECTIONS.length - 1; i >= 0; i--) {
+      if (ids.has(DEMO_COLLECTIONS[i].id)) DEMO_COLLECTIONS.splice(i, 1);
+    }
+    for (const v of DEMO_VIDEOS) {
+      if (v.collectionId != null && ids.has(v.collectionId)) {
+        (v as { collectionId: number | null }).collectionId = null;
+      }
+    }
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  // ── Bulk video ops ────────────────────────────────────────────────────────
+  http.post("*/api/videos/bulk/move", async ({ request }) => {
+    const body = (await request.json()) as { ids: number[]; collectionId: number | null };
+    for (const v of DEMO_VIDEOS) {
+      if (body.ids.includes(v.id)) v.collectionId = body.collectionId;
+    }
+    const moved = DEMO_VIDEOS.filter((v) => body.ids.includes(v.id));
+    return HttpResponse.json({ videos: moved });
+  }),
+
+  http.post("*/api/videos/bulk/category", async ({ request }) => {
+    const body = (await request.json()) as {
+      ids: number[];
+      category: "reel" | "rushes" | "other";
+    };
+    for (const v of DEMO_VIDEOS) {
+      if (body.ids.includes(v.id)) v.category = body.category;
+    }
+    const updated = DEMO_VIDEOS.filter((v) => body.ids.includes(v.id));
+    return HttpResponse.json({ videos: updated });
+  }),
 
   // ── Storage ───────────────────────────────────────────────────────────────
   http.get("*/api/storage/usage", () =>

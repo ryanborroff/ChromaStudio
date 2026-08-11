@@ -3,6 +3,17 @@
  * All data is fictional — thumbnails are public Unsplash photos.
  */
 
+interface DemoCollection {
+  id: number;
+  userId: number;
+  parentId: number | null;
+  name: string;
+  description: string | null;
+  path: string;
+  videoCount: number;
+  createdAt: string;
+}
+
 export const DEMO_USER = {
   id: 999,
   username: "demo_viewer",
@@ -157,8 +168,8 @@ export const DEMO_VIDEOS = [
     approvalDecidedAt: null,
     approvalDecidedBy: null,
     privacy: "public",
-    category: "short_film",
-    collectionId: null,
+    category: "rushes",
+    collectionId: 1004,
     shareEnabled: true,
     shareToken: "share-101",
     hasSharePassword: false,
@@ -246,7 +257,7 @@ export const DEMO_VIDEOS = [
     approvalDecidedBy: null,
     privacy: "public",
     category: "reel",
-    collectionId: null,
+    collectionId: 1001,
     shareEnabled: false,
     shareToken: null,
     hasSharePassword: false,
@@ -333,8 +344,8 @@ export const DEMO_VIDEOS = [
     approvalDecidedAt: null,
     approvalDecidedBy: null,
     privacy: "public",
-    category: "commercial",
-    collectionId: null,
+    category: "other",
+    collectionId: 1002,
     shareEnabled: true,
     shareToken: "share-105",
     hasSharePassword: false,
@@ -377,8 +388,8 @@ export const DEMO_VIDEOS = [
     approvalDecidedAt: null,
     approvalDecidedBy: null,
     privacy: "public",
-    category: "documentary",
-    collectionId: null,
+    category: "other",
+    collectionId: 1003,
     shareEnabled: true,
     shareToken: "share-106",
     hasSharePassword: false,
@@ -483,6 +494,59 @@ export const DEMO_VIDEOS = [
     isLiked: false,
     createdAt: daysAgo(120),
     user: DEMO_AUTHORS[3],
+  },
+];
+
+export const DEMO_COLLECTIONS: DemoCollection[] = [
+  {
+    id: 1001,
+    userId: 999,
+    parentId: null,
+    name: "Reels 2024",
+    description: null,
+    path: "/1001/",
+    videoCount: 1,
+    createdAt: daysAgo(200),
+  },
+  {
+    id: 1002,
+    userId: 999,
+    parentId: null,
+    name: "Commercials",
+    description: null,
+    path: "/1002/",
+    videoCount: 1,
+    createdAt: daysAgo(190),
+  },
+  {
+    id: 1003,
+    userId: 999,
+    parentId: null,
+    name: "Documentary",
+    description: null,
+    path: "/1003/",
+    videoCount: 1,
+    createdAt: daysAgo(180),
+  },
+  {
+    id: 1004,
+    userId: 999,
+    parentId: null,
+    name: "Rushes",
+    description: null,
+    path: "/1004/",
+    videoCount: 1,
+    createdAt: daysAgo(170),
+  },
+  {
+    id: 1005,
+    userId: 999,
+    parentId: 1002,
+    name: "Europe",
+    description: null,
+    path: "/1002/1005/",
+    videoCount: 0,
+    createdAt: daysAgo(160),
   },
 ];
 

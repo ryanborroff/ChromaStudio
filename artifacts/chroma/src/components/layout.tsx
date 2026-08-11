@@ -1,14 +1,14 @@
 // =============================================================================
 // NAV STRUCTURE — flat top nav + contextual sidebar
 //
-//  Top Nav: Watch | Live | Studio | Shop | Pricing  (flat links, no dropdowns)
+//  Top Nav: Watch | Live | Studio | Community | Pricing  (flat links, no dropdowns)
 //  Sidebar: Contextual per active section
-//    Watch   → Feed + Discover genre links
-//    Live    → Streaming, Cinema Events, Replays
-//    Studio  → Portfolio Collections, Media Library, Client Delivery,
+//    Watch     → Feed + Discover genre links
+//    Live      → Streaming, Cinema Events, Replays
+//    Studio    → Portfolio Collections, Media Library, Client Delivery,
 //               Website Embedding, Analytics
-//    Shop    → (no sidebar — content full-width)
-//    Pricing → (no sidebar — content full-width)
+//    Community → (no sidebar — content full-width)
+//    Pricing   → (no sidebar — content full-width)
 //
 //  Mobile: drawer shows all top-level links + sub-items for active section only
 // =============================================================================
@@ -44,7 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // ---------------------------------------------------------------------------
 
 type NavItem = { href: string; label: string; icon: LucideIcon };
-type Section = "watch" | "live" | "studio" | "shop" | "pricing";
+type Section = "watch" | "live" | "studio" | "community" | "pricing";
 
 const GENRE_TAGS = ["Documentary", "Narrative", "Experimental", "Commercial", "Music Video"];
 
@@ -75,17 +75,17 @@ const SIDEBAR_CONTENT: Record<Section, { label: string; items: NavItem[]; discov
       { href: "/studio/analytics", label: "Analytics",            icon: BarChart3 },
     ],
   },
-  shop:    null,
-  pricing: null,
+  community: null,
+  pricing:   null,
 };
 
 /** Flat top-nav entries — no dropdowns. */
 const TOP_NAV: { label: string; href: string; section: Section; testid: string; signedInOnly?: true }[] = [
-  { label: "Watch",   href: "/feed",             section: "watch",   testid: "link-watch" },
-  { label: "Live",    href: "/live",             section: "live",    testid: "link-live" },
-  { label: "Studio",  href: "/studio/portfolio", section: "studio",  testid: "link-studio", signedInOnly: true },
-  { label: "Shop",    href: "/store",            section: "shop",    testid: "link-shop" },
-  { label: "Pricing", href: "/pricing",          section: "pricing", testid: "link-pricing" },
+  { label: "Watch",     href: "/feed",             section: "watch",     testid: "link-watch" },
+  { label: "Live",      href: "/live",             section: "live",      testid: "link-live" },
+  { label: "Studio",    href: "/studio/portfolio", section: "studio",    testid: "link-studio", signedInOnly: true },
+  { label: "Community", href: "/community",        section: "community", testid: "link-community" },
+  { label: "Pricing",   href: "/pricing",          section: "pricing",   testid: "link-pricing" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -96,7 +96,7 @@ function getSection(location: string): Section | null {
   if (location.startsWith("/feed") || location.startsWith("/explore")) return "watch";
   if (location.startsWith("/live") || location.startsWith("/cinema"))  return "live";
   if (location.startsWith("/studio"))                                   return "studio";
-  if (location.startsWith("/store"))                                    return "shop";
+  if (location.startsWith("/community"))                                return "community";
   if (location.startsWith("/pricing"))                                  return "pricing";
   return null;
 }
