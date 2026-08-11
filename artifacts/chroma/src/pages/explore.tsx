@@ -223,8 +223,8 @@ export function Explore() {
           </section>
         ) : !showFeaturedStrip || featuredVideos.length === 0 ? (
           <EmptyState
-            title="No videos found"
-            description="We couldn't find any videos matching your search criteria. Try adjusting your filters."
+            title="Couldn't find that one"
+            description="Try a different word, or browse what's trending."
           />
         ) : null}
       </div>

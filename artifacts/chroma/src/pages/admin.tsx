@@ -60,8 +60,8 @@ export function AdminDashboard() {
     return (
       <div className="container mx-auto px-4 py-20 max-w-xl text-center">
         <ShieldCheck className="w-12 h-12 text-white/20 mx-auto mb-4" />
-        <h1 className="text-2xl font-black text-white mb-2">Admin access required</h1>
-        <p className="text-white/40">You don't have permission to access this area.</p>
+        <h1 className="text-2xl font-black text-white mb-2">This one's not for you</h1>
+        <p className="text-white/40">This area's admin-only — nothing to worry about. Head back to your feed.</p>
         <Button className="mt-6" onClick={() => setLocation("/feed")}>Back to feed</Button>
       </div>
     );

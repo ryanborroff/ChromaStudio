@@ -91,8 +91,8 @@ function AppRoutes() {
         <Route path="/live">
           <ComingSoon
             icon={Radio}
-            title="Streaming"
-            description="Broadcast premieres, Q&As and ticketed events to your audience in real time."
+            title="Save the date, soon"
+            description="Premieres, Q&As and ticketed events, broadcast straight to your audience. Coming soon."
             features={[
               "Ticketed live events",
               "Pay-per-view & free streams",
@@ -131,8 +131,8 @@ function AppRoutes() {
           component={() => (
             <ComingSoon
               icon={FolderOpen}
-              title="Portfolio Collections"
-              description="Organise your work into reels and categories with drag-and-drop."
+              title="A home for your best work"
+              description="Organise everything into reels and collections, drag-and-drop. Coming soon."
               features={[
                 "Reels & themed collections",
                 "Drag-and-drop ordering",
@@ -152,8 +152,8 @@ function AppRoutes() {
           component={() => (
             <ComingSoon
               icon={Code2}
-              title="Website Embedding"
-              description="Embed your players and galleries on any external website."
+              title="Almost ready to share"
+              description="Embed your players and galleries anywhere you like. Coming very soon."
               features={[
                 "Embeddable video players",
                 "Gallery & reel embeds",
@@ -167,8 +167,8 @@ function AppRoutes() {
           component={() => (
             <ComingSoon
               icon={BarChart3}
-              title="Analytics Dashboard"
-              description="A full creator dashboard for views, audience and revenue."
+              title="Your numbers are on their way"
+              description="Views, audience and revenue, all in one place. We're putting the finishing touches on it."
               features={[
                 "Views, watch time & retention",
                 "Audience & traffic sources",
@@ -182,8 +182,8 @@ function AppRoutes() {
         <Route path="/store">
           <ComingSoon
             icon={ShoppingBag}
-            title="Download Shop"
-            description="Sell and buy LUTs, presets, project files and other creator assets."
+            title="Getting the shelves stocked"
+            description="Buy and sell LUTs, presets and project files with other creators. Coming soon."
             features={[
               "LUTs, presets & project files",
               "Instant secure downloads",
