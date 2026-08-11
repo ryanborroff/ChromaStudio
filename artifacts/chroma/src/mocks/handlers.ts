@@ -27,6 +27,7 @@ export const handlers = [
     const featuredOnly = url.searchParams.get("featured") === "true";
     const collectionId = url.searchParams.get("collectionId");
     const category = url.searchParams.get("category");
+    const genre = url.searchParams.get("genre")?.toLowerCase() ?? "";
 
     let videos = [...DEMO_VIDEOS];
 
@@ -38,6 +39,10 @@ export const handlers = [
           v.tags.some((t) => t.includes(search)) ||
           v.user.name.toLowerCase().includes(search),
       );
+    }
+
+    if (genre) {
+      videos = videos.filter((v) => v.tags.includes(genre));
     }
 
     if (featuredOnly) {
@@ -350,9 +355,11 @@ export const handlers = [
   // ── Storage ───────────────────────────────────────────────────────────────
   http.get("*/api/storage/usage", () =>
     HttpResponse.json({
-      usedBytes: 0,
-      limitBytes: 10_737_418_240,
-      fileCount: 0,
+      totalBytesUsed: 0,
+      videoCount: 0,
+      planStorageLimitBytes: 100 * 1024 * 1024 * 1024,
+      usagePercent: 0,
+      warning: false,
     }),
   ),
 
@@ -383,6 +390,6 @@ export const handlers = [
 
   // ── Exports ───────────────────────────────────────────────────────────────
   http.get("*/api/exports", () =>
-    HttpResponse.json({ exports: [], total: 0 }),
+    HttpResponse.json([]),
   ),
 ];

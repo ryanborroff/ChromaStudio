@@ -57,7 +57,7 @@ export function Feed() {
         <div className="flex-1 min-w-0">
           <h1 className="text-2xl font-black text-white tracking-tight mb-1">Your feed is quiet</h1>
           <p className="text-white/50 text-sm leading-relaxed max-w-lg">
-            Follow filmmakers whose work you admire — their latest videos will appear here. In the meantime, here's what's trending on ChromaStudio.
+            Follow filmmakers whose work you admire — new work shows up here the second it drops. In the meantime, here's what everyone's watching on ChromaStudio.
           </p>
         </div>
         <div className="flex gap-3 shrink-0">

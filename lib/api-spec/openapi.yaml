@@ -537,6 +537,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: genre
+          in: query
+          description: Filter by genre tag (case-insensitive match against video tags).
+          schema:
+            type: string
         - name: sort
           in: query
           schema:

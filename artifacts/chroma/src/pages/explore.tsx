@@ -1,15 +1,18 @@
 import { useState, Fragment } from "react";
+import { Link, useLocation, useSearch } from "wouter";
 import { useListVideos, getListVideosQueryKey } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/video-card";
-import { Search, SlidersHorizontal, Grid3X3, List, Check, ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronDown, Star, Film } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
+import { Loader2, Search, SlidersHorizontal, Grid3X3, List, Check, ArrowDownWideNarrow, ArrowUpNarrowWide, ChevronDown, Star, X } from "lucide-react";
 import { useDebounce } from "@/hooks/use-debounce";
-import { Link } from "wouter";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+const GENRE_TAGS = ["Documentary", "Narrative", "Experimental", "Commercial", "Music Video"];
 
 const SORT_OPTIONS = [
   { value: "featured", label: "Trending" },
@@ -18,55 +21,18 @@ const SORT_OPTIONS = [
   { value: "newest", label: "Newest" },
 ] as const;
 
+// Shared pill class builder
 function pillClass(active: boolean) {
-  return `text-[13px] font-medium px-4 py-[7px] rounded-[20px] cursor-pointer transition-colors duration-150 ease-[ease] ${
+  return [
+    "flex items-center gap-1 px-4 py-[7px] rounded-full text-[13px] font-medium transition-colors cursor-pointer",
     active
       ? "bg-[#f2f2f2] text-[#111111]"
-      : "bg-transparent text-[#b5b5b0] border-[0.5px] border-[#3a3a38] hover:border-[#55554f] hover:text-[#e0e0dc]"
-  }`;
+      : "bg-transparent text-[#b5b5b0] hover:text-[#e0e0dc]",
+  ].join(" ");
 }
 
-function VideoSkeletonCard() {
-  return (
-    <div className="flex flex-col gap-2.5">
-      <div className="skeleton-shimmer relative aspect-video rounded-lg bg-[#1a1a1a] overflow-hidden" />
-      <div className="h-3 rounded bg-[#1a1a1a] w-4/5" />
-      <div className="h-[10px] rounded bg-[#1a1a1a] w-[45%]" />
-    </div>
-  );
-}
-
-function ExploreEmptyState({ hasFilters, onClear }: { hasFilters: boolean; onClear: () => void }) {
-  return (
-    <div className="border-[0.5px] border-[#262624] rounded-xl px-8 py-12 text-center">
-      <div className="w-14 h-14 rounded-full bg-[#241a12] flex items-center justify-center text-[#e08a3c] mx-auto mb-4">
-        {hasFilters ? <Search className="w-[26px] h-[26px]" /> : <Film className="w-[26px] h-[26px]" />}
-      </div>
-      <h3 className="text-[18px] font-medium text-[#f2f2f2] mb-1.5">
-        {hasFilters ? "Couldn't find that one" : "Be the first to publish"}
-      </h3>
-      <p className="text-sm text-[#9a9a94] leading-snug max-w-[340px] mx-auto mb-5">
-        {hasFilters
-          ? "Try a different word, or browse what's trending."
-          : "Trending work will appear here once creators start uploading. Upload yours to kick things off."}
-      </p>
-      {hasFilters ? (
-        <button
-          onClick={onClear}
-          className="inline-block bg-transparent text-[#f2f2f2] text-[13px] font-medium px-5 py-[9px] rounded-lg border-[0.5px] border-[#3a3a38] hover:border-[#55554f] hover:bg-[#1a1a1a] transition-colors"
-        >
-          Clear filters
-        </button>
-      ) : (
-        <Link
-          href="/videos/upload"
-          className="inline-block bg-[#e0631f] text-white text-[13px] font-medium px-5 py-[9px] rounded-lg hover:bg-[#c8551a] transition-colors"
-        >
-          Upload a video
-        </Link>
-      )}
-    </div>
-  );
+function pillStyle(active: boolean): React.CSSProperties | undefined {
+  return active ? undefined : { border: "0.5px solid #3a3a38" };
 }
 
 export function Explore() {
@@ -76,7 +42,31 @@ export function Explore() {
   const [view, setView] = useState<"grid" | "list">("grid");
   const isCommunity = sort === "community_rated" || sort === "community_rated_asc";
 
-  const showFeaturedStrip = sort === "featured" && !debouncedSearch;
+  // Read genre from URL query param (?genre=Documentary)
+  const searchString = useSearch();
+  const [, navigate] = useLocation();
+  const urlGenre = new URLSearchParams(searchString).get("genre") ?? undefined;
+
+  const activeGenre = urlGenre && GENRE_TAGS.includes(urlGenre) ? urlGenre : undefined;
+
+  function handleGenreClick(tag: string) {
+    if (activeGenre === tag) {
+      navigate("/explore");
+    } else {
+      navigate(`/explore?genre=${encodeURIComponent(tag)}`);
+    }
+  }
+
+  function clearAllFilters() {
+    setSearch("");
+    setSort("featured");
+    navigate("/explore");
+  }
+
+  // True when any filter/search is active (affects empty-state variant)
+  const hasFilters = !!debouncedSearch || sort !== "featured" || !!activeGenre;
+
+  const showFeaturedStrip = sort === "featured" && !debouncedSearch && !activeGenre;
 
   const { data: featuredData } = useListVideos(
     { featured: true, limit: 6 },
@@ -89,8 +79,8 @@ export function Explore() {
   );
 
   const { data, isLoading } = useListVideos(
-    { search: debouncedSearch || undefined, sort },
-    { query: { queryKey: getListVideosQueryKey({ search: debouncedSearch || undefined, sort }) } }
+    { search: debouncedSearch || undefined, sort, genre: activeGenre },
+    { query: { queryKey: getListVideosQueryKey({ search: debouncedSearch || undefined, sort, genre: activeGenre }) } }
   );
 
   const featuredVideos = featuredData?.videos ?? [];
@@ -98,9 +88,6 @@ export function Explore() {
   const mainVideos = showFeaturedStrip && featuredVideos.length > 0
     ? (data?.videos ?? []).filter(v => !featuredIds.has(v.id))
     : (data?.videos ?? []);
-
-  const hasFilters = search.trim() !== "" || sort !== "featured";
-  const showEmpty = !isLoading && mainVideos.length === 0 && (!showFeaturedStrip || featuredVideos.length === 0);
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
@@ -115,19 +102,20 @@ export function Explore() {
         }}
       >
         <div>
-          <h1 className="text-[28px] font-medium text-[#f2f2f2] mb-1">Explore</h1>
-          <p className="text-sm font-normal text-[#9a9a94]">Discover exceptional work.</p>
+          <h1 className="text-[15px] font-semibold text-white tracking-tight">Explore</h1>
+          <p className="text-xs text-white/35 font-medium">Discover exceptional work.</p>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Sort pills */}
-          <div className="hidden sm:flex items-center gap-1 mr-2">
-            {SORT_OPTIONS.map(opt => (
+          <div className="hidden sm:flex items-center gap-1.5 mr-2">
+            {SORT_OPTIONS.map(opt =>
               opt.value === "community_rated" ? (
                 <DropdownMenu key="community_rated">
                   <DropdownMenuTrigger asChild>
                     <button
-                      className={`flex items-center gap-1 ${pillClass(isCommunity)}`}
+                      className={pillClass(isCommunity)}
+                      style={pillStyle(isCommunity)}
                       data-testid="btn-community-rated"
                     >
                       Community Rated
@@ -158,24 +146,27 @@ export function Explore() {
                   key={opt.value}
                   onClick={() => setSort(opt.value)}
                   className={pillClass(sort === opt.value)}
+                  style={pillStyle(sort === opt.value)}
                 >
                   {opt.label}
                 </button>
               )
-            ))}
+            )}
           </div>
 
-          {/* Search */}
+          {/* Search — distinct input styling with orange focus ring */}
           <div
-            className="flex items-center gap-2 bg-[#1a1a1a] border-[0.5px] border-[#3a3a38] rounded-lg px-3 py-[6px] min-w-[200px] focus-within:border-[#e0631f] focus-within:shadow-[0_0_0_1px_rgba(224,99,31,0.3)] transition-[border-color,box-shadow] duration-150"
+            className="flex items-center gap-2 rounded-lg px-3 min-w-[200px] transition-colors focus-within:shadow-[0_0_0_1px_rgba(224,99,31,0.3)]"
+            style={{ background: "#1a1a1a", border: "0.5px solid #3a3a38" }}
           >
-            <Search className="w-4 h-4 text-[#888888]" />
+            <Search className="w-4 h-4 flex-shrink-0" style={{ color: "#888888" }} />
             <input
-              type="text"
               placeholder="Search…"
               value={search}
               onChange={e => setSearch(e.target.value)}
-              className="bg-transparent border-0 outline-none text-[#f2f2f2] text-[13px] w-full placeholder:text-[#888888]"
+              className="bg-transparent border-none outline-none text-[13px] w-full py-[6px]"
+              style={{ color: "#f2f2f2" }}
+              placeholder-style={{ color: "#888888" }}
               data-testid="input-search-videos"
             />
           </div>
@@ -228,10 +219,11 @@ export function Explore() {
             </DropdownMenuContent>
           </DropdownMenu>
 
+          {/* Grid / list toggle */}
           <button
             onClick={() => setView(view === "grid" ? "list" : "grid")}
-            aria-label="Toggle layout"
-            title="Toggle layout"
+            aria-label={view === "grid" ? "Switch to list view" : "Switch to grid view"}
+            title={view === "grid" ? "Switch to list view" : "Switch to grid view"}
             className="hidden sm:flex h-8 w-8 items-center justify-center rounded-lg text-white transition-all"
             style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
             data-testid="button-view-toggle"
@@ -239,6 +231,28 @@ export function Explore() {
             {view === "grid" ? <Grid3X3 className="w-3.5 h-3.5" /> : <List className="w-3.5 h-3.5" />}
           </button>
         </div>
+      </div>
+
+      {/* Genre filter pills */}
+      <div
+        className="flex items-center gap-2 px-6 py-2 overflow-x-auto"
+        style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}
+      >
+        {GENRE_TAGS.map(tag => {
+          const isActive = activeGenre === tag;
+          return (
+            <button
+              key={tag}
+              onClick={() => handleGenreClick(tag)}
+              className={pillClass(isActive)}
+              style={pillStyle(isActive)}
+              data-testid={`genre-pill-${tag.toLowerCase().replace(/\s+/g, "-")}`}
+            >
+              {isActive && <X className="w-3 h-3 opacity-70" />}
+              {tag}
+            </button>
+          );
+        })}
       </div>
 
       {/* Content */}
@@ -260,13 +274,9 @@ export function Explore() {
 
         {/* Main grid */}
         {isLoading ? (
-          <section aria-label="Loading videos">
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-5">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <VideoSkeletonCard key={i} />
-              ))}
-            </div>
-          </section>
+          <div className="flex items-center justify-center min-h-[40vh]">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          </div>
         ) : mainVideos.length > 0 ? (
           <section>
             {showFeaturedStrip && featuredVideos.length > 0 && (
@@ -278,14 +288,38 @@ export function Explore() {
               ))}
             </div>
           </section>
-        ) : showEmpty ? (
-          <ExploreEmptyState
-            hasFilters={hasFilters}
-            onClear={() => {
-              setSearch("");
-              setSort("featured");
-            }}
-          />
+        ) : !showFeaturedStrip || featuredVideos.length === 0 ? (
+          hasFilters ? (
+            /* Variant B: search/filter active, zero results */
+            <EmptyState
+              title="Couldn't find that one"
+              description="Try a different word, or browse what's trending."
+              action={
+                <button
+                  onClick={clearAllFilters}
+                  className="text-[13px] font-medium px-5 py-[9px] rounded-lg transition-colors hover:bg-white/5"
+                  style={{ background: "transparent", color: "#f2f2f2", border: "0.5px solid #3a3a38" }}
+                >
+                  Clear filters
+                </button>
+              }
+            />
+          ) : (
+            /* Variant A: genuinely empty catalogue */
+            <EmptyState
+              title="Be the first to publish"
+              description="Trending work will appear here once creators start uploading. Upload yours to kick things off."
+              action={
+                <Link
+                  href="/videos/upload"
+                  className="inline-block text-[13px] font-medium px-5 py-[9px] rounded-lg text-white transition-opacity hover:opacity-90"
+                  style={{ background: "#e0631f" }}
+                >
+                  Upload a video
+                </Link>
+              }
+            />
+          )
         ) : null}
       </div>
     </div>

@@ -114,6 +114,7 @@ router.get("/videos", async (req, res): Promise<void> => {
     category,
     search,
     tags,
+    genre,
     sort = "newest",
     featured,
     limit = "20",
@@ -140,6 +141,7 @@ router.get("/videos", async (req, res): Promise<void> => {
     conditions.push(eq(videosTable.collectionId, parseInt(collectionId)));
   }
   if (category) conditions.push(eq(videosTable.category, category));
+  if (genre) conditions.push(sql`${genre.toLowerCase()} = ANY(${videosTable.tags})`);
   if (featured === "true") conditions.push(eq(videosTable.isFeatured, true));
   if (search) {
     conditions.push(
@@ -167,8 +169,8 @@ router.get("/videos", async (req, res): Promise<void> => {
               ? desc(videosTable.isFeatured)
               : desc(videosTable.createdAt),
     )
-    .limit(parseInt(limit))
-    .offset(parseInt(offset));
+    .limit(Math.min(Math.max(parseInt(limit) || 20, 1), 100))
+    .offset(Math.max(parseInt(offset) || 0, 0));
 
   const [countRow] = await db
     .select({ count: sql<number>`count(*)::int` })
@@ -396,9 +398,12 @@ router.patch("/videos/:id", requireAuth, async (req, res): Promise<void> => {
       return;
     }
   }
+  // Strip streamStatus — it must only be set by internal webhook processing
+  // or the trusted /confirm-upload endpoint, never by direct client input.
+  const { streamStatus: _stripped, ...clientFields } = parsed.data;
   const [video] = await db
     .update(videosTable)
-    .set(parsed.data as Partial<typeof videosTable.$inferInsert>)
+    .set(clientFields as Partial<typeof videosTable.$inferInsert>)
     .where(
       sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id}`,
     )
@@ -410,6 +415,54 @@ router.patch("/videos/:id", requireAuth, async (req, res): Promise<void> => {
   const full = await buildVideoResponse(video, user.id);
   res.json(UpdateVideoResponse.parse(full));
 });
+
+// POST /videos/:id/confirm-upload
+// Trusted server-side path that marks an object-storage video as "ready".
+// Unlike PATCH /:id, this validates that the video actually has an object-storage
+// URL before flipping streamStatus, so clients cannot self-promote arbitrary status.
+router.post(
+  "/videos/:id/confirm-upload",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+    const id = parseInt(rawId, 10);
+    const user = await getCurrentUser(req);
+
+    const [video] = await db
+      .select()
+      .from(videosTable)
+      .where(
+        sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id}`,
+      )
+      .limit(1);
+
+    if (!video) {
+      res.status(404).json({ error: "Video not found" });
+      return;
+    }
+
+    // Only allow confirming videos that were uploaded via object storage
+    // (no streaming provider, URL points to the internal storage path).
+    const isObjectStorageVideo =
+      !video.streamProvider && video.videoUrl?.startsWith("/api/storage");
+
+    if (!isObjectStorageVideo) {
+      res
+        .status(400)
+        .json({ error: "Video is not an object-storage upload" });
+      return;
+    }
+
+    const [updated] = await db
+      .update(videosTable)
+      .set({ streamStatus: "ready" })
+      .where(eq(videosTable.id, id))
+      .returning();
+
+    const full = await buildVideoResponse(updated, user.id);
+    res.json(full);
+  },
+);
 
 // DELETE /videos/:id
 router.delete("/videos/:id", requireAuth, async (req, res): Promise<void> => {

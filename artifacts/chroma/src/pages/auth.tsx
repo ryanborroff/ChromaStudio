@@ -170,16 +170,24 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
               {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {isSignUp ? "Create account" : "Sign in"}
             </Button>
+
+            {!isSignUp && (
+              <div className="text-center mt-3">
+                <a href="/forgot-password" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+                  Forgot your password?
+                </a>
+              </div>
+            )}
           </form>
 
           <p className="text-sm text-muted-foreground mt-6">
-            {isSignUp ? "Already have an account? " : "New to ChromaStudio? "}
+            {isSignUp ? "Already have an account? " : "Don't have an account? "}
             <a
               href={isSignUp ? "/sign-in" : "/sign-up"}
               className="text-primary hover:underline"
               data-testid="link-toggle-mode"
             >
-              {isSignUp ? "Sign in" : "Create one"}
+              {isSignUp ? "Sign in" : "Join Chroma Studio."}
             </a>
           </p>
 

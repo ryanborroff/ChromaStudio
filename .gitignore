@@ -64,3 +64,4 @@ Thumbs.db
 # Replit
 .cache/
 .local/
+\n# Playwright test results (transient runtime state)\ntest-results/

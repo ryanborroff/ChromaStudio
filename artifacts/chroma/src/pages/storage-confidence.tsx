@@ -9,10 +9,15 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
 
-function formatBytes(bytes: number) {
-  if (bytes < 1024) return `${bytes} B`;
+function formatBytes(bytes?: number | null) {
+  const safeBytes =
+    typeof bytes === "number" && Number.isFinite(bytes)
+      ? Math.max(0, bytes)
+      : 0;
+
+  if (safeBytes < 1024) return `${safeBytes} B`;
   const units = ["KB", "MB", "GB", "TB"];
-  let value = bytes;
+  let value = safeBytes;
   let unit = -1;
   while (value >= 1024 && unit < units.length - 1) {
     value /= 1024;

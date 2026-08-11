@@ -3,6 +3,7 @@ import {
   useCreateVideo,
   useCreateVideoUploadUrl,
   useUpdateVideo,
+  useConfirmVideoUpload,
 } from "@workspace/api-client-react";
 import MuxUploader, {
   type MuxUploaderRefAttributes,
@@ -147,6 +148,7 @@ export function VideoUpload() {
   const uploadUrlMutation = useCreateVideoUploadUrl();
   const createMutation = useCreateVideo();
   const updateMutation = useUpdateVideo();
+  const confirmUploadMutation = useConfirmVideoUpload();
 
   const busy = phase !== "idle";
 
@@ -270,13 +272,19 @@ export function VideoUpload() {
       }
 
       setPhase("saving");
+      // For object-storage uploads the server validates the upload before
+      // marking streamStatus "ready" via a trusted endpoint. For streaming
+      // providers, the status is set by an incoming webhook — we only update
+      // the progress fields here.
+      if (isObjectStorage) {
+        await confirmUploadMutation.mutateAsync({ id: videoId });
+      }
       await updateMutation.mutateAsync({
         id: videoId,
         data: {
           uploadProgressPercent: 100,
           uploadError: null,
           retryCount,
-          ...(isObjectStorage ? { streamStatus: "ready" } : {}),
         },
       });
       localStorage.removeItem("chroma.pendingUpload");

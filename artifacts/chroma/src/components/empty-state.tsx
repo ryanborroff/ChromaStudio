@@ -9,20 +9,31 @@ interface EmptyStateProps {
   className?: string;
 }
 
-export function EmptyState({ 
-  icon = <Film className="w-12 h-12" />, 
-  title, 
-  description, 
+export function EmptyState({
+  icon = <Film className="w-[26px] h-[26px]" />,
+  title,
+  description,
   action,
-  className = ""
+  className = "",
 }: EmptyStateProps) {
   return (
-    <div className={`flex flex-col items-center justify-center py-20 px-4 text-center rounded-2xl border border-dashed border-border/50 bg-card/30 ${className}`}>
-      <div className="w-20 h-20 rounded-full bg-secondary/50 flex items-center justify-center text-muted-foreground mb-6">
-        {icon}
+    <div
+      className={`flex flex-col items-center py-12 px-8 text-center rounded-xl ${className}`}
+      style={{ border: "0.5px solid #262624" }}
+    >
+      <div
+        className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
+        style={{ background: "#241a12" }}
+      >
+        <span style={{ color: "#e08a3c", display: "flex" }}>{icon}</span>
       </div>
-      <h3 className="text-xl font-bold text-white mb-2">{title}</h3>
-      <p className="text-muted-foreground max-w-md mx-auto mb-8 leading-relaxed">
+      <h3 className="text-[18px] font-medium mb-[6px]" style={{ color: "#f2f2f2" }}>
+        {title}
+      </h3>
+      <p
+        className="text-[14px] leading-[1.5] max-w-[340px] mx-auto mb-5"
+        style={{ color: "#9a9a94" }}
+      >
         {description}
       </p>
       {action && <div>{action}</div>}
