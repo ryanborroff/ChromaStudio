@@ -73,7 +73,7 @@ catalogs:
 overrides:
   brace-expansion: '>=5.0.9'
   fast-uri: '>=3.1.5'
-  js-yaml: '>=4.3.1'
+  js-yaml: ^4.1.0
   linkify-it: '>=5.0.2'
   postcss: '>=8.5.25'
   '@esbuild-kit/esm-loader': npm:tsx@^4.21.0
@@ -2960,8 +2960,8 @@ packages:
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
-  js-yaml@5.2.3:
-    resolution: {integrity: sha512-n+mUVyUX5bVv7G/G2zyIHOhdxfuU1dY2NOFzTQUWiMUbFss8b57NFlgCCaggU78wSw5KVS9cllzeLyzyR+n5nw==}
+  js-yaml@4.3.1:
+    resolution: {integrity: sha512-CY6crGq313MX8GkwvB7tzgp99vjQxY1++5y10/BKN/GUfHqWaOGQMNZkBvqSzsZKWk/ijwHlWzzkLulsGHhjWQ==}
     hasBin: true
 
   jsesc@3.1.0:
@@ -6409,7 +6409,7 @@ snapshots:
 
   js-tokens@4.0.0: {}
 
-  js-yaml@5.2.3:
+  js-yaml@4.3.1:
     dependencies:
       argparse: 2.0.1
 
@@ -6677,7 +6677,7 @@ snapshots:
       find-up: 8.0.0
       fs-extra: 11.3.5
       jiti: 2.7.0
-      js-yaml: 5.2.3
+      js-yaml: 4.3.1
       remeda: 2.34.0
       string-argv: 0.3.2
       tsconfck: 3.1.6(typescript@5.9.3)

@@ -648,6 +648,7 @@ export const ListVideosQueryParams = zod.object({
   "category": zod.enum(['reel', 'rushes', 'other']).optional(),
   "search": zod.coerce.string().optional(),
   "tags": zod.coerce.string().optional(),
+  "genre": zod.coerce.string().optional().describe('Filter by genre tag (case-insensitive match against video tags).'),
   "sort": zod.enum(['newest', 'most_viewed', 'featured', 'community_rated', 'community_rated_asc']).optional(),
   "featured": zod.coerce.boolean().optional().describe('When true, only return featured videos.'),
   "limit": zod.coerce.number().optional(),
@@ -756,6 +757,26 @@ export const CreateVideoUploadUrlResponse = zod.object({
   "uid": zod.string(),
   "uploadMethod": zod.enum(['post', 'put']).optional(),
   "streamProvider": zod.string().nullish().describe('Active streaming provider name (mux, cloudflare) or null when falling back to object storage.')
+})
+
+
+/**
+ * @summary List all versions in a review group owned by the current user
+ */
+export const ListVideoVersionsParams = zod.object({
+  "reviewGroupId": zod.coerce.string()
+})
+
+export const ListVideoVersionsResponse = zod.object({
+  "versions": zod.array(zod.object({
+  "id": zod.number(),
+  "versionNumber": zod.number(),
+  "title": zod.string(),
+  "thumbnailUrl": zod.string().nullish(),
+  "streamStatus": zod.string(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']),
+  "createdAt": zod.coerce.date()
+}))
 })
 
 
@@ -1565,7 +1586,15 @@ export const GetReviewLinkResponse = zod.object({
   "parentCommentId": zod.number().nullish(),
   "resolved": zod.boolean(),
   "createdAt": zod.coerce.date()
-}))
+})),
+  "videoId": zod.number().nullish().describe('Id of the specific version currently being viewed. Null while requiresPassword is true and media has not been unlocked yet.'),
+  "versionNumber": zod.number().describe('Version number of the currently-viewed video within its review group. Defaults to 1 for ungrouped videos.'),
+  "versions": zod.array(zod.object({
+  "id": zod.number(),
+  "versionNumber": zod.number(),
+  "thumbnailUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})).describe('All ready versions in this review group, oldest to newest. A single-entry array for videos with no other versions.')
 })
 
 
@@ -1604,7 +1633,15 @@ export const UnlockReviewLinkResponse = zod.object({
   "parentCommentId": zod.number().nullish(),
   "resolved": zod.boolean(),
   "createdAt": zod.coerce.date()
-}))
+})),
+  "videoId": zod.number().nullish().describe('Id of the specific version currently being viewed. Null while requiresPassword is true and media has not been unlocked yet.'),
+  "versionNumber": zod.number().describe('Version number of the currently-viewed video within its review group. Defaults to 1 for ungrouped videos.'),
+  "versions": zod.array(zod.object({
+  "id": zod.number(),
+  "versionNumber": zod.number(),
+  "thumbnailUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})).describe('All ready versions in this review group, oldest to newest. A single-entry array for videos with no other versions.')
 })
 
 
@@ -1629,6 +1666,54 @@ export const PostGuestReviewCommentBody = zod.object({
   "authorName": zod.string().min(1),
   "password": zod.string().optional()
 }))
+
+
+/**
+ * @summary Switch the review session to a specific version within the same group
+ */
+export const SelectReviewVersionParams = zod.object({
+  "token": zod.coerce.string(),
+  "videoId": zod.coerce.number()
+})
+
+export const SelectReviewVersionBody = zod.object({
+  "password": zod.string().optional()
+})
+
+export const SelectReviewVersionResponse = zod.object({
+  "title": zod.string(),
+  "description": zod.string().nullish(),
+  "thumbnailUrl": zod.string().nullish(),
+  "requiresPassword": zod.boolean(),
+  "allowDownload": zod.boolean(),
+  "allowComments": zod.boolean(),
+  "approvalStatus": zod.enum(['pending', 'approved', 'changes_requested']),
+  "streamProvider": zod.string().nullish(),
+  "streamPlaybackId": zod.string().nullish(),
+  "streamUid": zod.string().nullish(),
+  "videoUrl": zod.string().nullish(),
+  "downloadFormats": zod.array(zod.string()).optional(),
+  "comments": zod.array(zod.object({
+  "id": zod.number(),
+  "videoId": zod.number(),
+  "groupId": zod.string(),
+  "timecodeSeconds": zod.number(),
+  "body": zod.string(),
+  "authorType": zod.enum(['owner', 'guest']),
+  "authorName": zod.string(),
+  "parentCommentId": zod.number().nullish(),
+  "resolved": zod.boolean(),
+  "createdAt": zod.coerce.date()
+})),
+  "videoId": zod.number().nullish().describe('Id of the specific version currently being viewed. Null while requiresPassword is true and media has not been unlocked yet.'),
+  "versionNumber": zod.number().describe('Version number of the currently-viewed video within its review group. Defaults to 1 for ungrouped videos.'),
+  "versions": zod.array(zod.object({
+  "id": zod.number(),
+  "versionNumber": zod.number(),
+  "thumbnailUrl": zod.string().nullish(),
+  "createdAt": zod.coerce.date()
+})).describe('All ready versions in this review group, oldest to newest. A single-entry array for videos with no other versions.')
+})
 
 
 /**

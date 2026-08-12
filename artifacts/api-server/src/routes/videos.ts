@@ -35,6 +35,8 @@ import {
   BulkSetVideoCategoryBody,
   BulkMoveVideosResponse,
   BulkSetVideoCategoryResponse,
+  ListVideoVersionsParams,
+  ListVideoVersionsResponse,
 } from "@workspace/api-zod";
 import { getStreamingProvider } from "../lib/streaming/index.js";
 import { ObjectStorageService } from "../lib/objectStorage";
@@ -340,6 +342,46 @@ router.post(
       req.log.error({ err }, `Failed to create ${provider.name} upload URL`);
       res.status(502).json({ error: "Could not start upload" });
     }
+  },
+);
+
+// GET /videos/group/:reviewGroupId
+// Registered ahead of GET /videos/:id so the literal "group" path segment
+// isn't swallowed by the :id param matcher.
+router.get(
+  "/videos/group/:reviewGroupId",
+  requireAuth,
+  async (req, res): Promise<void> => {
+    const params = ListVideoVersionsParams.safeParse(req.params);
+    if (!params.success) {
+      res.status(400).json({ error: "Invalid review group id" });
+      return;
+    }
+    const user = await getCurrentUser(req);
+    const versions = await db
+      .select()
+      .from(videosTable)
+      .where(
+        and(
+          eq(videosTable.reviewGroupId, params.data.reviewGroupId),
+          eq(videosTable.userId, user.id),
+        ),
+      )
+      .orderBy(asc(videosTable.versionNumber));
+
+    res.json(
+      ListVideoVersionsResponse.parse({
+        versions: versions.map((v) => ({
+          id: v.id,
+          versionNumber: v.versionNumber,
+          title: v.title,
+          thumbnailUrl: v.thumbnailUrl ?? null,
+          streamStatus: v.streamStatus,
+          approvalStatus: v.approvalStatus,
+          createdAt: v.createdAt,
+        })),
+      }),
+    );
   },
 );
 

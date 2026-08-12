@@ -1,7 +1,7 @@
 import { Router, type IRouter, type Request } from "express";
 import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import {
   db,
   reviewCommentsTable,
@@ -32,6 +32,9 @@ import {
   UnlockReviewLinkBody,
   UnlockReviewLinkParams,
   UnlockReviewLinkResponse,
+  SelectReviewVersionParams,
+  SelectReviewVersionBody,
+  SelectReviewVersionResponse,
 } from "@workspace/api-zod";
 import { getCurrentUser, requireAuth } from "../lib/auth";
 
@@ -96,6 +99,51 @@ async function getLatestVideo(groupId: string) {
     : null;
 }
 
+// A specific, non-latest version within a group. Used when a guest switches
+// the version picker away from "latest" to compare against an earlier cut.
+async function getVideoInGroup(groupId: string, videoId: number) {
+  if (groupId.startsWith("video-")) {
+    const fallbackId = Number(groupId.slice(6));
+    if (fallbackId !== videoId) return null;
+    const [video] = await db
+      .select()
+      .from(videosTable)
+      .where(
+        and(eq(videosTable.id, videoId), isNull(videosTable.reviewGroupId)),
+      )
+      .limit(1);
+    return video?.streamStatus === "ready" || video?.videoUrl ? video : null;
+  }
+  const [video] = await db
+    .select()
+    .from(videosTable)
+    .where(
+      and(
+        eq(videosTable.id, videoId),
+        eq(videosTable.reviewGroupId, groupId),
+        eq(videosTable.streamStatus, "ready"),
+      ),
+    )
+    .limit(1);
+  return video ?? null;
+}
+
+// All ready versions in a video's group, oldest first — for rendering a
+// version picker. A single-entry list for videos with no review group.
+async function listGroupVersions(video: ReviewVideo) {
+  if (!video.reviewGroupId) return [video];
+  return db
+    .select()
+    .from(videosTable)
+    .where(
+      and(
+        eq(videosTable.reviewGroupId, video.reviewGroupId),
+        eq(videosTable.streamStatus, "ready"),
+      ),
+    )
+    .orderBy(asc(videosTable.versionNumber));
+}
+
 async function listComments(videoId: number, groupId: string) {
   return db
     .select({
@@ -130,6 +178,9 @@ async function buildSession(
 ) {
   const groupId = getGroupId(video);
   const comments = await listComments(video.id, groupId);
+  // Version metadata is withheld pre-unlock along with everything else media-
+  // related, so a locked link can't be used to enumerate video ids.
+  const versions = includeMedia ? await listGroupVersions(video) : [];
   return {
     title: video.title,
     description: video.description ?? null,
@@ -147,6 +198,14 @@ async function buildSession(
     downloadFormats:
       includeMedia && link.allowDownload ? (video.downloadFormats ?? []) : [],
     comments: includeMedia ? comments : [],
+    videoId: includeMedia ? video.id : null,
+    versionNumber: video.versionNumber,
+    versions: versions.map((v) => ({
+      id: v.id,
+      versionNumber: v.versionNumber,
+      thumbnailUrl: v.thumbnailUrl ?? null,
+      createdAt: v.createdAt,
+    })),
   };
 }
 
@@ -162,14 +221,21 @@ function allowGuestAttempt(token: string) {
   return true;
 }
 
-async function authorizeGuest(token: string, password?: string) {
+async function authorizeGuest(
+  token: string,
+  password?: string,
+  videoId?: number,
+) {
   const link = await getLink(token);
   if (!link || !allowGuestAttempt(token)) return null;
   if (link.passwordHash) {
     if (!password || !(await bcrypt.compare(password, link.passwordHash)))
       return null;
   }
-  const video = await getLatestVideo(link.videoGroupId);
+  const video =
+    videoId != null
+      ? await getVideoInGroup(link.videoGroupId, videoId)
+      : await getLatestVideo(link.videoGroupId);
   if (!video) return null;
   return { link, video, groupId: getGroupId(video) };
 }
@@ -448,6 +514,37 @@ router.post("/review/:token", async (req, res): Promise<void> => {
     ),
   );
 });
+
+// Lets a guest switch the review session to view an earlier (or later) ready
+// version within the same group, for eyeballing an A/B comparison. Feedback
+// and approval decisions still always target the latest version — see
+// POST /review/:token/comments and /review/:token/approval, which resolve
+// via getLatestVideo rather than accepting a videoId.
+router.post(
+  "/review/:token/versions/:videoId",
+  async (req, res): Promise<void> => {
+    const params = SelectReviewVersionParams.safeParse(req.params);
+    const body = SelectReviewVersionBody.safeParse(req.body ?? {});
+    if (!params.success || !body.success) {
+      res.status(400).json({ error: "Invalid request" });
+      return;
+    }
+    const authorized = await authorizeGuest(
+      params.data.token,
+      body.data.password,
+      params.data.videoId,
+    );
+    if (!authorized) {
+      res.status(401).json({ error: "Invalid or expired review link" });
+      return;
+    }
+    res.json(
+      SelectReviewVersionResponse.parse(
+        await buildSession(authorized.link, authorized.video, true),
+      ),
+    );
+  },
+);
 
 router.post("/review/:token/comments", async (req, res): Promise<void> => {
   const params = PostGuestReviewCommentParams.safeParse(req.params);

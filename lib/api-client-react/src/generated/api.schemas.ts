@@ -221,6 +221,30 @@ export interface VideoInput {
   downloadFormats?: string[];
 }
 
+export type VideoVersionApprovalStatus = typeof VideoVersionApprovalStatus[keyof typeof VideoVersionApprovalStatus];
+
+
+export const VideoVersionApprovalStatus = {
+  pending: 'pending',
+  approved: 'approved',
+  changes_requested: 'changes_requested',
+} as const;
+
+export interface VideoVersion {
+  id: number;
+  versionNumber: number;
+  title: string;
+  /** @nullable */
+  thumbnailUrl?: string | null;
+  streamStatus: string;
+  approvalStatus: VideoVersionApprovalStatus;
+  createdAt: string;
+}
+
+export interface VideoVersionList {
+  versions: VideoVersion[];
+}
+
 export type StreamUploadTicketUploadMethod = typeof StreamUploadTicketUploadMethod[keyof typeof StreamUploadTicketUploadMethod];
 
 
@@ -531,6 +555,14 @@ export const ReviewSessionApprovalStatus = {
   changes_requested: 'changes_requested',
 } as const;
 
+export interface ReviewVideoVersion {
+  id: number;
+  versionNumber: number;
+  /** @nullable */
+  thumbnailUrl?: string | null;
+  createdAt: string;
+}
+
 export interface ReviewSession {
   title: string;
   /** @nullable */
@@ -551,10 +583,23 @@ export interface ReviewSession {
   videoUrl?: string | null;
   downloadFormats?: string[];
   comments: ReviewComment[];
+  /**
+     * Id of the specific version currently being viewed. Null while requiresPassword is true and media has not been unlocked yet.
+     * @nullable
+     */
+  videoId?: number | null;
+  /** Version number of the currently-viewed video within its review group. Defaults to 1 for ungrouped videos. */
+  versionNumber: number;
+  /** All ready versions in this review group, oldest to newest. A single-entry array for videos with no other versions. */
+  versions: ReviewVideoVersion[];
 }
 
 export interface ReviewUnlockInput {
   password: string;
+}
+
+export interface SelectReviewVersionInput {
+  password?: string;
 }
 
 export type ApprovalInputStatus = typeof ApprovalInputStatus[keyof typeof ApprovalInputStatus];

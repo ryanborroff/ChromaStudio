@@ -7,6 +7,7 @@
  */
 import type { ReviewComment } from './reviewComment';
 import type { ReviewSessionApprovalStatus } from './reviewSessionApprovalStatus';
+import type { ReviewVideoVersion } from './reviewVideoVersion';
 
 export interface ReviewSession {
   title: string;
@@ -28,4 +29,13 @@ export interface ReviewSession {
   videoUrl?: string | null;
   downloadFormats?: string[];
   comments: ReviewComment[];
+  /**
+     * Id of the specific version currently being viewed. Null while requiresPassword is true and media has not been unlocked yet.
+     * @nullable
+     */
+  videoId?: number | null;
+  /** Version number of the currently-viewed video within its review group. Defaults to 1 for ungrouped videos. */
+  versionNumber: number;
+  /** All ready versions in this review group, oldest to newest. A single-entry array for videos with no other versions. */
+  versions: ReviewVideoVersion[];
 }

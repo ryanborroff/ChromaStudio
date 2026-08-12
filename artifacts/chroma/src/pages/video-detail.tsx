@@ -10,6 +10,8 @@ import {
   getListReviewCommentsQueryKey,
   useResolveReviewComment,
   useSetOwnerApprovalStatus,
+  useListVideoVersions,
+  getListVideoVersionsQueryKey,
   downloadEditingExport,
 } from "@workspace/api-client-react";
 import {
@@ -21,6 +23,7 @@ import {
   Clock,
   Download,
   Film,
+  UploadCloud,
 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { StarRating } from "@/components/star-rating";
@@ -77,6 +80,16 @@ export function VideoDetail() {
       queryKey: getListReviewCommentsQueryKey(videoId),
     },
   });
+
+  const isOwner = isSignedIn && video?.userId === user?.id;
+  const groupId = video?.reviewGroupId || (video ? `video-${video.id}` : "");
+  const { data: versionsData } = useListVideoVersions(groupId, {
+    query: {
+      enabled: !!groupId && isOwner,
+      queryKey: getListVideoVersionsQueryKey(groupId),
+    },
+  });
+  const versions = versionsData?.versions ?? [];
 
   const likeMutation = useLikeVideo({
     mutation: {
@@ -363,7 +376,7 @@ export function VideoDetail() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   )}
-                {video.userId === user?.id && (
+                {isOwner && (
                   <Button
                     variant="secondary"
                     className="rounded-full font-semibold"
@@ -373,8 +386,40 @@ export function VideoDetail() {
                     Export to editor
                   </Button>
                 )}
+                {isOwner && (
+                  <Button asChild className="rounded-full font-semibold">
+                    <Link
+                      href={`/videos/upload?reviewGroupId=${encodeURIComponent(groupId)}&title=${encodeURIComponent(video.title)}`}
+                    >
+                      <UploadCloud className="w-5 h-5 mr-2" />
+                      Upload new version
+                    </Link>
+                  </Button>
+                )}
               </div>
             </div>
+
+            {versions.length > 1 && (
+              <div className="mb-6 flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  Versions
+                </span>
+                {versions.map((v) => (
+                  <Link key={v.id} href={`/videos/${v.id}`}>
+                    <span
+                      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                        v.id === videoId
+                          ? "border-primary bg-primary/15 text-primary"
+                          : "border-border/50 bg-card text-muted-foreground hover:border-primary/50 hover:text-white"
+                      }`}
+                    >
+                      v{v.versionNumber}
+                      {v.id === videoId && " · viewing"}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
 
             <div className="mb-6 flex flex-wrap items-center gap-3">
               <span className="rounded-full border border-border/50 bg-card px-3 py-1.5 text-xs font-semibold text-muted-foreground">

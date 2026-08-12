@@ -34,7 +34,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { ImageUploader } from "@/components/ImageUploader";
 import { useToast } from "@/hooks/use-toast";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { DOWNLOAD_FORMATS } from "@/lib/downloadFormats";
 
 const VIDEO_TAGS = [
@@ -109,6 +109,10 @@ function uploadViaPut(
 export function VideoUpload() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const search = useSearch();
+  const searchParams = new URLSearchParams(search);
+  const reviewGroupId = searchParams.get("reviewGroupId") || undefined;
+  const revisionTitle = searchParams.get("title") || undefined;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const muxUploaderRef = useRef<MuxUploaderRefAttributes | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -136,7 +140,7 @@ export function VideoUpload() {
   const form = useForm<UploadFormValues>({
     resolver: zodResolver(uploadSchema),
     defaultValues: {
-      title: "",
+      title: revisionTitle ?? "",
       description: "",
       privacy: "public",
       credits: "",
@@ -204,6 +208,7 @@ export function VideoUpload() {
               ? { videoUrl: `/api/storage${ticket.uid}` }
               : { streamUid: ticket.uid }),
             ...(thumbnailUrl ? { thumbnailUrl } : {}),
+            ...(reviewGroupId ? { reviewGroupId } : {}),
           },
         });
         videoId = video.id;
@@ -329,9 +334,17 @@ export function VideoUpload() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-2xl">
-      <h1 className="text-3xl font-black text-white tracking-tight mb-8">
-        Upload Video
+      <h1
+        className={`text-3xl font-black text-white tracking-tight ${reviewGroupId ? "mb-2" : "mb-8"}`}
+      >
+        {reviewGroupId ? "Upload New Version" : "Upload Video"}
       </h1>
+      {reviewGroupId && (
+        <p className="text-sm text-muted-foreground mb-8">
+          This upload will be added as a new version alongside the existing
+          cut, so reviewers can compare it against prior versions.
+        </p>
+      )}
 
       <div className="bg-card border border-border/50 rounded-xl p-6">
         <Form {...form}>

@@ -68,6 +68,7 @@ import type {
   ReviewLinkInput,
   ReviewSession,
   ReviewUnlockInput,
+  SelectReviewVersionInput,
   SharePublic,
   ShareSettings,
   ShareSettingsInput,
@@ -86,7 +87,8 @@ import type {
   VideoExport,
   VideoInput,
   VideoList,
-  VideoUpdate
+  VideoUpdate,
+  VideoVersionList
 } from './api.schemas';
 
 import { customFetch } from '../custom-fetch';
@@ -1837,6 +1839,83 @@ export const useCreateVideoUploadUrl = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getCreateVideoUploadUrlMutationOptions(options));
     }
+
+export const getListVideoVersionsUrl = (reviewGroupId: string,) => {
+
+
+
+
+  return `/api/videos/group/${reviewGroupId}`
+}
+
+/**
+ * @summary List all versions in a review group owned by the current user
+ */
+export const listVideoVersions = async (reviewGroupId: string, options?: RequestInit): Promise<VideoVersionList> => {
+
+  return customFetch<VideoVersionList>(getListVideoVersionsUrl(reviewGroupId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListVideoVersionsQueryKey = (reviewGroupId: string,) => {
+    return [
+    `/api/videos/group/${reviewGroupId}`
+    ] as const;
+    }
+
+
+export const getListVideoVersionsQueryOptions = <TData = Awaited<ReturnType<typeof listVideoVersions>>, TError = ErrorType<unknown>>(reviewGroupId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listVideoVersions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListVideoVersionsQueryKey(reviewGroupId);
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listVideoVersions>>> = ({ signal }) => listVideoVersions(reviewGroupId, { signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, enabled: !!(reviewGroupId), ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listVideoVersions>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListVideoVersionsQueryResult = NonNullable<Awaited<ReturnType<typeof listVideoVersions>>>
+export type ListVideoVersionsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all versions in a review group owned by the current user
+ */
+
+export function useListVideoVersions<TData = Awaited<ReturnType<typeof listVideoVersions>>, TError = ErrorType<unknown>>(
+ reviewGroupId: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listVideoVersions>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListVideoVersionsQueryOptions(reviewGroupId,options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+
+
+
+
+
 
 export const getGetVideoUrl = (id: number,) => {
 
@@ -3662,6 +3741,80 @@ export const usePostGuestReviewComment = <TError = ErrorType<unknown>,
         TContext
       > => {
       return useMutation(getPostGuestReviewCommentMutationOptions(options));
+    }
+
+export const getSelectReviewVersionUrl = (token: string,
+    videoId: number,) => {
+
+
+
+
+  return `/api/review/${token}/versions/${videoId}`
+}
+
+/**
+ * @summary Switch the review session to a specific version within the same group
+ */
+export const selectReviewVersion = async (token: string,
+    videoId: number,
+    selectReviewVersionInput?: SelectReviewVersionInput, options?: RequestInit): Promise<ReviewSession> => {
+
+  return customFetch<ReviewSession>(getSelectReviewVersionUrl(token,videoId),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(
+      selectReviewVersionInput,)
+  }
+);}
+
+
+
+
+export const getSelectReviewVersionMutationOptions = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof selectReviewVersion>>, TError,{token: string;videoId: number;data?: BodyType<SelectReviewVersionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof selectReviewVersion>>, TError,{token: string;videoId: number;data?: BodyType<SelectReviewVersionInput>}, TContext> => {
+
+const mutationKey = ['selectReviewVersion'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof selectReviewVersion>>, {token: string;videoId: number;data?: BodyType<SelectReviewVersionInput>}> = (props) => {
+          const {token,videoId,data} = props ?? {};
+
+          return  selectReviewVersion(token,videoId,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type SelectReviewVersionMutationResult = NonNullable<Awaited<ReturnType<typeof selectReviewVersion>>>
+    export type SelectReviewVersionMutationBody = BodyType<SelectReviewVersionInput> | undefined
+    export type SelectReviewVersionMutationError = ErrorType<void>
+
+    /**
+ * @summary Switch the review session to a specific version within the same group
+ */
+export const useSelectReviewVersion = <TError = ErrorType<void>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof selectReviewVersion>>, TError,{token: string;videoId: number;data?: BodyType<SelectReviewVersionInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof selectReviewVersion>>,
+        TError,
+        {token: string;videoId: number;data?: BodyType<SelectReviewVersionInput>},
+        TContext
+      > => {
+      return useMutation(getSelectReviewVersionMutationOptions(options));
     }
 
 export const getSetGuestApprovalStatusUrl = (token: string,) => {

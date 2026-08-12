@@ -4,6 +4,7 @@ import {
   getGetReviewLinkQueryKey,
   useGetReviewLink,
   usePostGuestReviewComment,
+  useSelectReviewVersion,
   useSetGuestApprovalStatus,
   useUnlockReviewLink,
 } from "@workspace/api-client-react";
@@ -19,6 +20,7 @@ import {
   Check,
   RotateCcw,
   Download,
+  History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -88,6 +90,11 @@ export function ReviewPage() {
       },
     },
   });
+  const selectVersionMutation = useSelectReviewVersion({
+    mutation: {
+      onSuccess: setUnlocked,
+    },
+  });
 
   if (reviewQuery.isLoading) {
     return (
@@ -149,6 +156,10 @@ export function ReviewPage() {
   const canReview =
     !!session.streamPlaybackId || !!session.streamUid || !!session.videoUrl;
   const reviewPassword = unlocked ? password : undefined;
+  const versions = session.versions ?? [];
+  const latestVersion = versions[versions.length - 1];
+  const isLatestVersion =
+    versions.length <= 1 || !latestVersion || session.videoId === latestVersion.id;
   const safeTitle = session.title.replace(/[^\w.-]+/g, "_");
   const format = selectedFormat || session.downloadFormats?.[0] || "";
   const downloadHref =
@@ -178,6 +189,14 @@ export function ReviewPage() {
         timecodeSeconds: Math.max(0, Number(timecode) || 0),
         password: reviewPassword,
       },
+    });
+  }
+
+  function selectVersion(videoId: number) {
+    selectVersionMutation.mutate({
+      token,
+      videoId,
+      data: { password: reviewPassword },
     });
   }
 
@@ -214,6 +233,39 @@ export function ReviewPage() {
             </span>
           </div>
         </div>
+
+        {versions.length > 1 && (
+          <div className="mb-6 flex flex-wrap items-center gap-2">
+            <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <History className="h-3.5 w-3.5" /> Versions
+            </span>
+            {versions.map((v) => (
+              <button
+                key={v.id}
+                type="button"
+                disabled={
+                  v.id === session.videoId || selectVersionMutation.isPending
+                }
+                onClick={() => selectVersion(v.id)}
+                className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                  v.id === session.videoId
+                    ? "border-primary bg-primary/15 text-primary"
+                    : "border-border/50 bg-card text-muted-foreground hover:border-primary/50 hover:text-white"
+                }`}
+              >
+                v{v.versionNumber}
+                {v.id === latestVersion?.id ? " (latest)" : ""}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {!isLatestVersion && (
+          <div className="mb-6 rounded-lg border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+            You're viewing an earlier version for comparison. Switch to the
+            latest version to leave feedback or approve.
+          </div>
+        )}
 
         <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
           <section>
@@ -295,7 +347,7 @@ export function ReviewPage() {
                 value={guestName}
                 onChange={(event) => setGuestName(event.target.value)}
               />
-              {session.allowComments && (
+              {session.allowComments && isLatestVersion && (
                 <form className="mt-4 space-y-3" onSubmit={postComment}>
                   <div className="grid grid-cols-[110px_1fr] gap-2">
                     <Input
@@ -377,14 +429,22 @@ export function ReviewPage() {
               <div className="mt-4 grid grid-cols-2 gap-2">
                 <Button
                   variant="secondary"
-                  disabled={!guestName.trim() || approvalMutation.isPending}
+                  disabled={
+                    !isLatestVersion ||
+                    !guestName.trim() ||
+                    approvalMutation.isPending
+                  }
                   onClick={() => decide("changes_requested")}
                 >
                   <RotateCcw className="mr-2 h-4 w-4" />
                   Changes
                 </Button>
                 <Button
-                  disabled={!guestName.trim() || approvalMutation.isPending}
+                  disabled={
+                    !isLatestVersion ||
+                    !guestName.trim() ||
+                    approvalMutation.isPending
+                  }
                   onClick={() => decide("approved")}
                 >
                   <Check className="mr-2 h-4 w-4" />

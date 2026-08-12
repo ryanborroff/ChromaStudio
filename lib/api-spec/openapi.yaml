@@ -605,6 +605,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/StreamUploadTicket"
 
+  /videos/group/{reviewGroupId}:
+    get:
+      operationId: listVideoVersions
+      tags: [videos]
+      summary: List all versions in a review group owned by the current user
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: reviewGroupId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Versions in the group, ordered oldest to newest
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VideoVersionList"
+
   /videos/{id}:
     get:
       operationId: getVideo
@@ -1137,6 +1158,39 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/ReviewComment"
+
+  /review/{token}/versions/{videoId}:
+    post:
+      operationId: selectReviewVersion
+      tags: [review]
+      summary: Switch the review session to a specific version within the same group
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: videoId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SelectReviewVersionInput"
+      responses:
+        "200":
+          description: Review session for the requested version
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReviewSession"
+        "401":
+          description: Incorrect password
+        "404":
+          description: Not found
 
   /review/{token}/approval:
     post:
@@ -1805,6 +1859,37 @@ components:
           items:
             type: string
 
+    VideoVersion:
+      type: object
+      required:
+        [id, versionNumber, title, streamStatus, approvalStatus, createdAt]
+      properties:
+        id:
+          type: integer
+        versionNumber:
+          type: integer
+        title:
+          type: string
+        thumbnailUrl:
+          type: ["string", "null"]
+        streamStatus:
+          type: string
+        approvalStatus:
+          type: string
+          enum: [pending, approved, changes_requested]
+        createdAt:
+          type: string
+          format: date-time
+
+    VideoVersionList:
+      type: object
+      required: [versions]
+      properties:
+        versions:
+          type: array
+          items:
+            $ref: "#/components/schemas/VideoVersion"
+
     StreamUploadTicket:
       type: object
       required: [uploadURL, uid]
@@ -2273,6 +2358,8 @@ components:
           allowComments,
           approvalStatus,
           comments,
+          versionNumber,
+          versions,
         ]
       properties:
         title:
@@ -2306,10 +2393,41 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ReviewComment"
+        videoId:
+          type: ["integer", "null"]
+          description: Id of the specific version currently being viewed. Null while requiresPassword is true and media has not been unlocked yet.
+        versionNumber:
+          type: integer
+          description: Version number of the currently-viewed video within its review group. Defaults to 1 for ungrouped videos.
+        versions:
+          type: array
+          description: All ready versions in this review group, oldest to newest. A single-entry array for videos with no other versions.
+          items:
+            $ref: "#/components/schemas/ReviewVideoVersion"
+
+    ReviewVideoVersion:
+      type: object
+      required: [id, versionNumber, createdAt]
+      properties:
+        id:
+          type: integer
+        versionNumber:
+          type: integer
+        thumbnailUrl:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
 
     ReviewUnlockInput:
       type: object
       required: [password]
+      properties:
+        password:
+          type: string
+
+    SelectReviewVersionInput:
+      type: object
       properties:
         password:
           type: string
