@@ -21,12 +21,14 @@ import {
   RotateCcw,
   Download,
   History,
+  Crosshair,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { EmptyState } from "@/components/empty-state";
 import { DOWNLOAD_FORMAT_LABELS } from "@/lib/downloadFormats";
+import { usePlayerTime } from "@/hooks/use-player-time";
 
 function formatTime(seconds: number) {
   const minutes = Math.floor(seconds / 60);
@@ -44,9 +46,12 @@ export function ReviewPage() {
     () => sessionStorage.getItem("chroma-review-name") ?? "",
   );
   const [timecode, setTimecode] = useState("0");
+  const [timecodeCaptured, setTimecodeCaptured] = useState(false);
   const [body, setBody] = useState("");
   const [approvalMessage, setApprovalMessage] = useState("");
   const [selectedFormat, setSelectedFormat] = useState("");
+  const { muxPlayerRef, streamRef, videoRef, getCurrentTime, seekTo } =
+    usePlayerTime();
 
   const reviewQuery = useGetReviewLink(token, {
     query: {
@@ -66,22 +71,26 @@ export function ReviewPage() {
     mutation: {
       onSuccess: (comment) => {
         setBody("");
-        setUnlocked((current) =>
-          current
-            ? { ...current, comments: [...current.comments, comment] }
-            : current,
-        );
+        setTimecode("0");
+        setTimecodeCaptured(false);
+        setUnlocked((current) => {
+          const base = current ?? reviewQuery.data;
+          return base
+            ? { ...base, comments: [...base.comments, comment] }
+            : current;
+        });
       },
     },
   });
   const approvalMutation = useSetGuestApprovalStatus({
     mutation: {
       onSuccess: (result) => {
-        setUnlocked((current) =>
-          current
-            ? { ...current, approvalStatus: result.approvalStatus }
-            : current,
-        );
+        setUnlocked((current) => {
+          const base = current ?? reviewQuery.data;
+          return base
+            ? { ...base, approvalStatus: result.approvalStatus }
+            : current;
+        });
         setApprovalMessage(
           result.approvalStatus === "approved"
             ? "Approved"
@@ -168,6 +177,11 @@ export function ReviewPage() {
       : session.streamUid
         ? `https://videodelivery.net/${session.streamUid}/downloads/default.mp4?filename=${encodeURIComponent(`${safeTitle}-${format}.mp4`)}`
         : session.videoUrl || "";
+
+  function captureCurrentTime() {
+    setTimecode(getCurrentTime().toFixed(3));
+    setTimecodeCaptured(true);
+  }
 
   function saveName() {
     const value = guestName.trim();
@@ -272,6 +286,7 @@ export function ReviewPage() {
             <div className="aspect-video overflow-hidden rounded-2xl border border-border/50 bg-black shadow-2xl">
               {session.streamProvider === "mux" && session.streamPlaybackId ? (
                 <MuxPlayer
+                  ref={muxPlayerRef}
                   playbackId={session.streamPlaybackId}
                   streamType="on-demand"
                   metadataVideoTitle={session.title}
@@ -279,6 +294,7 @@ export function ReviewPage() {
                 />
               ) : session.streamUid ? (
                 <Stream
+                  streamRef={streamRef}
                   controls
                   responsive={false}
                   height="100%"
@@ -288,6 +304,7 @@ export function ReviewPage() {
                 />
               ) : session.videoUrl ? (
                 <video
+                  ref={videoRef}
                   src={session.videoUrl}
                   poster={session.thumbnailUrl || undefined}
                   className="h-full w-full"
@@ -319,9 +336,16 @@ export function ReviewPage() {
                     >
                       <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1.5">
-                          <PlayCircle className="h-3.5 w-3.5 text-primary" />{" "}
-                          {formatTime(comment.timecodeSeconds)} ·{" "}
-                          {comment.authorName}
+                          <button
+                            type="button"
+                            onClick={() => seekTo(comment.timecodeSeconds)}
+                            className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                            title="Jump to this point in the video"
+                          >
+                            <PlayCircle className="h-3.5 w-3.5 text-primary" />
+                            {formatTime(comment.timecodeSeconds)}
+                          </button>
+                          · {comment.authorName}
                         </span>
                         {comment.resolved && <span>Resolved</span>}
                       </div>
@@ -349,24 +373,44 @@ export function ReviewPage() {
               />
               {session.allowComments && isLatestVersion && (
                 <form className="mt-4 space-y-3" onSubmit={postComment}>
-                  <div className="grid grid-cols-[110px_1fr] gap-2">
-                    <Input
-                      className="bg-input text-white"
-                      type="number"
-                      min="0"
-                      step="0.01"
-                      value={timecode}
-                      onChange={(event) => setTimecode(event.target.value)}
-                      aria-label="Timecode in seconds"
-                    />
-                    <p className="flex items-center text-xs text-muted-foreground">
-                      Timecode (seconds)
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        className="w-28 bg-input text-white"
+                        type="number"
+                        min="0"
+                        step="0.001"
+                        value={timecode}
+                        onChange={(event) => {
+                          setTimecode(event.target.value);
+                          setTimecodeCaptured(true);
+                        }}
+                        aria-label="Timecode in seconds"
+                      />
+                      <Button
+                        type="button"
+                        variant="secondary"
+                        size="sm"
+                        className="gap-1.5 text-xs"
+                        onClick={captureCurrentTime}
+                        disabled={!canReview}
+                      >
+                        <Crosshair className="h-3.5 w-3.5" />
+                        Use current time
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {formatTime(Number(timecode) || 0)} — captured from
+                      where you paused, or edit to fine-tune.
                     </p>
                   </div>
                   <Textarea
                     className="min-h-24 bg-input text-white"
                     placeholder="What should change?"
                     value={body}
+                    onFocus={() => {
+                      if (!timecodeCaptured) captureCurrentTime();
+                    }}
                     onChange={(event) => setBody(event.target.value)}
                   />
                   <Button

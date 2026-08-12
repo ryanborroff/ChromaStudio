@@ -12,6 +12,7 @@ import {
   useSetOwnerApprovalStatus,
   useListVideoVersions,
   getListVideoVersionsQueryKey,
+  usePostOwnerReviewComment,
   downloadEditingExport,
 } from "@workspace/api-client-react";
 import {
@@ -24,6 +25,9 @@ import {
   Download,
   Film,
   UploadCloud,
+  Crosshair,
+  PlayCircle,
+  Send,
 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { StarRating } from "@/components/star-rating";
@@ -41,11 +45,21 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { queryClient } from "@/lib/queryClient";
 import { useState } from "react";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/lib/useAuth";
 import { Stream } from "@cloudflare/stream-react";
 import MuxPlayer from "@mux/mux-player-react";
+import { usePlayerTime } from "@/hooks/use-player-time";
+
+function formatTime(seconds: number) {
+  const minutes = Math.floor(seconds / 60);
+  const remainder = Math.floor(seconds % 60)
+    .toString()
+    .padStart(2, "0");
+  return `${minutes}:${remainder}`;
+}
 
 export function VideoDetail() {
   const params = useParams();
@@ -53,6 +67,11 @@ export function VideoDetail() {
   const { toast } = useToast();
   const { user, isSignedIn } = useAuth();
   const [commentText, setCommentText] = useState("");
+  const [reviewNoteBody, setReviewNoteBody] = useState("");
+  const [reviewTimecode, setReviewTimecode] = useState("0");
+  const [reviewTimecodeCaptured, setReviewTimecodeCaptured] = useState(false);
+  const { muxPlayerRef, streamRef, videoRef, getCurrentTime, seekTo } =
+    usePlayerTime();
 
   const {
     data: video,
@@ -143,6 +162,23 @@ export function VideoDetail() {
         }),
     },
   });
+  const postReviewCommentMutation = usePostOwnerReviewComment({
+    mutation: {
+      onSuccess: () => {
+        setReviewNoteBody("");
+        setReviewTimecode("0");
+        setReviewTimecodeCaptured(false);
+        queryClient.invalidateQueries({
+          queryKey: getListReviewCommentsQueryKey(videoId),
+        });
+      },
+      onError: () =>
+        toast({
+          title: "Could not post review note",
+          variant: "destructive",
+        }),
+    },
+  });
 
   const handleEditingExport = async () => {
     try {
@@ -197,12 +233,30 @@ export function VideoDetail() {
     commentMutation.mutate({ id: videoId, data: { body: commentText } });
   };
 
+  const captureReviewTime = () => {
+    setReviewTimecode(getCurrentTime().toFixed(3));
+    setReviewTimecodeCaptured(true);
+  };
+
+  const handlePostReviewComment = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!reviewNoteBody.trim()) return;
+    postReviewCommentMutation.mutate({
+      id: videoId,
+      data: {
+        body: reviewNoteBody.trim(),
+        timecodeSeconds: Math.max(0, Number(reviewTimecode) || 0),
+      },
+    });
+  };
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="aspect-video bg-black rounded-xl overflow-hidden mb-8 border border-border/50 shadow-xl shadow-black/50">
         {video.streamProvider === "mux" ? (
           video.streamPlaybackId ? (
             <MuxPlayer
+              ref={muxPlayerRef}
               playbackId={video.streamPlaybackId}
               poster={video.thumbnailUrl || undefined}
               style={{ width: "100%", height: "100%" }}
@@ -217,6 +271,7 @@ export function VideoDetail() {
           )
         ) : video.streamProvider === "cloudflare" && video.streamUid ? (
           <Stream
+            streamRef={streamRef}
             controls
             responsive={false}
             height="100%"
@@ -226,6 +281,7 @@ export function VideoDetail() {
           />
         ) : video.videoUrl ? (
           <video
+            ref={videoRef}
             src={video.videoUrl}
             poster={video.thumbnailUrl || undefined}
             className="w-full h-full"
@@ -493,47 +549,114 @@ export function VideoDetail() {
           </div>
 
           <div>
-            {reviewCommentsData && reviewCommentsData.comments.length > 0 && (
+            {isOwner && (
               <div className="mb-10">
                 <h3 className="mb-4 text-xl font-bold text-white">
                   Client review notes
                 </h3>
-                <div className="space-y-3">
-                  {reviewCommentsData.comments.map((comment) => (
-                    <div
-                      key={comment.id}
-                      className="rounded-lg border border-primary/20 bg-primary/5 p-4"
-                    >
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <Clock className="h-3.5 w-3.5 text-primary" />
-                        {Math.floor(comment.timecodeSeconds / 60)}:
-                        {Math.floor(comment.timecodeSeconds % 60)
-                          .toString()
-                          .padStart(2, "0")}{" "}
-                        · {comment.authorName}
-                      </div>
-                      <div className="mt-2 flex items-start justify-between gap-3">
-                        <p className="text-sm text-white">{comment.body}</p>
-                        {!comment.resolved && (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-7 shrink-0 text-xs text-muted-foreground"
-                            disabled={resolveReviewCommentMutation.isPending}
-                            onClick={() =>
-                              resolveReviewCommentMutation.mutate({
-                                id: videoId,
-                                commentId: comment.id,
-                              })
-                            }
+                {reviewCommentsData && reviewCommentsData.comments.length > 0 ? (
+                  <div className="mb-4 space-y-3">
+                    {reviewCommentsData.comments.map((comment) => (
+                      <div
+                        key={comment.id}
+                        className="rounded-lg border border-primary/20 bg-primary/5 p-4"
+                      >
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <button
+                            type="button"
+                            onClick={() => seekTo(comment.timecodeSeconds)}
+                            className="flex items-center gap-1.5 hover:text-primary transition-colors"
+                            title="Jump to this point in the video"
                           >
-                            Resolve
-                          </Button>
-                        )}
+                            <PlayCircle className="h-3.5 w-3.5 text-primary" />
+                            {formatTime(comment.timecodeSeconds)}
+                          </button>
+                          · {comment.authorName}
+                        </div>
+                        <div className="mt-2 flex items-start justify-between gap-3">
+                          <p className="text-sm text-white">{comment.body}</p>
+                          {!comment.resolved && (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-7 shrink-0 text-xs text-muted-foreground"
+                              disabled={resolveReviewCommentMutation.isPending}
+                              onClick={() =>
+                                resolveReviewCommentMutation.mutate({
+                                  id: videoId,
+                                  commentId: comment.id,
+                                })
+                              }
+                            >
+                              Resolve
+                            </Button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    No review notes yet.
+                  </p>
+                )}
+                <form
+                  onSubmit={handlePostReviewComment}
+                  className="space-y-3 rounded-lg border border-border/30 bg-card/30 p-4"
+                >
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Input
+                      className="w-28 bg-input text-white"
+                      type="number"
+                      min="0"
+                      step="0.001"
+                      value={reviewTimecode}
+                      onChange={(e) => {
+                        setReviewTimecode(e.target.value);
+                        setReviewTimecodeCaptured(true);
+                      }}
+                      aria-label="Timecode in seconds"
+                    />
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      className="gap-1.5 text-xs"
+                      onClick={captureReviewTime}
+                    >
+                      <Crosshair className="h-3.5 w-3.5" />
+                      Use current time
+                    </Button>
+                    <span className="text-xs text-muted-foreground">
+                      {formatTime(Number(reviewTimecode) || 0)}
+                    </span>
+                  </div>
+                  <Textarea
+                    placeholder="Add a review note tied to this timecode..."
+                    value={reviewNoteBody}
+                    onFocus={() => {
+                      if (!reviewTimecodeCaptured) captureReviewTime();
+                    }}
+                    onChange={(e) => setReviewNoteBody(e.target.value)}
+                    className="bg-input border-border text-white resize-none"
+                    rows={2}
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={
+                        !reviewNoteBody.trim() ||
+                        postReviewCommentMutation.isPending
+                      }
+                    >
+                      <Send className="mr-2 h-4 w-4" />
+                      {postReviewCommentMutation.isPending
+                        ? "Posting…"
+                        : "Add review note"}
+                    </Button>
+                  </div>
+                </form>
               </div>
             )}
             <h3 className="text-xl font-bold text-white mb-6">
