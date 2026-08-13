@@ -363,20 +363,104 @@ export const handlers = [
     }),
   ),
 
-  // ── Upload (no-op in demo) ────────────────────────────────────────────────
-  http.post("*/api/videos/upload-url", () =>
-    HttpResponse.json(
-      { error: "Uploads are disabled in demo mode." },
-      { status: 403 },
-    ),
+  // ── Upload (simulated in demo — nothing is actually stored) ────────────────
+  http.post("*/api/videos/upload-url", () => {
+    const uid = `/demo-uploads/${Date.now()}`;
+    return HttpResponse.json({
+      uploadURL: `/api/storage/uploads/mock${uid}`,
+      uid,
+      uploadMethod: "put",
+      streamProvider: null,
+    });
+  }),
+
+  http.post("*/api/storage/uploads/request-url", () => {
+    const uid = `/demo-uploads/${Date.now()}`;
+    return HttpResponse.json({
+      uploadURL: `/api/storage/uploads/mock${uid}`,
+      uid,
+      uploadMethod: "put",
+      streamProvider: null,
+    });
+  }),
+
+  // Stands in for the real object-storage PUT target — accepts the file and
+  // discards it; demo mode never persists uploaded bytes anywhere.
+  http.put("*/api/storage/uploads/mock/*", () =>
+    HttpResponse.json({ ok: true }),
   ),
 
-  http.post("*/api/storage/uploads/request-url", () =>
-    HttpResponse.json(
-      { error: "Uploads are disabled in demo mode." },
-      { status: 403 },
-    ),
-  ),
+  http.post("*/api/videos", async ({ request }) => {
+    const body = (await request.json()) as Record<string, unknown>;
+    const id = Date.now();
+    const video = {
+      id,
+      userId: DEMO_USER.id,
+      title: body.title as string,
+      description: (body.description as string) ?? null,
+      thumbnailUrl:
+        (body.thumbnailUrl as string) ??
+        "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=720&q=80",
+      // Demo mode never persists real bytes, so playback intentionally
+      // falls back to the "not available" placeholder rather than pointing
+      // at a fake URL that would 404/500 against real infrastructure.
+      videoUrl: null,
+      streamUid: null,
+      streamStatus: "ready",
+      streamProvider: null,
+      streamAssetId: null,
+      streamPlaybackId: null,
+      duration: null,
+      fileSizeBytes: (body.fileSizeBytes as number) ?? null,
+      uploadProgressPercent: 0,
+      uploadError: null,
+      retryCount: 0,
+      reviewGroupId: (body.reviewGroupId as string) ?? null,
+      versionNumber: 1,
+      approvalStatus: "pending",
+      approvalDecidedAt: null,
+      approvalDecidedBy: null,
+      privacy: (body.privacy as string) ?? "public",
+      category: "reel",
+      collectionId: null,
+      shareEnabled: false,
+      shareToken: null,
+      hasSharePassword: false,
+      tags: (body.tags as string[]) ?? [],
+      credits: (body.credits as string) ?? null,
+      downloadFormats: (body.downloadFormats as string[]) ?? [],
+      isFeatured: false,
+      viewCount: 0,
+      likeCount: 0,
+      ratingSum: 0,
+      ratingCount: 0,
+      ratingAvg: 0,
+      userRating: null,
+      isLiked: false,
+      createdAt: new Date().toISOString(),
+      user: DEMO_USER,
+    };
+    DEMO_VIDEOS.unshift(video as unknown as (typeof DEMO_VIDEOS)[number]);
+    return HttpResponse.json(video, { status: 201 });
+  }),
+
+  http.patch("*/api/videos/:id", async ({ params, request }) => {
+    const id = Number(params.id);
+    const video = DEMO_VIDEOS.find((v) => v.id === id);
+    if (!video) return HttpResponse.json({ error: "Not found" }, { status: 404 });
+    const body = (await request.json()) as Record<string, unknown>;
+    Object.assign(video, body);
+    return HttpResponse.json(video);
+  }),
+
+  http.post("*/api/videos/:id/confirm-upload", ({ params }) => {
+    const id = Number(params.id);
+    const video = DEMO_VIDEOS.find((v) => v.id === id);
+    if (!video) return HttpResponse.json({ error: "Not found" }, { status: 404 });
+    video.streamStatus = "ready";
+    video.uploadProgressPercent = 100;
+    return HttpResponse.json(video);
+  }),
 
   // ── Admin users ───────────────────────────────────────────────────────────
   http.get("*/api/admin/users", () =>
