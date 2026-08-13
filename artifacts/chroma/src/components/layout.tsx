@@ -272,7 +272,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       href="/sign-up"
                       onClick={() => setMobileOpen(false)}
                       className="w-full text-center text-sm font-semibold px-4 py-2 rounded-lg text-white transition-all"
-                      style={{ background: "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)" }}
+                      style={{ background: "linear-gradient(135deg, hsl(39 100% 56%) 0%, hsl(39 100% 42%) 100%)" }}
                       data-testid="mobile-btn-join"
                     >
                       Join ChromaStudio
@@ -417,7 +417,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 href="/sign-up"
                 className="text-sm font-semibold px-4 py-1.5 rounded-lg text-white transition-all"
                 style={{
-                  background: "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)",
+                  background: "linear-gradient(135deg, hsl(39 100% 56%) 0%, hsl(39 100% 42%) 100%)",
                   boxShadow: "0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12)",
                 }}
                 data-testid="btn-join"
@@ -476,7 +476,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Link
                   href="/pricing"
                   className="block rounded-xl p-3 transition-all hover:opacity-90"
-                  style={{ background: "rgba(229,62,62,0.08)", border: "1px solid rgba(229,62,62,0.18)" }}
+                  style={{ background: "rgba(255,176,32,0.08)", border: "1px solid rgba(255,176,32,0.18)" }}
                   data-testid="sidebar-link-pro"
                 >
                   <Sparkles className="w-4 h-4 text-primary mb-1.5" />

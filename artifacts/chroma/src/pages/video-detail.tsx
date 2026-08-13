@@ -374,7 +374,7 @@ export function VideoDetail() {
               playbackId={video.streamPlaybackId}
               poster={video.thumbnailUrl || undefined}
               style={{ width: "100%", height: "100%" }}
-              accentColor="#6B5BFF"
+              accentColor="#FFB020"
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-card">

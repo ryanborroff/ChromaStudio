@@ -87,14 +87,14 @@ export function Home() {
           className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-30"
           style={{
             background:
-              "radial-gradient(circle, hsl(0 80% 55% / 0.35) 0%, transparent 70%)",
+              "radial-gradient(circle, hsl(39 100% 56% / 0.35) 0%, transparent 70%)",
           }}
         />
         <div
           className="absolute top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-20"
           style={{
             background:
-              "radial-gradient(circle, hsl(0 80% 55% / 0.2) 0%, transparent 70%)",
+              "radial-gradient(circle, hsl(39 100% 56% / 0.2) 0%, transparent 70%)",
           }}
         />
 
@@ -112,7 +112,7 @@ export function Home() {
               className="text-transparent bg-clip-text"
               style={{
                 backgroundImage:
-                  "linear-gradient(135deg, hsl(0 80% 65%) 0%, hsl(20 90% 65%) 100%)",
+                  "linear-gradient(135deg, hsl(39 100% 65%) 0%, hsl(45 100% 62%) 100%)",
               }}
             >
               Community
@@ -130,9 +130,9 @@ export function Home() {
               className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white transition-all"
               style={{
                 background:
-                  "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)",
+                  "linear-gradient(135deg, hsl(39 100% 56%) 0%, hsl(39 100% 42%) 100%)",
                 boxShadow:
-                  "0 4px 24px rgba(229,62,62,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  "0 4px 24px rgba(255,176,32,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
               }}
               data-testid="hero-join-btn"
             >
@@ -204,7 +204,7 @@ export function Home() {
                 (e.currentTarget as HTMLElement).style.background =
                   "rgba(255,255,255,0.065)";
                 (e.currentTarget as HTMLElement).style.borderColor =
-                  "rgba(229,62,62,0.25)";
+                  "rgba(255,176,32,0.25)";
                 (e.currentTarget as HTMLElement).style.transform =
                   "translateY(-2px)";
                 (e.currentTarget as HTMLElement).style.boxShadow =
@@ -222,7 +222,7 @@ export function Home() {
             >
               <div
                 className="w-10 h-10 rounded-xl flex items-center justify-center text-primary mb-5"
-                style={{ background: "rgba(229,62,62,0.1)" }}
+                style={{ background: "rgba(255,176,32,0.1)" }}
               >
                 {f.icon}
               </div>
@@ -297,8 +297,8 @@ export function Home() {
             className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white transition-all"
             style={{
               background:
-                "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)",
-              boxShadow: "0 4px 24px rgba(229,62,62,0.25)",
+                "linear-gradient(135deg, hsl(39 100% 56%) 0%, hsl(39 100% 42%) 100%)",
+              boxShadow: "0 4px 24px rgba(255,176,32,0.25)",
             }}
           >
             View pricing
@@ -355,9 +355,9 @@ export function Home() {
               className="inline-flex items-center gap-2 h-12 px-8 rounded-xl text-base font-semibold text-white transition-all"
               style={{
                 background:
-                  "linear-gradient(135deg, hsl(0 80% 55%) 0%, hsl(0 80% 42%) 100%)",
+                  "linear-gradient(135deg, hsl(39 100% 56%) 0%, hsl(39 100% 42%) 100%)",
                 boxShadow:
-                  "0 4px 24px rgba(229,62,62,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
+                  "0 4px 24px rgba(255,176,32,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
               }}
             >
               Join ChromaStudio — it's free
