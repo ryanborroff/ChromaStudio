@@ -1,4 +1,4 @@
-import { useParams, Link } from "wouter";
+import { useParams, Link, useLocation } from "wouter";
 import {
   useGetVideo,
   getGetVideoQueryKey,
@@ -13,6 +13,9 @@ import {
   useListVideoVersions,
   getListVideoVersionsQueryKey,
   usePostOwnerReviewComment,
+  useCreateVideoUploadUrl,
+  useCreateVideo,
+  useConfirmVideoUpload,
   downloadEditingExport,
 } from "@workspace/api-client-react";
 import {
@@ -29,6 +32,10 @@ import {
   PlayCircle,
   Send,
 } from "lucide-react";
+import MuxUploader, {
+  type MuxUploaderRefAttributes,
+} from "@mux/mux-uploader-react";
+import { uploadViaPost, uploadViaPut } from "@/lib/videoUpload";
 import { EmptyState } from "@/components/empty-state";
 import { StarRating } from "@/components/star-rating";
 import { Button } from "@/components/ui/button";
@@ -44,7 +51,7 @@ import { DOWNLOAD_FORMAT_LABELS } from "@/lib/downloadFormats";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { format } from "date-fns";
 import { queryClient } from "@/lib/queryClient";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -66,10 +73,18 @@ export function VideoDetail() {
   const videoId = Number(params.id);
   const { toast } = useToast();
   const { user, isSignedIn } = useAuth();
+  const [, setLocation] = useLocation();
   const [commentText, setCommentText] = useState("");
   const [reviewNoteBody, setReviewNoteBody] = useState("");
   const [reviewTimecode, setReviewTimecode] = useState("0");
   const [reviewTimecodeCaptured, setReviewTimecodeCaptured] = useState(false);
+  const [isDragActive, setIsDragActive] = useState(false);
+  const [versionUpload, setVersionUpload] = useState<{
+    fileName: string;
+    progress: number;
+  } | null>(null);
+  const dragCounter = useRef(0);
+  const muxUploaderRef = useRef<MuxUploaderRefAttributes | null>(null);
   const { muxPlayerRef, streamRef, videoRef, getCurrentTime, seekTo } =
     usePlayerTime();
 
@@ -179,6 +194,95 @@ export function VideoDetail() {
         }),
     },
   });
+
+  const uploadUrlMutation = useCreateVideoUploadUrl();
+  const createVersionMutation = useCreateVideo();
+  const confirmUploadMutation = useConfirmVideoUpload();
+
+  const handleVersionDrop = async (file: File) => {
+    if (!file.type.startsWith("video/")) {
+      toast({ title: "Please drop a video file", variant: "destructive" });
+      return;
+    }
+    setVersionUpload({ fileName: file.name, progress: 0 });
+    try {
+      const ticket = await uploadUrlMutation.mutateAsync();
+      const uploadMethod = ticket.uploadMethod ?? "put";
+      const streamProvider = ticket.streamProvider ?? null;
+      const isObjectStorage = !streamProvider;
+
+      const newVideo = await createVersionMutation.mutateAsync({
+        data: {
+          title: video!.title,
+          description: video!.description ?? undefined,
+          privacy: (video!.privacy as any) ?? "public",
+          fileSizeBytes: file.size,
+          ...(isObjectStorage
+            ? { videoUrl: `/api/storage${ticket.uid}` }
+            : { streamUid: ticket.uid }),
+          reviewGroupId: groupId,
+        },
+      });
+
+      const onProgress = (pct: number) =>
+        setVersionUpload({ fileName: file.name, progress: pct });
+
+      if (streamProvider === "mux") {
+        await new Promise<void>((resolve, reject) => {
+          const uploader = muxUploaderRef.current;
+          if (!uploader) {
+            reject(new Error("Mux uploader is unavailable"));
+            return;
+          }
+          uploader.setAttribute("endpoint", ticket.uploadURL);
+          const onSuccess = () => {
+            uploader.removeEventListener("success", onSuccess);
+            uploader.removeEventListener("uploaderror", onError);
+            resolve();
+          };
+          const onError = (event: Event) => {
+            uploader.removeEventListener("success", onSuccess);
+            uploader.removeEventListener("uploaderror", onError);
+            const detail = (event as CustomEvent<{ message?: string }>)
+              .detail;
+            reject(new Error(detail?.message ?? "Mux upload failed"));
+          };
+          const onUploaderProgress = (event: Event) => {
+            onProgress((event as CustomEvent<number>).detail);
+          };
+          uploader.addEventListener("success", onSuccess);
+          uploader.addEventListener("uploaderror", onError);
+          uploader.addEventListener("progress", onUploaderProgress);
+          uploader.dispatchEvent(
+            new CustomEvent("file-ready", {
+              detail: file,
+              bubbles: true,
+              composed: true,
+            }),
+          );
+        });
+      } else if (uploadMethod === "put") {
+        await uploadViaPut(ticket.uploadURL, file, onProgress);
+      } else {
+        await uploadViaPost(ticket.uploadURL, file, onProgress);
+      }
+
+      if (isObjectStorage) {
+        await confirmUploadMutation.mutateAsync({ id: newVideo.id });
+      }
+
+      toast({ title: "New version uploaded" });
+      setVersionUpload(null);
+      setLocation(`/videos/${newVideo.id}`);
+    } catch (err) {
+      setVersionUpload(null);
+      toast({
+        title: "Could not upload new version",
+        description: err instanceof Error ? err.message : "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
 
   const handleEditingExport = async () => {
     try {

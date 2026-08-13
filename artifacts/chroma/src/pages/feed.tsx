@@ -36,7 +36,7 @@ export function Feed() {
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">
           <h1 className="text-3xl font-black text-white tracking-tight">Your Feed</h1>
-          <p className="text-muted-foreground mt-2 font-medium">Latest work from filmmakers you follow.</p>
+          <p className="text-muted-foreground mt-2 font-medium">View the latest work from filmmakers you follow.</p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {feedVideos.map((video) => (

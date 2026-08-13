@@ -36,6 +36,7 @@ import { ImageUploader } from "@/components/ImageUploader";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation, useSearch } from "wouter";
 import { DOWNLOAD_FORMATS } from "@/lib/downloadFormats";
+import { uploadViaPost, uploadViaPut } from "@/lib/videoUpload";
 
 const VIDEO_TAGS = [
   "Documentary",
@@ -57,54 +58,6 @@ const uploadSchema = z.object({
 });
 
 type UploadFormValues = z.infer<typeof uploadSchema>;
-
-function uploadViaPost(
-  uploadURL: string,
-  file: File,
-  onProgress: (pct: number) => void,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    const formData = new FormData();
-    formData.append("file", file);
-    xhr.open("POST", uploadURL, true);
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable)
-        onProgress(Math.round((e.loaded / e.total) * 100));
-    };
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(`Upload failed (${xhr.status})`));
-    };
-    xhr.onerror = () => reject(new Error("Network error during upload"));
-    xhr.send(formData);
-  });
-}
-
-function uploadViaPut(
-  uploadURL: string,
-  file: File,
-  onProgress: (pct: number) => void,
-): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const xhr = new XMLHttpRequest();
-    xhr.open("PUT", uploadURL, true);
-    xhr.setRequestHeader(
-      "Content-Type",
-      file.type || "application/octet-stream",
-    );
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable)
-        onProgress(Math.round((e.loaded / e.total) * 100));
-    };
-    xhr.onload = () => {
-      if (xhr.status >= 200 && xhr.status < 300) resolve();
-      else reject(new Error(`Upload failed (${xhr.status})`));
-    };
-    xhr.onerror = () => reject(new Error("Network error during upload"));
-    xhr.send(file);
-  });
-}
 
 export function VideoUpload() {
   const { toast } = useToast();
