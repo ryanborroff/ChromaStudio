@@ -215,7 +215,7 @@ export function VideoDetail() {
         data: {
           title: video!.title,
           description: video!.description ?? undefined,
-          privacy: (video!.privacy as any) ?? "public",
+          privacy: video!.privacy,
           fileSizeBytes: file.size,
           ...(isObjectStorage
             ? { videoUrl: `/api/storage${ticket.uid}` }
@@ -356,6 +356,16 @@ export function VideoDetail() {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
+      {isOwner && (
+        <MuxUploader
+          ref={muxUploaderRef}
+          noDrop
+          noProgress
+          noStatus
+          noRetry
+          style={{ display: "none" }}
+        />
+      )}
       <div className="aspect-video bg-black rounded-xl overflow-hidden mb-8 border border-border/50 shadow-xl shadow-black/50">
         {video.streamProvider === "mux" ? (
           video.streamPlaybackId ? (
@@ -559,25 +569,71 @@ export function VideoDetail() {
               </div>
             </div>
 
-            {versions.length > 1 && (
-              <div className="mb-6 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Versions
-                </span>
-                {versions.map((v) => (
-                  <Link key={v.id} href={`/videos/${v.id}`}>
-                    <span
-                      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
-                        v.id === videoId
-                          ? "border-primary bg-primary/15 text-primary"
-                          : "border-border/50 bg-card text-muted-foreground hover:border-primary/50 hover:text-white"
-                      }`}
-                    >
-                      v{v.versionNumber}
-                      {v.id === videoId && " · viewing"}
+            {isOwner && (
+              <div
+                className={`mb-6 rounded-xl border-2 border-dashed p-4 transition-colors ${
+                  isDragActive
+                    ? "border-primary bg-primary/5"
+                    : "border-border/40"
+                }`}
+                onDragEnter={(e) => {
+                  e.preventDefault();
+                  dragCounter.current += 1;
+                  if (e.dataTransfer.types.includes("Files"))
+                    setIsDragActive(true);
+                }}
+                onDragOver={(e) => e.preventDefault()}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  dragCounter.current -= 1;
+                  if (dragCounter.current <= 0) {
+                    dragCounter.current = 0;
+                    setIsDragActive(false);
+                  }
+                }}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  dragCounter.current = 0;
+                  setIsDragActive(false);
+                  const file = e.dataTransfer.files?.[0];
+                  if (file && !versionUpload) void handleVersionDrop(file);
+                }}
+                data-testid="dropzone-new-version"
+              >
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Version stack
+                  </span>
+                  {versions.length > 1 &&
+                    versions.map((v) => (
+                      <Link key={v.id} href={`/videos/${v.id}`}>
+                        <span
+                          className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                            v.id === videoId
+                              ? "border-primary bg-primary/15 text-primary"
+                              : "border-border/50 bg-card text-muted-foreground hover:border-primary/50 hover:text-white"
+                          }`}
+                        >
+                          v{v.versionNumber}
+                          {v.id === videoId && " · viewing"}
+                        </span>
+                      </Link>
+                    ))}
+                </div>
+                {versionUpload ? (
+                  <div className="flex items-center gap-3 text-sm text-muted-foreground">
+                    <Loader2 className="h-4 w-4 animate-spin text-primary shrink-0" />
+                    <span className="truncate">
+                      Uploading {versionUpload.fileName}… {versionUpload.progress}%
                     </span>
-                  </Link>
-                ))}
+                  </div>
+                ) : (
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <UploadCloud className="h-3.5 w-3.5" />
+                    Drag &amp; drop a revised cut here to stack it onto this
+                    review, or use "Upload new version" above.
+                  </p>
+                )}
               </div>
             )}
 
