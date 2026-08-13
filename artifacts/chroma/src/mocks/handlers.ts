@@ -366,14 +366,14 @@ export const handlers = [
   // ── Upload (no-op in demo) ────────────────────────────────────────────────
   http.post("*/api/videos/upload-url", () =>
     HttpResponse.json(
-      { error: "Upload is disabled in demo mode." },
+      { error: "Uploads are disabled in demo mode." },
       { status: 403 },
     ),
   ),
 
   http.post("*/api/storage/uploads/request-url", () =>
     HttpResponse.json(
-      { error: "Upload is disabled in demo mode." },
+      { error: "Uploads are disabled in demo mode." },
       { status: 403 },
     ),
   ),

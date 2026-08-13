@@ -37,6 +37,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation, useSearch } from "wouter";
 import { DOWNLOAD_FORMATS } from "@/lib/downloadFormats";
 import { uploadViaPost, uploadViaPut } from "@/lib/videoUpload";
+import { ApiError } from "@workspace/api-client-react";
+
+function describeError(err: unknown): string {
+  if (err instanceof ApiError) {
+    const data = err.data as { error?: string; message?: string } | null;
+    return data?.error ?? data?.message ?? err.message;
+  }
+  return err instanceof Error ? err.message : "Please try again";
+}
 
 const VIDEO_TAGS = [
   "Documentary",
@@ -270,15 +279,14 @@ export function VideoUpload() {
         void updateMutation.mutateAsync({
           id: activeVideoId,
           data: {
-            uploadError:
-              err instanceof Error ? err.message : "Please try again",
+            uploadError: describeError(err),
             retryCount: nextRetryCount,
           },
         });
       }
       toast({
         title: "Upload failed",
-        description: err instanceof Error ? err.message : "Please try again",
+        description: describeError(err),
         variant: "destructive",
       });
       setPhase("idle");
