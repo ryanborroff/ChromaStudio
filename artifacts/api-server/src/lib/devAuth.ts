@@ -87,7 +87,7 @@ devAuthToggleRouter.get("/login", async (req, res, next) => {
 devAuthToggleRouter.get("/plan/:plan", async (req, res, next) => {
   try {
     const raw = Array.isArray(req.params.plan) ? req.params.plan[0] : req.params.plan;
-    const allowed = ["free", "creator", "studio"];
+    const allowed = ["free", "creator", "studio", "team"];
     const plan = allowed.includes(raw) ? raw : "free";
     const userId = (req.user as { id?: number } | undefined)?.id ?? DEMO_USER_ID;
     await db.update(usersTable).set({ plan }).where(eq(usersTable.id, userId));

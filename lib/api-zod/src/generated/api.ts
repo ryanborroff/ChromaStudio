@@ -118,6 +118,26 @@ export const GetStorageUsageResponse = zod.object({
 
 
 /**
+ * @summary Create a Stripe Checkout session to upgrade to a paid plan
+ */
+export const CreateCheckoutSessionBody = zod.object({
+  "plan": zod.enum(['creator', 'studio', 'team']).describe('The paid tier to subscribe to. Free and Enterprise have no Stripe checkout path.')
+})
+
+export const CreateCheckoutSessionResponse = zod.object({
+  "url": zod.string().describe('Stripe-hosted URL to redirect the browser to.')
+})
+
+
+/**
+ * @summary Create a Stripe Billing Portal session for the current subscriber
+ */
+export const CreatePortalSessionResponse = zod.object({
+  "url": zod.string().describe('Stripe-hosted URL to redirect the browser to.')
+})
+
+
+/**
  * @summary Request a direct export URL for an owned video
  */
 export const RequestVideoExportParams = zod.object({

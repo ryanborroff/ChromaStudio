@@ -307,6 +307,28 @@ export interface BulkSetCategoryInput {
   category: VideoCategory;
 }
 
+/**
+ * The paid tier to subscribe to. Free and Enterprise have no Stripe checkout path.
+ */
+export type CheckoutSessionInputPlan = typeof CheckoutSessionInputPlan[keyof typeof CheckoutSessionInputPlan];
+
+
+export const CheckoutSessionInputPlan = {
+  creator: 'creator',
+  studio: 'studio',
+  team: 'team',
+} as const;
+
+export interface CheckoutSessionInput {
+  /** The paid tier to subscribe to. Free and Enterprise have no Stripe checkout path. */
+  plan: CheckoutSessionInputPlan;
+}
+
+export interface BillingSessionResponse {
+  /** Stripe-hosted URL to redirect the browser to. */
+  url: string;
+}
+
 export interface StorageUsage {
   totalBytesUsed: number;
   videoCount: number;

@@ -1,5 +1,4 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { Readable } from "stream";
 import { randomBytes, createHmac, timingSafeEqual } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { eq, and, desc, count } from "drizzle-orm";
@@ -384,29 +383,13 @@ router.get(
 
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(file.objectPath);
-      const response = await objectStorageService.downloadObject(objectFile);
-
-      res.status(response.status);
-      response.headers.forEach((value, key) => {
-        // We set our own content-type & disposition below.
-        if (key.toLowerCase() === "content-disposition") return;
-        res.setHeader(key, value);
-      });
-      res.setHeader("X-Content-Type-Options", "nosniff");
-      if (file.contentType) res.setHeader("Content-Type", file.contentType);
 
       const asciiName = file.name.replace(/[^\x20-\x7E]/g, "_").replace(/["\\]/g, "_");
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename="${asciiName}"; filename*=UTF-8''${encodeURIComponent(file.name)}`,
-      );
-
-      if (response.body) {
-        const nodeStream = Readable.fromWeb(response.body as ReadableStream<Uint8Array>);
-        nodeStream.pipe(res);
-      } else {
-        res.end();
-      }
+      const downloadUrl = await objectStorageService.getObjectEntityDownloadURL(objectFile, {
+        responseContentDisposition: `attachment; filename="${asciiName}"; filename*=UTF-8''${encodeURIComponent(file.name)}`,
+        responseContentType: file.contentType ?? undefined,
+      });
+      res.redirect(302, downloadUrl);
     } catch (error) {
       if (error instanceof ObjectNotFoundError) {
         res.status(404).json({ error: "File not found" });

@@ -1,5 +1,9 @@
-import { Link } from "wouter";
-import { Check, Film, Clock, Users } from "lucide-react";
+import { useLocation } from "wouter";
+import { Check, Film, Clock, Users, Loader2 } from "lucide-react";
+import { useCreateCheckoutSession } from "@workspace/api-client-react";
+import type { CheckoutSessionInputPlan } from "@workspace/api-client-react";
+import { useAuth } from "@/lib/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 type Tier = {
   name: string;
@@ -13,6 +17,9 @@ type Tier = {
   cta: string;
   ctaHref: string;
   featured?: boolean;
+  // Present only for tiers with a real Stripe checkout path. Free has no
+  // Stripe object; Enterprise is sales-assisted, not self-serve checkout.
+  billablePlan?: CheckoutSessionInputPlan;
 };
 
 const TIERS: Tier[] = [
@@ -51,6 +58,7 @@ const TIERS: Tier[] = [
     ],
     cta: "Choose Creator Plan",
     ctaHref: "/sign-up",
+    billablePlan: "creator",
     featured: true,
   },
   {
@@ -70,6 +78,7 @@ const TIERS: Tier[] = [
     ],
     cta: "Choose Studio Plan",
     ctaHref: "/sign-up",
+    billablePlan: "studio",
   },
   {
     name: "Team",
@@ -88,6 +97,7 @@ const TIERS: Tier[] = [
     ],
     cta: "Choose Team Plan",
     ctaHref: "/sign-up",
+    billablePlan: "team",
   },
   {
     name: "Enterprise",
@@ -109,6 +119,36 @@ const TIERS: Tier[] = [
 ];
 
 export function Pricing() {
+  const { isSignedIn } = useAuth();
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
+  const checkoutMutation = useCreateCheckoutSession({
+    mutation: {
+      onSuccess: (result) => {
+        window.location.href = result.url;
+      },
+      onError: () => {
+        toast({
+          title: "Could not start checkout",
+          description: "Please try again in a moment.",
+          variant: "destructive",
+        });
+      },
+    },
+  });
+
+  function chooseTier(tier: Tier) {
+    if (!tier.billablePlan) {
+      setLocation(tier.ctaHref);
+      return;
+    }
+    if (!isSignedIn) {
+      setLocation(`/sign-up?plan=${tier.billablePlan}`);
+      return;
+    }
+    checkoutMutation.mutate({ data: { plan: tier.billablePlan } });
+  }
+
   return (
     <div className="flex flex-col w-full">
       {/* Hero */}
@@ -248,9 +288,15 @@ export function Pricing() {
                 ))}
               </ul>
 
-              <Link
-                href={tier.ctaHref}
-                className="mt-7 inline-flex items-center justify-center h-11 px-5 rounded-xl text-sm font-semibold transition-all"
+              <button
+                type="button"
+                onClick={() => chooseTier(tier)}
+                disabled={
+                  tier.billablePlan != null &&
+                  checkoutMutation.isPending &&
+                  checkoutMutation.variables?.data.plan === tier.billablePlan
+                }
+                className="mt-7 inline-flex items-center justify-center h-11 px-5 rounded-xl text-sm font-semibold transition-all disabled:opacity-60"
                 style={
                   tier.featured
                     ? {
@@ -268,8 +314,14 @@ export function Pricing() {
                 }
                 data-testid={`cta-${tier.name.toLowerCase()}`}
               >
-                {tier.cta}
-              </Link>
+                {tier.billablePlan != null &&
+                checkoutMutation.isPending &&
+                checkoutMutation.variables?.data.plan === tier.billablePlan ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  tier.cta
+                )}
+              </button>
             </div>
           ))}
         </div>

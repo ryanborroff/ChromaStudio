@@ -19,6 +19,7 @@ import webhooksRouter from "./webhooks";
 import reviewRouter from "./review";
 import exportsRouter from "./exports";
 import editingExportsRouter from "./editingExports";
+import billingRouter from "./billing";
 
 const router: IRouter = Router();
 
@@ -40,6 +41,7 @@ router.use(webhooksRouter);
 router.use(reviewRouter);
 router.use(exportsRouter);
 router.use(editingExportsRouter);
+router.use(billingRouter);
 
 router.get("/download-source", (_req, res) => {
   const zipPath = path.resolve("/home/runner/workspace/chroma-src.zip");

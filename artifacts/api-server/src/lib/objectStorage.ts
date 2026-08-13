@@ -4,7 +4,6 @@ import {
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { Readable } from "stream";
 import { randomUUID } from "crypto";
 import { getR2Client, getR2Bucket } from "./r2Client";
 import {
@@ -43,34 +42,6 @@ export class ObjectStorageService {
   }
 
   /**
-   * Download an R2 object and return it as a web Response for streaming.
-   */
-  async downloadObject(ref: R2ObjectRef, cacheTtlSec: number = 3600): Promise<Response> {
-    const result = await getR2Client().send(
-      new GetObjectCommand({ Bucket: getR2Bucket(), Key: ref.key }),
-    );
-
-    const aclPolicy = await getObjectAclPolicy(ref);
-    const isPublic = aclPolicy?.visibility === "public";
-
-    const headers: Record<string, string> = {
-      "Content-Type": result.ContentType ?? "application/octet-stream",
-      "Cache-Control": `${isPublic ? "public" : "private"}, max-age=${cacheTtlSec}`,
-    };
-    if (result.ContentLength != null) {
-      headers["Content-Length"] = String(result.ContentLength);
-    }
-
-    if (!result.Body) {
-      return new Response(null, { headers });
-    }
-
-    // AWS SDK Body in Node.js is a Readable stream — convert to web ReadableStream.
-    const webStream = Readable.toWeb(result.Body as Readable) as ReadableStream;
-    return new Response(webStream, { headers });
-  }
-
-  /**
    * Generate a presigned PUT URL for a new private upload.
    * Returns a signed R2 URL; call normalizeObjectEntityPath() to get the
    * internal /objects/<key> path to store in the database.
@@ -79,6 +50,24 @@ export class ObjectStorageService {
     const key = `${PRIVATE_PREFIX}/uploads/${randomUUID()}`;
     const command = new PutObjectCommand({ Bucket: getR2Bucket(), Key: key });
     return getSignedUrl(getR2Client(), command, { expiresIn: 900 });
+  }
+
+  /**
+   * Generate a short-lived presigned GET URL for downloading an object.
+   * Callers must run their own access-control check before calling this —
+   * anyone holding the URL can read the object until it expires.
+   */
+  async getObjectEntityDownloadURL(
+    ref: R2ObjectRef,
+    opts?: { responseContentDisposition?: string; responseContentType?: string },
+  ): Promise<string> {
+    const command = new GetObjectCommand({
+      Bucket: getR2Bucket(),
+      Key: ref.key,
+      ResponseContentDisposition: opts?.responseContentDisposition,
+      ResponseContentType: opts?.responseContentType,
+    });
+    return getSignedUrl(getR2Client(), command, { expiresIn: 120 });
   }
 
   /**

@@ -1,5 +1,4 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { Readable } from "stream";
 import {
   RequestUploadUrlBody,
   RequestUploadUrlResponse,
@@ -167,19 +166,9 @@ router.get(
         return;
       }
 
-      const response = await objectStorageService.downloadObject(file);
-
-      res.status(response.status);
-      response.headers.forEach((value, key) => res.setHeader(key, value));
-
-      if (response.body) {
-        const nodeStream = Readable.fromWeb(
-          response.body as ReadableStream<Uint8Array>,
-        );
-        nodeStream.pipe(res);
-      } else {
-        res.end();
-      }
+      const downloadUrl =
+        await objectStorageService.getObjectEntityDownloadURL(file);
+      res.redirect(302, downloadUrl);
     } catch (error) {
       req.log.error({ err: error }, "Error serving public object");
       res.status(500).json({ error: "Failed to serve public object" });
@@ -194,70 +183,48 @@ router.get(
  * These are served from a separate path from /public-objects and can optionally
  * be protected with authentication or ACL checks based on the use case.
  */
-router.get("/storage/objects/*path", async (req: Request, res: Response) => {
-  try {
-    const raw = req.params.path;
-    const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;
-    const objectPath = `/objects/${wildcardPath}`;
-    const objectFile =
-      await objectStorageService.getObjectEntityFile(objectPath);
+router.get(
+  "/storage/objects/*path",
+  requireAuth,
+  async (req: Request, res: Response) => {
+    try {
+      const raw = req.params.path;
+      const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;
+      const objectPath = `/objects/${wildcardPath}`;
+      const objectFile =
+        await objectStorageService.getObjectEntityFile(objectPath);
 
-    // --- Protected route example (uncomment when using replit-auth) ---
-    // if (!req.isAuthenticated()) {
-    //   res.status(401).json({ error: "Unauthorized" });
-    //   return;
-    // }
-    // const canAccess = await objectStorageService.canAccessObjectEntity({
-    //   userId: req.user.id,
-    //   objectFile,
-    //   requestedPermission: ObjectPermission.READ,
-    // });
-    // if (!canAccess) {
-    //   res.status(403).json({ error: "Forbidden" });
-    //   return;
-    // }
+      const userId = String((req.user as { id: number }).id);
+      const canAccess = await objectStorageService.canAccessObjectEntity({
+        userId,
+        objectFile,
+        requestedPermission: ObjectPermission.READ,
+      });
+      if (!canAccess) {
+        res.status(403).json({ error: "Forbidden" });
+        return;
+      }
 
-    const response = await objectStorageService.downloadObject(objectFile);
-
-    res.status(response.status);
-    response.headers.forEach((value, key) => res.setHeader(key, value));
-
-    // Harden against active content served from the app origin: never let the
-    // browser sniff a different type, and force scriptable types to download
-    // rather than execute inline.
-    res.setHeader("X-Content-Type-Options", "nosniff");
-    const contentType = (
-      response.headers.get("content-type") ?? ""
-    ).toLowerCase();
-    const SCRIPTABLE = [
-      "text/html",
-      "application/xhtml+xml",
-      "image/svg+xml",
-      "application/javascript",
-      "text/javascript",
-      "application/xml",
-    ];
-    if (SCRIPTABLE.some((t) => contentType.includes(t))) {
-      res.setHeader("Content-Disposition", "attachment");
-    }
-
-    if (response.body) {
-      const nodeStream = Readable.fromWeb(
-        response.body as ReadableStream<Uint8Array>,
+      // Harden against active content served from the app origin: force
+      // scriptable types to download rather than execute inline. We don't
+      // know the content type without a HEAD call, so default to a safe
+      // attachment disposition — this is a private-object download link,
+      // not something meant to render inline in the browser.
+      const downloadUrl = await objectStorageService.getObjectEntityDownloadURL(
+        objectFile,
+        { responseContentDisposition: "attachment" },
       );
-      nodeStream.pipe(res);
-    } else {
-      res.end();
+      res.redirect(302, downloadUrl);
+    } catch (error) {
+      if (error instanceof ObjectNotFoundError) {
+        req.log.warn({ err: error }, "Object not found");
+        res.status(404).json({ error: "Object not found" });
+        return;
+      }
+      req.log.error({ err: error }, "Error serving object");
+      res.status(500).json({ error: "Failed to serve object" });
     }
-  } catch (error) {
-    if (error instanceof ObjectNotFoundError) {
-      req.log.warn({ err: error }, "Object not found");
-      res.status(404).json({ error: "Object not found" });
-      return;
-    }
-    req.log.error({ err: error }, "Error serving object");
-    res.status(500).json({ error: "Failed to serve object" });
-  }
-});
+  },
+);
 
 export default router;

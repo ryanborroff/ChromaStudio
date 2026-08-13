@@ -191,6 +191,59 @@ paths:
         "401":
           description: Authentication required.
 
+  # ── Billing ─────────────────────────────────────────────────────────────────
+  /billing/checkout-session:
+    post:
+      operationId: createCheckoutSession
+      tags: [billing]
+      summary: Create a Stripe Checkout session to upgrade to a paid plan
+      security:
+        - cookieAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckoutSessionInput"
+      responses:
+        "200":
+          description: Checkout session created — redirect the browser to `url`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingSessionResponse"
+        "400":
+          description: Unknown plan, or billing is not configured.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: Authentication required.
+
+  /billing/portal-session:
+    post:
+      operationId: createPortalSession
+      tags: [billing]
+      summary: Create a Stripe Billing Portal session for the current subscriber
+      security:
+        - cookieAuth: []
+      responses:
+        "200":
+          description: Portal session created — redirect the browser to `url`.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingSessionResponse"
+        "400":
+          description: No Stripe customer on file yet — the user has never subscribed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorEnvelope"
+        "401":
+          description: Authentication required.
+
   /videos/{id}/export:
     post:
       operationId: requestVideoExport
@@ -1969,6 +2022,23 @@ components:
             type: integer
         category:
           $ref: "#/components/schemas/VideoCategory"
+
+    CheckoutSessionInput:
+      type: object
+      required: [plan]
+      properties:
+        plan:
+          type: string
+          description: The paid tier to subscribe to. Free and Enterprise have no Stripe checkout path.
+          enum: [creator, studio, team]
+
+    BillingSessionResponse:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+          description: Stripe-hosted URL to redirect the browser to.
 
     StorageUsage:
       type: object

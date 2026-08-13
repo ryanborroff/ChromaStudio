@@ -22,7 +22,13 @@ export const usersTable = pgTable("users", {
   isAdmin: boolean("is_admin").notNull().default(false),
   // Subscription tier. "free" = no paid features; anything else (e.g. "creator",
   // "studio") unlocks paid-only features like video sharing & external embedding.
+  // Kept in sync with Stripe via webhook (see routes/webhooks.ts); never set
+  // directly by client requests.
   plan: text("plan").notNull().default("free"),
+  stripeCustomerId: text("stripe_customer_id").unique(),
+  stripeSubscriptionId: text("stripe_subscription_id"),
+  subscriptionStatus: text("subscription_status"),
+  currentPeriodEnd: timestamp("current_period_end"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 

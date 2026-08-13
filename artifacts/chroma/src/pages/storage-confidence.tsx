@@ -2,11 +2,19 @@ import {
   useGetStorageUsage,
   useListExportJobs,
   useRequestBulkExport,
+  useCreatePortalSession,
 } from "@workspace/api-client-react";
-import { Database, Download, Loader2, ShieldCheck } from "lucide-react";
+import {
+  CreditCard,
+  Database,
+  Download,
+  Loader2,
+  ShieldCheck,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/lib/useAuth";
 import { queryClient } from "@/lib/queryClient";
 
 function formatBytes(bytes?: number | null) {
@@ -28,7 +36,22 @@ function formatBytes(bytes?: number | null) {
 
 export function StorageConfidence() {
   const { toast } = useToast();
+  const { user } = useAuth();
   const { data: usage, isLoading: usageLoading } = useGetStorageUsage();
+  const portalMutation = useCreatePortalSession({
+    mutation: {
+      onSuccess: (result) => {
+        window.location.href = result.url;
+      },
+      onError: () => {
+        toast({
+          title: "Could not open billing portal",
+          description: "Try again in a moment.",
+          variant: "destructive",
+        });
+      },
+    },
+  });
   const { data: jobs = [], isLoading: jobsLoading } = useListExportJobs();
   const exportMutation = useRequestBulkExport({
     mutation: {
@@ -63,6 +86,46 @@ export function StorageConfidence() {
           </p>
         </div>
       </div>
+
+      <section className="mb-6 rounded-xl border border-border/50 bg-card p-6">
+        <div className="mb-3 flex items-center gap-3">
+          <CreditCard className="h-5 w-5 text-primary" />
+          <h2 className="font-bold text-white">Billing</h2>
+        </div>
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-sm text-white">
+              Current plan:{" "}
+              <span className="font-semibold capitalize text-primary">
+                {user?.plan ?? "free"}
+              </span>
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {user?.plan && user.plan !== "free"
+                ? "Manage your subscription, payment method, and invoices."
+                : "Upgrade from the pricing page to unlock sharing, embeds, and more."}
+            </p>
+          </div>
+          {user?.plan && user.plan !== "free" ? (
+            <Button
+              variant="secondary"
+              onClick={() => portalMutation.mutate()}
+              disabled={portalMutation.isPending}
+            >
+              {portalMutation.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="mr-2 h-4 w-4" />
+              )}
+              Manage subscription
+            </Button>
+          ) : (
+            <Button variant="secondary" asChild>
+              <a href="/pricing">View plans</a>
+            </Button>
+          )}
+        </div>
+      </section>
 
       <section className="rounded-xl border border-border/50 bg-card p-6">
         <div className="mb-5 flex items-center gap-3">

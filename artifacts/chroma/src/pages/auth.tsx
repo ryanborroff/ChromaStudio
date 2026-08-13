@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { useLocation } from "wouter";
+import { useLocation, useSearch } from "wouter";
 import { Clapperboard, Loader2 } from "lucide-react";
 import {
   loginWithGoogle,
@@ -10,6 +10,12 @@ import {
 } from "@/lib/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  useCreateCheckoutSession,
+  CheckoutSessionInputPlan,
+} from "@workspace/api-client-react";
+
+const BILLABLE_PLANS = new Set<string>(Object.values(CheckoutSessionInputPlan));
 
 function GoogleIcon() {
   return (
@@ -44,7 +50,26 @@ function AppleIcon() {
 
 function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
   const [, setLocation] = useLocation();
+  const search = useSearch();
   const isSignUp = mode === "sign-up";
+  const requestedPlan = new URLSearchParams(search).get("plan");
+  const pendingPlan =
+    requestedPlan && BILLABLE_PLANS.has(requestedPlan)
+      ? (requestedPlan as CheckoutSessionInputPlan)
+      : null;
+
+  const checkoutMutation = useCreateCheckoutSession({
+    mutation: {
+      onSuccess: (result) => {
+        window.location.href = result.url;
+      },
+      onError: () => {
+        // Checkout failed to start after signup — land them signed in on the
+        // normal onboarding path rather than stranding them on this page.
+        setLocation("/onboarding");
+      },
+    },
+  });
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -78,7 +103,11 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
     try {
       if (isSignUp) {
         await registerWithEmail({ email, password, name: name.trim() || undefined });
-        setLocation("/onboarding");
+        if (pendingPlan) {
+          checkoutMutation.mutate({ data: { plan: pendingPlan } });
+        } else {
+          setLocation("/onboarding");
+        }
       } else {
         await loginWithEmail({ email, password });
         setLocation("/feed");
@@ -166,9 +195,20 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
               </p>
             )}
 
-            <Button type="submit" disabled={submitting} className="h-11" data-testid="btn-submit">
-              {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-              {isSignUp ? "Create account" : "Sign in"}
+            <Button
+              type="submit"
+              disabled={submitting || checkoutMutation.isPending}
+              className="h-11"
+              data-testid="btn-submit"
+            >
+              {(submitting || checkoutMutation.isPending) && (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              )}
+              {checkoutMutation.isPending
+                ? "Redirecting to checkout…"
+                : isSignUp
+                  ? "Create account"
+                  : "Sign in"}
             </Button>
 
             {!isSignUp && (
