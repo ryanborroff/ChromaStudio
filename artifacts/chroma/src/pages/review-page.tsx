@@ -332,7 +332,7 @@ export function ReviewPage() {
                   session.comments.map((comment) => (
                     <div
                       key={comment.id}
-                      className={`rounded-lg border p-3 ${comment.resolved ? "border-emerald-500/20 opacity-60" : "border-border/40"}`}
+                      className={`rounded-lg border p-3 ${comment.resolved ? "border-amber-500/20 opacity-60" : "border-border/40"}`}
                     >
                       <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
                         <span className="flex items-center gap-1.5">

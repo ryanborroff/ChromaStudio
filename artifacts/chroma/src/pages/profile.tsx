@@ -280,7 +280,7 @@ export function Profile() {
         {user.coverUrl ? (
           <img src={user.coverUrl} alt="Cover" className="w-full h-full object-cover" />
         ) : (
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-blue-500/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/25 to-amber-700/10" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
       </div>

@@ -1,5 +1,7 @@
 import { useGetFeed, useListVideos, getListVideosQueryKey } from "@workspace/api-client-react";
 import { VideoCard } from "@/components/video-card";
+import { HeroFeatured } from "@/components/hero-featured";
+import { FilterStrip } from "@/components/filter-strip";
 import { EmptyState } from "@/components/empty-state";
 import { Film, Loader2, Compass, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,14 +34,20 @@ export function Feed() {
   }
 
   if (feedVideos.length > 0) {
+    const [featured, ...rest] = feedVideos;
     return (
       <div className="container mx-auto px-4 py-8 max-w-7xl">
-        <div className="mb-8">
-          <h1 className="text-3xl font-black text-white tracking-tight">Your Feed</h1>
-          <p className="text-muted-foreground mt-2 font-medium">View the latest work from filmmakers you follow.</p>
+        {featured && <HeroFeatured video={featured} />}
+
+        <div className="mb-6">
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white mb-1">Your Feed</h1>
+          <p className="text-muted-foreground font-medium">View the latest work from filmmakers you follow.</p>
         </div>
+
+        <FilterStrip />
+
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {feedVideos.map((video) => (
+          {rest.map((video) => (
             <VideoCard key={video.id} video={video} />
           ))}
         </div>
@@ -55,7 +63,7 @@ export function Feed() {
           <Compass className="w-8 h-8 text-primary" />
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="text-2xl font-black text-white tracking-tight mb-1">Your feed is quiet</h1>
+          <h1 className="text-2xl font-black tracking-tight text-white mb-1">Your feed is quiet</h1>
           <p className="text-white/50 text-sm leading-relaxed max-w-lg">
             Follow filmmakers whose work you admire — new work shows up here the second it drops. In the meantime, here's what everyone's watching on ChromaStudio.
           </p>
@@ -79,11 +87,14 @@ export function Feed() {
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : discoverVideos.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {discoverVideos.map((video) => (
-              <VideoCard key={video.id} video={video} />
-            ))}
-          </div>
+          <>
+            <FilterStrip />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {discoverVideos.map((video) => (
+                <VideoCard key={video.id} video={video} />
+              ))}
+            </div>
+          </>
         ) : (
           <EmptyState
             icon={<Film className="w-10 h-10" />}

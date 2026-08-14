@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap');
 @layer theme, base, components, utilities;
 @import "tailwindcss";
 @import "tw-animate-css";
@@ -78,61 +78,60 @@
   --elevate-1: rgba(255,255,255, .04);
   --elevate-2: rgba(255,255,255, .09);
 
-  /* Background: #0B0B0B */
-  --background: 0 0% 4%;
+  /* Background: #080809 */
+  --background: 240 5% 3%;
   /* Text: #FFFFFF */
   --foreground: 0 0% 100%;
 
-  /* Borders / Separators - slightly lighter than bg */
-  --border: 0 0% 15%;
+  /* Borders / Separators: #232329 */
+  --border: 240 6% 16%;
 
-  /* Card/surface: #181818 */
-  --card: 0 0% 9%;
+  /* Card/surface: #111116 */
+  --card: 240 7% 7%;
   --card-foreground: 0 0% 100%;
-  --card-border: 0 0% 15%;
+  --card-border: 240 6% 16%;
 
-  --sidebar: 0 0% 9%;
+  --sidebar: 240 7% 7%;
   --sidebar-foreground: 0 0% 100%;
-  --sidebar-border: 0 0% 15%;
-  --sidebar-primary: 39 100% 56%;
+  --sidebar-border: 240 6% 16%;
+  --sidebar-primary: 38 92% 50%;
   --sidebar-primary-foreground: 0 0% 8%;
-  --sidebar-accent: 0 0% 15%;
+  --sidebar-accent: 240 6% 16%;
   --sidebar-accent-foreground: 0 0% 100%;
-  --sidebar-ring: 39 100% 56%;
+  --sidebar-ring: 38 92% 50%;
 
-  --popover: 0 0% 9%;
+  --popover: 240 7% 7%;
   --popover-foreground: 0 0% 100%;
-  --popover-border: 0 0% 15%;
+  --popover-border: 240 6% 16%;
 
-  /* Accent: Amber #FFB020 */
-  --primary: 39 100% 56%;
+  /* Accent: Amber #F59E0B */
+  --primary: 38 92% 50%;
   --primary-foreground: 0 0% 8%;
 
-  --secondary: 0 0% 15%;
+  --secondary: 240 6% 16%;
   --secondary-foreground: 0 0% 100%;
 
   /* Muted: #B0B0B0 */
-  --muted: 0 0% 15%;
+  --muted: 240 6% 16%;
   --muted-foreground: 0 0% 69%;
 
-  --accent: 0 0% 15%;
+  --accent: 240 6% 16%;
   --accent-foreground: 0 0% 100%;
 
   --destructive: 0 84% 60%;
   --destructive-foreground: 0 0% 100%;
 
-  --input: 0 0% 20%;
-  --ring: 39 100% 56%;
+  --input: 240 6% 18%;
+  --ring: 38 92% 50%;
 
-  /* Success: #3EB489 */
-  --chart-1: 158 48% 47%;
-  --chart-2: 39 100% 56%;
-  --chart-3: 0 0% 69%;
-  --chart-4: 0 0% 100%;
-  --chart-5: 0 0% 15%;
+  --chart-1: 38 92% 50%;
+  --chart-2: 32 95% 56%;
+  --chart-3: 45 93% 58%;
+  --chart-4: 0 0% 69%;
+  --chart-5: 240 6% 16%;
 
-  --app-font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", 'Inter', sans-serif;
-  --app-font-serif: Georgia, serif;
+  --app-font-sans: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+  --app-font-serif: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
   --app-font-mono: ui-monospace, "SF Mono", Menlo, monospace;
   --radius: 0.625rem;
   
@@ -179,6 +178,14 @@
 
   .no-default-hover-elevate {}
   .no-default-active-elevate {}
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
 
   .toggle-elevate::before,
   .toggle-elevate-2::before {

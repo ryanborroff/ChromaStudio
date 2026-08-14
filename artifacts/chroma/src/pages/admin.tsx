@@ -215,7 +215,7 @@ export function AdminDashboard() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          className={v.isFeatured ? "text-yellow-400 hover:text-yellow-300" : "text-white/30 hover:text-white"}
+                          className={v.isFeatured ? "text-amber-400 hover:text-amber-300" : "text-white/30 hover:text-white"}
                           disabled={toggleFeaturedMutation.isPending}
                           onClick={() => toggleFeaturedMutation.mutate({ videoId: v.id, data: { featured: !v.isFeatured } })}
                         >

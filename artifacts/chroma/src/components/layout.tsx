@@ -18,8 +18,8 @@ import { Link, useLocation } from "wouter";
 import { useAuth, logout } from "@/lib/useAuth";
 import {
   Film, LogOut, Settings, User as UserIcon,
-  Clapperboard, Sparkles, Rss, Menu,
-  Radio, History, FolderOpen, Cloud, Send, Code2, BarChart3,
+  Clapperboard, Sparkles, Rss, Menu, Search, Bookmark,
+  Radio, History, FolderOpen, Cloud, Send, Code2, BarChart3, TrendingUp,
   ShieldCheck, KeyRound, type LucideIcon,
 } from "lucide-react";
 import {
@@ -48,12 +48,22 @@ type Section = "watch" | "live" | "studio" | "community" | "pricing";
 
 const GENRE_TAGS = ["Documentary", "Narrative", "Experimental", "Commercial", "Music Video"];
 
+const FOLLOWING = [
+  { name: "Mia Chen", username: "miachen", avatarUrl: null as string | null },
+  { name: "Théo Laurent", username: "theolaurent", avatarUrl: null as string | null },
+  { name: "Aisha Kone", username: "aishakone", avatarUrl: null as string | null },
+  { name: "Rowan Blake", username: "rowanblake", avatarUrl: null as string | null },
+];
+
 /** Sidebar content per section. `null` = no sidebar (full-width layout). */
 const SIDEBAR_CONTENT: Record<Section, { label: string; items: NavItem[]; discover?: true } | null> = {
   watch: {
     label: "Watch",
     items: [
-      { href: "/feed",    label: "Feed",    icon: Rss },
+      { href: "/feed",         label: "Feed",     icon: Rss },
+      { href: "/explore",      label: "Trending", icon: TrendingUp },
+      { href: "/saved",        label: "Saved",    icon: Bookmark },
+      { href: "/history",      label: "History",  icon: History },
     ],
     discover: true,
   },
@@ -298,16 +308,37 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <Link
                   key={href}
                   href={href}
-                  className={`px-3 py-1 rounded-md text-sm font-medium transition-all ${
-                    active ? "bg-white/10 text-white" : "text-white/50 hover:text-white hover:bg-white/5"
+                  className={`relative px-3 py-1 rounded-md text-sm font-medium transition-all ${
+                    active ? "text-white" : "text-white/50 hover:text-white hover:bg-white/5"
                   }`}
                   data-testid={testid}
                 >
                   {label}
+                  {active && (
+                    <span
+                      className="absolute left-3 right-3 -bottom-[13px] h-[2px] rounded-full"
+                      style={{ background: "linear-gradient(90deg, #f59e0b, #d97706)" }}
+                    />
+                  )}
                 </Link>
               );
             })}
           </nav>
+        </div>
+
+        {/* Center — search */}
+        <div className="hidden md:flex flex-1 max-w-md mx-6">
+          <button
+            className="w-full flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-white/35 transition-all hover:text-white/55"
+            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+            data-testid="btn-search"
+          >
+            <Search className="w-3.5 h-3.5 shrink-0" />
+            <span className="flex-1 text-left truncate">Search films, creators...</span>
+            <kbd className="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded border border-white/10 bg-white/5 text-white/40">
+              ⌘K
+            </kbd>
+          </button>
         </div>
 
         {/* Right — auth */}
@@ -316,7 +347,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <>
               <Link
                 href="/videos/upload"
-                className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-md text-sm font-medium text-white/50 hover:text-white hover:bg-white/5 transition-all"
+                className="hidden sm:flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-sm font-semibold text-black transition-transform hover:scale-[1.03]"
+                style={{ background: "linear-gradient(135deg, #f59e0b, #d97706)", boxShadow: "0 2px 12px rgba(245,158,11,0.35)" }}
                 data-testid="btn-upload"
               >
                 <Film className="w-3.5 h-3.5" />
@@ -470,19 +502,51 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </>
             )}
 
+            {/* Following — shown on Watch section */}
+            {section === "watch" && isSignedIn && (
+              <>
+                <p className="px-3 mt-6 mb-[10px] text-[11px] font-medium text-[#6b6b66] uppercase tracking-[0.04em]">
+                  Following
+                </p>
+                {FOLLOWING.map((creator) => (
+                  <Link
+                    key={creator.username}
+                    href={`/profile/${creator.username}`}
+                    className="flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-sm text-[#b5b5b0] hover:text-[#e0e0dc] hover:bg-white/5 transition-all mb-0.5"
+                    data-testid={`sidebar-link-following-${creator.username}`}
+                  >
+                    <Avatar className="h-5 w-5 flex-shrink-0">
+                      <AvatarImage src={creator.avatarUrl ?? undefined} />
+                      <AvatarFallback className="text-[9px] font-semibold" style={{ background: "rgba(245,158,11,0.15)", color: "#f5c667" }}>
+                        {creator.name.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="truncate">{creator.name}</span>
+                  </Link>
+                ))}
+              </>
+            )}
+
             {/* Pro CTA — shown on Watch and Live sections */}
             {(section === "watch" || section === "live") && (
-              <div className="mt-auto px-1">
+              <div className="mt-auto px-1 pt-6">
                 <Link
                   href="/pricing"
-                  className="block rounded-xl p-3 transition-all hover:opacity-90"
-                  style={{ background: "rgba(255,176,32,0.08)", border: "1px solid rgba(255,176,32,0.18)" }}
+                  className="relative block rounded-xl p-3.5 overflow-hidden transition-transform hover:scale-[1.02]"
+                  style={{
+                    background: "linear-gradient(155deg, rgba(245,158,11,0.16) 0%, rgba(217,119,6,0.05) 100%)",
+                    border: "1px solid rgba(245,158,11,0.22)",
+                  }}
                   data-testid="sidebar-link-pro"
                 >
-                  <Sparkles className="w-4 h-4 text-primary mb-1.5" />
-                  <p className="text-xs font-semibold text-white mb-0.5">Pro Membership</p>
-                  <p className="text-[11px] text-white/40 leading-relaxed">
-                    Unlock unlimited uploads and analytics.
+                  <div
+                    className="absolute -top-6 -right-6 w-20 h-20 rounded-full blur-2xl"
+                    style={{ background: "rgba(245,158,11,0.25)" }}
+                  />
+                  <Sparkles className="w-4 h-4 text-primary mb-1.5 relative" />
+                  <p className="text-xs font-semibold text-white mb-0.5 relative">Upgrade to Pro</p>
+                  <p className="text-[11px] text-white/45 leading-relaxed relative">
+                    Unlimited uploads, analytics, and priority delivery.
                   </p>
                 </Link>
               </div>
