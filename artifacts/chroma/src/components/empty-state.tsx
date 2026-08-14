@@ -23,9 +23,9 @@ export function EmptyState({
     >
       <div
         className="w-14 h-14 rounded-full flex items-center justify-center mx-auto mb-4"
-        style={{ background: "#241a12" }}
+        style={{ background: "rgba(245,158,11,0.12)" }}
       >
-        <span style={{ color: "#e08a3c", display: "flex" }}>{icon}</span>
+        <span style={{ color: "#fb923c", display: "flex" }}>{icon}</span>
       </div>
       <h3 className="text-[18px] font-medium mb-[6px]" style={{ color: "#f2f2f2" }}>
         {title}
