@@ -30,7 +30,7 @@ export function PrivacyPolicy() {
         {/* AI Training callout */}
         <div
           className="rounded-2xl p-6 mb-10 flex gap-4"
-          style={{ background: "rgba(107,91,255,0.08)", border: "1px solid rgba(107,91,255,0.25)" }}
+          style={{ background: "rgba(245,158,11,0.08)", border: "1px solid rgba(245,158,11,0.25)" }}
         >
           <EyeOff className="w-5 h-5 text-primary shrink-0 mt-0.5" />
           <div>

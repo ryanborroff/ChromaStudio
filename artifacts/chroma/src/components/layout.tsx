@@ -145,7 +145,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="min-h-[100dvh] bg-background text-foreground flex flex-col dark"
-      style={{ fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", Inter, sans-serif' }}
+      style={{ fontFamily: "var(--app-font-sans)" }}
     >
       {/* ------------------------------------------------------------------ */}
       {/* macOS-style menu bar                                                */}
@@ -282,7 +282,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       href="/sign-up"
                       onClick={() => setMobileOpen(false)}
                       className="w-full text-center text-sm font-semibold px-4 py-2 rounded-lg text-white transition-all"
-                      style={{ background: "linear-gradient(135deg, hsl(39 100% 56%) 0%, hsl(39 100% 42%) 100%)" }}
+                      style={{ background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" }}
                       data-testid="mobile-btn-join"
                     >
                       Join ChromaStudio
@@ -449,7 +449,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 href="/sign-up"
                 className="text-sm font-semibold px-4 py-1.5 rounded-lg text-white transition-all"
                 style={{
-                  background: "linear-gradient(135deg, hsl(39 100% 56%) 0%, hsl(39 100% 42%) 100%)",
+                  background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
                   boxShadow: "0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12)",
                 }}
                 data-testid="btn-join"

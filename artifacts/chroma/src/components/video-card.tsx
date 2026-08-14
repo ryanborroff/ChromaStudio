@@ -108,7 +108,7 @@ export function VideoCard({ video, showAuthor = true }: VideoCardProps) {
           <Link href={`/profile/${video.user.username}`} className="flex-shrink-0 mt-0.5">
             <Avatar className="h-8 w-8" data-testid={`video-author-avatar-${video.id}`}>
               <AvatarImage src={video.user.avatarUrl || undefined} />
-              <AvatarFallback className="text-xs font-semibold" style={{ background: "rgba(255,176,32,0.15)", color: "hsl(39 100% 65%)" }}>
+              <AvatarFallback className="text-xs font-semibold" style={{ background: "rgba(245,158,11,0.15)", color: "#fbbf24" }}>
                 {video.user.name?.charAt(0) || "U"}
               </AvatarFallback>
             </Avatar>

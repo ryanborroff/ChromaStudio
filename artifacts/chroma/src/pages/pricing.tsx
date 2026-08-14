@@ -157,7 +157,7 @@ export function Pricing() {
           className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-25"
           style={{
             background:
-              "radial-gradient(circle, hsl(39 100% 56% / 0.35) 0%, transparent 70%)",
+              "radial-gradient(circle, rgba(245,158,11,0.35) 0%, transparent 70%)",
           }}
         />
         <div className="relative z-10 max-w-3xl mx-auto px-6 text-center">
@@ -170,7 +170,7 @@ export function Pricing() {
               className="text-transparent bg-clip-text"
               style={{
                 backgroundImage:
-                  "linear-gradient(135deg, hsl(39 100% 65%) 0%, hsl(45 100% 62%) 100%)",
+                  "linear-gradient(135deg, #fbbf24 0%, #fb923c 100%)",
               }}
             >
               needs
@@ -196,13 +196,13 @@ export function Pricing() {
               className="relative flex flex-col p-7 rounded-2xl transition-all duration-300"
               style={{
                 background: tier.featured
-                  ? "rgba(255,176,32,0.07)"
+                  ? "rgba(245,158,11,0.07)"
                   : "rgba(255,255,255,0.04)",
                 border: tier.featured
-                  ? "1px solid rgba(255,176,32,0.45)"
+                  ? "1px solid rgba(245,158,11,0.45)"
                   : "1px solid rgba(255,255,255,0.07)",
                 boxShadow: tier.featured
-                  ? "0 8px 40px rgba(255,176,32,0.18)"
+                  ? "0 8px 40px rgba(245,158,11,0.18)"
                   : "none",
               }}
               data-testid={`tier-${tier.name.toLowerCase()}`}
@@ -212,7 +212,7 @@ export function Pricing() {
                   className="absolute -top-3 left-7 px-3 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider text-white"
                   style={{
                     background:
-                      "linear-gradient(135deg, hsl(39 100% 56%) 0%, hsl(39 100% 42%) 100%)",
+                      "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
                   }}
                 >
                   Most popular
@@ -303,10 +303,10 @@ export function Pricing() {
                   tier.featured
                     ? {
                         background:
-                          "linear-gradient(135deg, hsl(39 100% 56%) 0%, hsl(39 100% 42%) 100%)",
+                          "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
                         color: "white",
                         boxShadow:
-                          "0 4px 24px rgba(255,176,32,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
+                          "0 4px 24px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
                       }
                     : {
                         background: "rgba(255,255,255,0.07)",

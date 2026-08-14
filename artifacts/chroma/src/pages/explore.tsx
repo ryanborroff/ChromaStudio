@@ -156,7 +156,7 @@ export function Explore() {
 
           {/* Search — distinct input styling with orange focus ring */}
           <div
-            className="flex items-center gap-2 rounded-lg px-3 min-w-[200px] transition-colors focus-within:shadow-[0_0_0_1px_rgba(224,99,31,0.3)]"
+            className="flex items-center gap-2 rounded-lg px-3 min-w-[200px] transition-colors focus-within:shadow-[0_0_0_1px_rgba(251,146,60,0.3)]"
             style={{ background: "#1a1a1a", border: "0.5px solid #3a3a38" }}
           >
             <Search className="w-4 h-4 flex-shrink-0" style={{ color: "#888888" }} />
@@ -313,7 +313,7 @@ export function Explore() {
                 <Link
                   href="/videos/upload"
                   className="inline-block text-[13px] font-medium px-5 py-[9px] rounded-lg text-white transition-opacity hover:opacity-90"
-                  style={{ background: "#e0631f" }}
+                  style={{ background: "#fb923c" }}
                 >
                   Upload a video
                 </Link>

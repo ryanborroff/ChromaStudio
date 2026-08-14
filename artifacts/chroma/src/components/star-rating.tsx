@@ -73,8 +73,8 @@ export function StarRating({
               <Star
                 className={`${px} transition-colors`}
                 style={{
-                  color: active ? "hsl(45 95% 58%)" : "rgba(255,255,255,0.25)",
-                  fill: active ? "hsl(45 95% 58%)" : "transparent",
+                  color: active ? "#fbbf24" : "rgba(255,255,255,0.25)",
+                  fill: active ? "#fbbf24" : "transparent",
                 }}
               />
             </button>
