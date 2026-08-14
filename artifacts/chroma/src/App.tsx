@@ -13,6 +13,8 @@ import { useAuth } from "@/lib/useAuth";
 import { Home } from "@/pages/home";
 import { Feed } from "@/pages/feed";
 import { Explore } from "@/pages/explore";
+import { Saved } from "@/pages/saved";
+import { History as HistoryPage } from "@/pages/history";
 import { Messages } from "@/pages/messages";
 import { MessageThread } from "@/pages/message-thread";
 import { Profile } from "@/pages/profile";
@@ -89,6 +91,8 @@ function AppRoutes() {
         <ProtectedRoute path="/onboarding" component={Onboarding} />
         <ProtectedRoute path="/feed" component={Feed} />
         <Route path="/explore" component={Explore} />
+        <ProtectedRoute path="/saved" component={Saved} />
+        <ProtectedRoute path="/history" component={HistoryPage} />
         <Route path="/pricing" component={Pricing} />
         <ProtectedRoute path="/messages" component={Messages} />
         <ProtectedRoute path="/messages/:userId" component={MessageThread} />
