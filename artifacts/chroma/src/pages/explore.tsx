@@ -308,7 +308,7 @@ export function Explore() {
             /* Variant A: genuinely empty catalogue */
             <EmptyState
               title="Be the first to publish"
-              description="Trending work will appear here once creators start uploading. Upload yours to kick things off."
+              description="Trending work will appear here once creators start uploading. Upload your work to kick things off."
               action={
                 <Link
                   href="/videos/upload"
