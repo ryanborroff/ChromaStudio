@@ -5,6 +5,7 @@ packages:
   - scripts
 
 allowBuilds:
+  esbuild: true
   msw: true
 
 autoInstallPeers: false
