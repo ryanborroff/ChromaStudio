@@ -180,7 +180,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               <SheetHeader className="px-4 h-12 flex flex-row items-center justify-start border-b border-white/10 space-y-0">
                 <SheetTitle className="flex items-center gap-2 text-white">
-                  <span className="font-black text-xl tracking-tight">ChromaStudio</span>
+                  <span className="font-black text-4xl tracking-tight">ChromaStudio</span>
                 </SheetTitle>
               </SheetHeader>
 
@@ -294,7 +294,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group" data-testid="link-home">
-            <span className="font-black text-xl tracking-tight text-white">ChromaStudio</span>
+            <span className="font-black text-4xl tracking-tight text-white">ChromaStudio</span>
           </Link>
 
           {/* ── Flat top-level nav — no dropdowns ───────────────────────── */}
