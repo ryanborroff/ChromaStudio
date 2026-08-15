@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { useLocation, useSearch } from "wouter";
-import { Clapperboard, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   loginWithGoogle,
   loginWithApple,
@@ -123,7 +123,6 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
     <div className="flex min-h-[calc(100dvh-4rem)] flex-col items-center justify-center py-12 px-4 bg-background">
       <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="bg-[#181818] rounded-2xl w-full overflow-hidden p-8 flex flex-col items-center text-center">
-          <Clapperboard className="h-10 w-10 text-primary mb-6" strokeWidth={2.5} />
           <h1 className="text-2xl font-bold tracking-tight text-white">
             {isSignUp ? "Join ChromaStudio" : "Sign in to ChromaStudio"}
           </h1>
