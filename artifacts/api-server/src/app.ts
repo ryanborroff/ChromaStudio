@@ -1,3 +1,5 @@
+import path from "path";
+import fs from "fs";
 import express, { type Express } from "express";
 import cors from "cors";
 import session from "express-session";
@@ -103,5 +105,21 @@ if (process.env.NODE_ENV === "development") {
 }
 
 app.use("/api", router);
+
+// Serve the built chroma SPA from the same origin so session cookies (sameSite:
+// "lax", the app's only CSRF protection — see above) keep working. Built as
+// part of this service's Railway build command; see package.json "build".
+const clientDistPath = path.resolve(process.cwd(), "../chroma/dist/public");
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+  app.get(/^(?!\/api).*/, (_req, res) => {
+    res.sendFile(path.join(clientDistPath, "index.html"));
+  });
+} else {
+  logger.warn(
+    { clientDistPath },
+    "chroma build output not found — frontend will not be served from this service",
+  );
+}
 
 export default app;
