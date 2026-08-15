@@ -151,7 +151,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       {/* macOS-style menu bar                                                */}
       {/* ------------------------------------------------------------------ */}
       <header
-        className="sticky top-0 z-50 w-full h-12 flex items-center px-4 justify-between"
+        className="sticky top-0 z-50 w-full h-12 flex items-center px-2 sm:px-4 justify-between"
         style={{
           background: "rgba(14,14,14,0.88)",
           backdropFilter: "blur(20px) saturate(180%)",
@@ -180,7 +180,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               <SheetHeader className="px-4 h-12 flex flex-row items-center justify-start border-b border-white/10 space-y-0">
                 <SheetTitle className="flex items-center gap-2 text-white">
-                  <span className="font-black text-4xl tracking-tight">ChromaStudio</span>
+                  <span className="font-black text-2xl tracking-tight">ChromaStudio</span>
                 </SheetTitle>
               </SheetHeader>
 
@@ -293,8 +293,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </Sheet>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group" data-testid="link-home">
-            <span className="font-black text-4xl tracking-tight text-white">ChromaStudio</span>
+          <Link href="/" className="flex items-center gap-2 group min-w-0" data-testid="link-home">
+            <span className="font-black text-lg sm:text-2xl md:text-3xl lg:text-4xl tracking-tight text-white whitespace-nowrap">ChromaStudio</span>
           </Link>
 
           {/* ── Flat top-level nav — no dropdowns ───────────────────────── */}
@@ -438,21 +438,22 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <>
               <Link
                 href="/sign-in"
-                className="text-sm font-medium text-white/50 hover:text-white px-3 py-1 rounded-md hover:bg-white/5 transition-all"
+                className="text-sm font-medium text-white/50 hover:text-white px-2 sm:px-3 py-1 rounded-md hover:bg-white/5 transition-all whitespace-nowrap"
                 data-testid="link-sign-in"
               >
                 Sign In
               </Link>
               <Link
                 href="/sign-up"
-                className="text-sm font-semibold px-4 py-1.5 rounded-lg text-white transition-all"
+                className="text-sm font-semibold px-3 sm:px-4 py-1.5 rounded-lg text-white transition-all whitespace-nowrap"
                 style={{
                   background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
                   boxShadow: "0 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12)",
                 }}
                 data-testid="btn-join"
               >
-                Join ChromaStudio
+                <span className="sm:hidden">Join</span>
+                <span className="hidden sm:inline">Join ChromaStudio</span>
               </Link>
             </>
           )}

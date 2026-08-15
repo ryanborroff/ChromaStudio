@@ -701,7 +701,7 @@ export function Library() {
 
               <div className="flex items-center gap-3">
                 {/* Search library */}
-                <div className="flex items-center gap-2 bg-[#1a1a1a] border-[0.5px] border-[#3a3a38] rounded-lg px-3 py-[6px] min-w-[200px] focus-within:border-[#fb923c] focus-within:shadow-[0_0_0_1px_rgba(251,146,60,0.3)] transition-[border-color,box-shadow] duration-150">
+                <div className="flex items-center gap-2 bg-[#1a1a1a] border-[0.5px] border-[#3a3a38] rounded-lg px-3 py-[6px] min-w-0 flex-1 sm:min-w-[200px] sm:flex-none focus-within:border-[#fb923c] focus-within:shadow-[0_0_0_1px_rgba(251,146,60,0.3)] transition-[border-color,box-shadow] duration-150">
                   <Search className="w-4 h-4 text-[#888888]" />
                   <input
                     type="search"
