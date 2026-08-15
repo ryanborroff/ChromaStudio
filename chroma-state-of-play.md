@@ -6,7 +6,9 @@
 
 > ⚠️ **Sample size caveat:** the survey has only 6 completed responses. Every percentage below is out of 6 — treat directional signal as hypothesis-confirming, not statistically reliable.
 
-> ⚠️ **Uncommitted work:** the Stripe billing implementation described below (routes/billing.ts, webhook handling, pricing-page wiring, schema columns) is written and typechecked but **not yet committed to git**. Everything else in this report reflects committed code on `main`.
+> ✅ **Update 2026-08-14:** the Stripe billing work described below is confirmed **committed** (`a976175`, ancestor of current `main` `HEAD`) — the "uncommitted" framing throughout this doc is stale. It's committed but still *unconfigured* (no Stripe keys), which is the actual blocker, not git status.
+
+> ✅ **Update 2026-08-14 — deployed to Railway.** Project `chroma-studio`: `chroma` (frontend) + `api-server` (backend) + Postgres, all live, schema pushed. **Mux is configured and active** as the streaming provider (`MUX_TOKEN_ID`/`MUX_TOKEN_SECRET`/`MUX_WEBHOOK_SECRET` set) — resolves the "which provider is actually configured" open question below. **Decision: stick with Mux (streaming) + Cloudflare R2 (file/image storage, zero egress fees) through the testing phase.** Cloudflare Stream's code path is real but incomplete (no webhook handler) and not worth building pre-launch — Mux is code-complete, already live, and cheap enough at testing volume (free trial credit). Revisit only if Mux's per-minute cost becomes material at real launch volume; switching is a two-env-var change per `lib/streaming/index.ts`, no re-architecture needed.
 
 ---
 
@@ -154,18 +156,18 @@ Status tags: **WORKING** (built and reachable end-to-end) · **PARTIAL** (built 
 
 ---
 
-## Gap List (Prioritized) — updated
+## Gap List (Prioritized) — updated 2026-08-14
 
-Items 1–3 from the previous list are done. Renumbered; new #1 reflects that billing needs *configuration*, not more code.
+Deployed to Railway this session: Mux is now the configured streaming provider (resolves old #2's urgency — Cloudflare Stream is simply unused, no need to build its webhook). The object-storage auth hole (old #3) was already fixed in commit `a976175`, which is deployed. Renumbered; new #1 reflects that billing needs *configuration*, not more code.
 
-1. **Configure and commit the Stripe billing work.** The code is done — this is now an operational task: create Stripe Products/Prices, set five env vars, register the webhook endpoint, run the DB migration in the real environment, and commit `artifacts/api-server/src/lib/stripe.ts` + `routes/billing.ts` + the pricing/account-page changes (currently uncommitted).
-2. **Fix the Cloudflare Stream / provider-strategy mismatch.** Now the top remaining code gap. Either build `POST /webhooks/cloudflare` or consolidate on Mux and say so explicitly — confirm which provider is actually configured in the real deployment first, since that determines urgency.
-3. **Close the unauthenticated private-object-serving hole.** `GET /api/storage/objects/*` still has no auth check. Treat as urgent before wide testing, independent of everything else.
-4. **Ship an anti-AI-scraping posture.** Validated demand, zero implementation, cheap first step (robots.txt disallow rules for AI crawlers).
-5. **Surface curated collections as a public portfolio feature.** Backend already built; needs a public read route and a profile-page surface.
-6. **Add domain-restricted share links.** Low priority per survey, cheap to bolt onto the existing password-check pattern.
-7. **Decide on migration tooling — likely deprioritize.** Survey data doesn't support it as a priority.
-8. **Backfill test/CI coverage.** More urgent now that billing exists — a regression in checkout or webhook handling is a money bug, not just a UX bug. Recommend this lands before or alongside the billing configuration work in #1.
+1. **Configure and commit the Stripe billing work.** The code is done — this is now an operational task: create Stripe Products/Prices, set five env vars, register the webhook endpoint, run the DB migration in the real environment. Recommend a separate, later test round once configured — don't bundle into the review-workflow round.
+2. **Move Mux playback from `public` to `signed` policy.** Assets are currently created with `playback_policy: ["public"]` ([mux.ts:21](artifacts/api-server/src/lib/streaming/mux.ts#L21)) — Mux itself performs no per-user auth on playback, so a leaked/extracted playback URL bypasses ChromaStudio's own access control (login gate / share-link token / password) for that video, similar to an "unlisted" video. Fine for this test round; fix before handling sensitive/unreleased footage. Requires signed-token generation (JWT) and a token-issuing endpoint — a real code change, not a config flip.
+3. **Ship an anti-AI-scraping posture.** Validated demand, zero implementation, cheap first step (robots.txt disallow rules for AI crawlers).
+4. **Surface curated collections as a public portfolio feature.** Backend already built; needs a public read route and a profile-page surface.
+5. **Add domain-restricted share links.** Low priority per survey, cheap to bolt onto the existing password-check pattern.
+6. **Decide on migration tooling — likely deprioritize.** Survey data doesn't support it as a priority.
+7. **Backfill test/CI coverage.** More urgent now that billing exists — a regression in checkout or webhook handling is a money bug, not just a UX bug. Recommend this lands before or alongside the billing configuration work in #1.
+8. **Isolate ChromaStudio's Mux usage from the account owner's personal assets**, if that separation ever matters (e.g. cost tracking, avoiding mixing personal and product video). Currently both share one Mux account/token — normal for a single-tenant-infra SaaS setup, but worth a dedicated Mux account later if it becomes a practical problem.
 
 ---
 
