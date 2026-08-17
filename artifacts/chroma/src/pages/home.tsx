@@ -8,6 +8,17 @@ import {
   Quote,
 } from "lucide-react";
 import { useState } from "react";
+import { motion } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: { opacity: 1, y: 0 },
+};
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.12 } },
+};
 
 const TESTIMONIALS = [
   {
@@ -83,23 +94,47 @@ export function Home() {
     <div className="flex flex-col w-full">
       {/* Hero */}
       <section className="relative overflow-hidden pt-28 pb-36 md:pt-40 md:pb-52">
-        <div
+        <motion.div
           className="absolute -top-40 -right-40 w-[600px] h-[600px] rounded-full opacity-30"
           style={{
             background:
               "radial-gradient(circle, rgba(245,158,11,0.35) 0%, transparent 70%)",
           }}
+          animate={{
+            x: [0, 30, 0],
+            y: [0, -20, 0],
+            scale: [1, 1.08, 1],
+          }}
+          transition={{ duration: 12, repeat: Infinity, ease: "easeInOut" }}
         />
-        <div
+        <motion.div
           className="absolute top-40 -left-40 w-[600px] h-[600px] rounded-full opacity-20"
           style={{
             background:
               "radial-gradient(circle, rgba(245,158,11,0.2) 0%, transparent 70%)",
           }}
+          animate={{
+            x: [0, -20, 0],
+            y: [0, 30, 0],
+            scale: [1, 1.1, 1],
+          }}
+          transition={{
+            duration: 14,
+            repeat: Infinity,
+            ease: "easeInOut",
+            delay: 1,
+          }}
         />
 
-        <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-          <h1
+        <motion.div
+          className="relative z-10 max-w-5xl mx-auto px-6 text-center"
+          initial="hidden"
+          animate="visible"
+          variants={stagger}
+        >
+          <motion.h1
+            variants={fadeUp}
+            transition={{ duration: 0.7, ease: "easeOut" }}
             className="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight mb-8 text-white leading-tight sm:whitespace-nowrap"
             style={{ letterSpacing: "-0.03em" }}
           >
@@ -114,16 +149,24 @@ export function Home() {
               Community
             </span>{" "}
             in Motion
-          </h1>
+          </motion.h1>
 
-          <p className="text-lg md:text-xl lg:text-2xl text-white/50 max-w-2xl lg:max-w-none mx-auto mb-12 font-medium leading-relaxed lg:whitespace-nowrap">
+          <motion.p
+            variants={fadeUp}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="text-lg md:text-xl lg:text-2xl text-white/50 max-w-2xl lg:max-w-none mx-auto mb-12 font-medium leading-relaxed lg:whitespace-nowrap"
+          >
             The filmmaker-first hosting platform with community at its heart
-          </p>
+          </motion.p>
 
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <motion.div
+            variants={fadeUp}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3"
+          >
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white transition-all"
+              className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg active:translate-y-0"
               style={{
                 background:
                   "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
@@ -136,7 +179,7 @@ export function Home() {
             </Link>
             <Link
               href="/explore"
-              className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white/80 hover:text-white transition-all"
+              className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white/80 hover:text-white transition-all hover:-translate-y-0.5"
               style={{
                 background: "rgba(255,255,255,0.07)",
                 border: "1px solid rgba(255,255,255,0.1)",
@@ -145,9 +188,13 @@ export function Home() {
             >
               Explore filmmakers
             </Link>
-          </div>
+          </motion.div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs md:text-sm font-medium uppercase tracking-[0.2em] text-white/45">
+          <motion.div
+            variants={fadeUp}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="mt-8 flex flex-wrap items-center justify-center gap-x-3 gap-y-2 text-xs md:text-sm font-medium uppercase tracking-[0.2em] text-white/45"
+          >
             {["Discover", "Create", "Host", "Manage", "Stream"].map(
               (step, i) => (
                 <span key={step} className="flex items-center gap-x-3">
@@ -158,8 +205,8 @@ export function Home() {
                 </span>
               ),
             )}
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
 
       {/* Features */}
@@ -171,7 +218,13 @@ export function Home() {
           background: "rgba(255,255,255,0.015)",
         }}
       >
-        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-5">
+        <motion.div
+          className="max-w-7xl mx-auto px-6 grid md:grid-cols-3 gap-5"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.3 }}
+          variants={stagger}
+        >
           {[
             {
               icon: <Play className="w-5 h-5" />,
@@ -189,8 +242,11 @@ export function Home() {
               desc: "Send clients a private download link for cuts, stills, and deliverables — no shared drives, no email attachments.",
             },
           ].map((f) => (
-            <div
+            <motion.div
               key={f.title}
+              variants={fadeUp}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              whileHover={{ y: -4 }}
               className="p-7 rounded-2xl transition-all duration-300 group"
               style={{
                 background: "rgba(255,255,255,0.04)",
@@ -201,8 +257,6 @@ export function Home() {
                   "rgba(255,255,255,0.065)";
                 (e.currentTarget as HTMLElement).style.borderColor =
                   "rgba(245,158,11,0.25)";
-                (e.currentTarget as HTMLElement).style.transform =
-                  "translateY(-2px)";
                 (e.currentTarget as HTMLElement).style.boxShadow =
                   "0 8px 32px rgba(0,0,0,0.4)";
               }}
@@ -211,8 +265,6 @@ export function Home() {
                   "rgba(255,255,255,0.04)";
                 (e.currentTarget as HTMLElement).style.borderColor =
                   "rgba(255,255,255,0.07)";
-                (e.currentTarget as HTMLElement).style.transform =
-                  "translateY(0)";
                 (e.currentTarget as HTMLElement).style.boxShadow = "none";
               }}
             >
@@ -226,27 +278,42 @@ export function Home() {
                 {f.title}
               </h3>
               <p className="text-sm text-white/45 leading-relaxed">{f.desc}</p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
       </section>
 
       {/* Testimonials */}
       <section className="py-24 px-6">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-14">
+          <motion.div
+            className="text-center mb-14"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.6 }}
+            variants={fadeUp}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/30 mb-3">
               From the community
             </p>
             <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">
               What filmmakers are saying
             </h2>
-          </div>
+          </motion.div>
 
-          <div className="grid md:grid-cols-3 gap-6">
+          <motion.div
+            className="grid md:grid-cols-3 gap-6"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={stagger}
+          >
             {TESTIMONIALS.map((t) => (
-              <div
+              <motion.div
                 key={t.name}
+                variants={fadeUp}
+                transition={{ duration: 0.6, ease: "easeOut" }}
                 className="p-7 rounded-2xl flex flex-col gap-5"
                 style={{
                   background: "rgba(255,255,255,0.04)",
@@ -263,9 +330,9 @@ export function Home() {
                     {t.role} · {t.location}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -277,7 +344,14 @@ export function Home() {
           background: "rgba(255,255,255,0.015)",
         }}
       >
-        <div className="max-w-2xl mx-auto text-center">
+        <motion.div
+          className="max-w-2xl mx-auto text-center"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.6 }}
+          variants={fadeUp}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+        >
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/30 mb-3">
             Plans
           </p>
@@ -290,7 +364,7 @@ export function Home() {
           </p>
           <Link
             href="/pricing"
-            className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white transition-all"
+            className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
             style={{
               background:
                 "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
@@ -299,26 +373,44 @@ export function Home() {
           >
             View pricing
           </Link>
-        </div>
+        </motion.div>
       </section>
 
       {/* FAQ */}
       <section className="py-24 px-6">
         <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-12">
+          <motion.div
+            className="text-center mb-12"
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.6 }}
+            variants={fadeUp}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+          >
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/30 mb-3">
               Questions
             </p>
             <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight">
               Frequently asked
             </h2>
-          </div>
+          </motion.div>
 
-          <div>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            variants={stagger}
+          >
             {FAQS.map((item) => (
-              <FAQItem key={item.q} q={item.q} a={item.a} />
+              <motion.div
+                key={item.q}
+                variants={fadeUp}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+              >
+                <FAQItem q={item.q} a={item.a} />
+              </motion.div>
             ))}
-          </div>
+          </motion.div>
 
           <div className="mt-10 text-center">
             <p className="text-white/35 text-sm">
@@ -337,18 +429,36 @@ export function Home() {
         className="py-24 px-6 text-center"
         style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
       >
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight">
+        <motion.div
+          className="max-w-2xl mx-auto"
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, amount: 0.5 }}
+          variants={stagger}
+        >
+          <motion.h2
+            variants={fadeUp}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="text-4xl md:text-5xl font-black text-white tracking-tight mb-5 leading-tight"
+          >
             Your work deserves
             <br />a professional home.
-          </h2>
-          <p className="text-white/45 mb-8 text-lg">
+          </motion.h2>
+          <motion.p
+            variants={fadeUp}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="text-white/45 mb-8 text-lg"
+          >
             Join thousands of filmmakers already on ChromaStudio.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+          </motion.p>
+          <motion.div
+            variants={fadeUp}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            className="flex flex-col sm:flex-row items-center justify-center gap-3"
+          >
             <Link
               href="/sign-up"
-              className="inline-flex items-center gap-2 h-12 px-8 rounded-xl text-base font-semibold text-white transition-all"
+              className="inline-flex items-center gap-2 h-12 px-8 rounded-xl text-base font-semibold text-white transition-all hover:-translate-y-0.5 hover:shadow-lg"
               style={{
                 background:
                   "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)",
@@ -360,7 +470,7 @@ export function Home() {
             </Link>
             <Link
               href="/explore"
-              className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white/80 hover:text-white transition-all"
+              className="inline-flex items-center gap-2 h-12 px-7 rounded-xl text-base font-semibold text-white/80 hover:text-white transition-all hover:-translate-y-0.5"
               style={{
                 background: "rgba(255,255,255,0.07)",
                 border: "1px solid rgba(255,255,255,0.1)",
@@ -368,8 +478,8 @@ export function Home() {
             >
               Explore films
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </section>
     </div>
   );
