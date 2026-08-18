@@ -68,6 +68,43 @@ This is the part that matters most for "test soon." Short version: **the core fi
 
 ---
 
+## Claimed vs. Built — Funding Application Commitments
+
+> ⚠️ **These are not marketing copy.** Confirmed 2026-08-15: the eight items checked below (and the four AI-roadmap items further down) are commitments made in a **funding application**. No deadline attached yet, but the bar is different from a landing page — a funder's diligence (a follow-up call, a demo request, a milestone check-in) tests the gap between "committed" and "built" directly. Treat every ❌/⚠️ row below as something a funder could reasonably ask to see, not just a backlog item.
+
+Checked against eight capability claims on 2026-08-14/15. Consolidated to seven rows — two of the eight claims describe the same underlying gap.
+
+| Claimed | Status | Evidence |
+|---|---|---|
+| High-resolution raw file sharing for production collaboration *(asked twice, same gap)* | ❌ **Not built** | The generic file-sharing feature (`deliveries` — [routes/deliveries.ts](artifacts/api-server/src/routes/deliveries.ts)) is real but hard-capped **server-side at 50 MB/file** ([storage.ts:125](artifacts/api-server/src/routes/storage.ts#L125), `MAX_FILE_BYTES`, enforced not just UI copy) — far below camera-original scale. The video pipeline (Mux/R2) can take larger files when a provider is configured, but the upload picker rejects anything whose browser-reported MIME type isn't `video/*` ([video-upload.tsx](artifacts/chroma/src/pages/video-upload.tsx)), which commonly excludes true camera-RAW formats (BRAW, R3D, ARI). No chunked/resumable upload outside Mux's own uploader either — a dropped connection on a multi-GB file means starting over. |
+| Option to create low-resolution proxies | ❌ **Missing entirely** | Zero references to "proxy"/"proxies" anywhere in the codebase. Not stubbed, not scaffolded, not on any prior gap list. |
+| Secure, highly customizable links to WIP edits and completed films | ⚠️ **Partial — depends which link type** | Three separate link mechanisms exist with very different capability levels. Review links (WIP): password, expiry, independent download/comment toggles, revoke — genuinely rich. Video share links (finished work): password + on/off only, paid-plan-gated, no expiry. Delivery links (file downloads): password only. "Highly customizable" is fair for WIP review links, an overstatement for finished-film share links. |
+| Frictionless client review, no account required | ✅ **Ready** | Verified live this session — guest review links, frame-accurate commenting to exact sub-second precision, approve/request-changes, all with zero sign-up. |
+| Customizable public-facing portfolios | ⚠️ **Partial — profile yes, portfolio no** | Profile customization (name, profession, location, website, bio, 5 social links, avatar/cover) is real and public at `/profile/:username`. But portfolio *curation* — selecting/arranging a showcased body of work — isn't: `collections.ts` is fully built on the backend but every route requires auth, `profile.tsx` never surfaces it, and the dedicated `/studio/portfolio` destination is a "Coming Soon" stub. |
+| Curated filmmaker community in one platform | ❌ **Not built** | `/community` is a "Coming Soon" stub with literal placeholder copy ("Filmmaker groups · Project collaborations · Community events") — zero backend. What does exist (follow/feed/explore) is real but is discovery/social infrastructure, not community (groups, discussion, curation). |
+| Built-in AI-scraping protection | ❌ **Missing, unchanged** | `robots.txt` still `Allow: /` (wide open); zero watermarking or anti-scraping code anywhere. Confirmed both in the original audit and re-checked now. |
+
+**Net read:** one of seven is ready today (frictionless client review — this is the one I can vouch for firsthand, having built and verified it this session). Two are honest-with-caveats (link customization, portfolios) — real underlying infrastructure but the specific claim oversells what's public/usable today. Four are not built at all: raw file sharing at production scale, proxy generation, curated community, and AI-scraping protection (the last one *was* flagged in the original audit, just not yet acted on).
+
+**Given these are funder commitments, recommend two parallel tracks rather than treating this as one prioritized backlog:**
+1. **Close the gap for real**, sequenced by the updated Gap List below (raw file sharing and proxies are now #6–#7, ahead of most existing gaps, given the source).
+2. **Decide what to say if asked before it's built.** A funder question about a committed feature usually has a reasonable honest answer ("in active development, here's the architecture, here's the timeline") — but that answer needs to be decided and consistent, not improvised per-conversation. That's a conversation with whoever owns funder relations, not something I can resolve from the code.
+
+### Planned AI features — checked for existing groundwork, found none
+
+Framed as forward-looking plans rather than current claims, so the bar here is different: is there anything already in place to build on, or is this fully greenfield? Checked package.json in both apps and grepped the codebase for any trace of each.
+
+| Planned feature | Groundwork found | Notes |
+|---|---|---|
+| Automated transcription/captioning (multi-language) | None | No transcription/captioning code, no speech-to-text SDK (no OpenAI, AWS Transcribe, Google Speech, Whisper) in either `package.json`. Mux does support auto-captioning as an add-on API on assets already flowing through it (`streamAssetId` is already stored) — worth checking before building this from scratch, since it may be a Mux API call away rather than a new pipeline. |
+| Scene/image recognition for automated metadata tagging | None | No vision/ML SDK anywhere (no AWS Rekognition, Google Vision, etc.). `videosTable.tags` exists but is a plain user-picked array (`video-upload.tsx`'s checkbox list) — a real hook point to write auto-generated tags into, once something generates them, but nothing does yet. |
+| AI-assisted search across footage libraries | None | Current search (`explore.tsx`, `GET /videos`) is a plain SQL `ILIKE` match on title/description ([routes/videos.ts](artifacts/api-server/src/routes/videos.ts)) — keyword substring matching, not semantic/AI search. No vector store, no embeddings anywhere in the stack. |
+| Smart proxy generation | None | Same underlying gap as "low-resolution proxies" above — there's no proxy generation at all yet, "smart"/AI-assisted or otherwise. This is downstream of building basic proxy generation first. |
+
+None of these have false starts or half-built scaffolding to work around — whoever scopes them is starting clean. The one thing worth flagging before scoping is the transcription item specifically: **check what Mux's captioning API already offers** before building a bespoke transcription pipeline, since Mux is already the streaming provider of record and this might be materially cheaper than it looks.
+
+---
+
 ## Code Audit
 
 Status tags: **WORKING** (built and reachable end-to-end) · **PARTIAL** (built but incomplete, gated, or missing a critical link) · **STUBBED** (scaffolding/schema exists, no real functionality) · **MISSING** (not present at all).
@@ -156,18 +193,27 @@ Status tags: **WORKING** (built and reachable end-to-end) · **PARTIAL** (built 
 
 ---
 
-## Gap List (Prioritized) — updated 2026-08-14
+## Gap List (Prioritized) — updated 2026-08-15
 
 Deployed to Railway this session: Mux is now the configured streaming provider (resolves old #2's urgency — Cloudflare Stream is simply unused, no need to build its webhook). The object-storage auth hole (old #3) was already fixed in commit `a976175`, which is deployed. Renumbered; new #1 reflects that billing needs *configuration*, not more code.
 
+**Confirmed 2026-08-15: items 5–7 are funding-application commitments, not hypothetical asks** — reordered above #8 (domain-restricted links) accordingly, since that one was never committed anywhere and was already low priority per survey data. No deadline attached yet, but "funded commitment with no deadline" still outranks "backlog item with low survey priority."
+
 1. **Configure and commit the Stripe billing work.** The code is done — this is now an operational task: create Stripe Products/Prices, set five env vars, register the webhook endpoint, run the DB migration in the real environment. Recommend a separate, later test round once configured — don't bundle into the review-workflow round.
 2. **Move Mux playback from `public` to `signed` policy.** Assets are currently created with `playback_policy: ["public"]` ([mux.ts:21](artifacts/api-server/src/lib/streaming/mux.ts#L21)) — Mux itself performs no per-user auth on playback, so a leaked/extracted playback URL bypasses ChromaStudio's own access control (login gate / share-link token / password) for that video, similar to an "unlisted" video. Fine for this test round; fix before handling sensitive/unreleased footage. Requires signed-token generation (JWT) and a token-issuing endpoint — a real code change, not a config flip.
-3. **Ship an anti-AI-scraping posture.** Validated demand, zero implementation, cheap first step (robots.txt disallow rules for AI crawlers).
-4. **Surface curated collections as a public portfolio feature.** Backend already built; needs a public read route and a profile-page surface.
-5. **Add domain-restricted share links.** Low priority per survey, cheap to bolt onto the existing password-check pattern.
-6. **Decide on migration tooling — likely deprioritize.** Survey data doesn't support it as a priority.
-7. **Backfill test/CI coverage.** More urgent now that billing exists — a regression in checkout or webhook handling is a money bug, not just a UX bug. Recommend this lands before or alongside the billing configuration work in #1.
-8. **Isolate ChromaStudio's Mux usage from the account owner's personal assets**, if that separation ever matters (e.g. cost tracking, avoiding mixing personal and product video). Currently both share one Mux account/token — normal for a single-tenant-infra SaaS setup, but worth a dedicated Mux account later if it becomes a practical problem.
+3. **Ship an anti-AI-scraping posture.** *Funder commitment.* Validated demand too, zero implementation, cheap first step (robots.txt disallow rules for AI crawlers).
+4. **Surface curated collections as a public portfolio feature.** *Funder commitment.* Backend already built; needs a public read route and a profile-page surface. Cheapest of the funder-committed gaps to close — this is real wiring work, not new architecture.
+5. **High-resolution raw file sharing for production collaboration.** *Funder commitment.* Currently capped at 50 MB/file with no chunked upload — nowhere near camera-original scale. Real scope: a much higher (or removed) size ceiling, real multipart/resumable upload (the existing Uppy `ObjectUploader` already has multipart support in its dependency, just disabled — `shouldUseMultipart: false`), and either relaxing or removing the `video/*` MIME check for this specific upload path so RAW camera formats aren't rejected client-side. This is the biggest engineering lift of the funder-committed items — sequence it first among them regardless, since #6 depends on it existing.
+6. **Low-resolution proxy generation.** *Funder commitment.* Fully greenfield — no code, no schema field pairing an original with a proxy. Real scope: a transcode step (ffmpeg job, or a provider API if one's already in the stack) triggered on upload, a `proxyUrl`/`proxyStatus` pairing in the video schema, and a UI toggle to play proxy vs. original. Sequenced after #5 — low value without larger raw files to make proxies *of*.
+7. **Curated filmmaker community.** *Funder commitment.* `/community` is currently a placeholder with no backend. This is the largest scope item of the three — closer to a new product surface (groups, discussion, curation) than a gap-fill, and survey signal (Q22) shows real users don't rank it highly. Recommend treating this as its own scoping/timeline conversation rather than sequencing it like the others — "committed" doesn't tell you how much of it needs to exist to satisfy the commitment.
+8. **Add domain-restricted share links.** Low priority per survey, not a funder commitment, cheap to bolt onto the existing password-check pattern whenever it's picked up.
+9. **Decide on migration tooling — likely deprioritize.** Survey data doesn't support it as a priority.
+10. **Backfill test/CI coverage.** More urgent now that billing exists — a regression in checkout or webhook handling is a money bug, not just a UX bug. Recommend this lands before or alongside the billing configuration work in #1.
+11. **Isolate ChromaStudio's Mux usage from the account owner's personal assets**, if that separation ever matters (e.g. cost tracking, avoiding mixing personal and product video). Currently both share one Mux account/token — normal for a single-tenant-infra SaaS setup, but worth a dedicated Mux account later if it becomes a practical problem.
+
+### AI roadmap — funder commitments, not yet prioritized against the above
+
+Four more items are also funding-application commitments: automated transcription/captioning, scene/image recognition for auto-tagging, AI-assisted search, and smart proxy generation. All four are fully greenfield (see the groundwork check above) — no false starts to account for, but also nothing to build on. Deliberately not folded into the numbered list above since these are a different kind of decision (multi-provider-API roadmap bets, not gap-fills) and "no deadline yet" gives room for a real scoping pass rather than slotting them in by guesswork. One live lead: check Mux's own captioning API before scoping transcription from scratch, since Mux is already the provider of record for every asset in the system.
 
 ---
 
@@ -177,3 +223,4 @@ Deployed to Railway this session: Mux is now the configured streaming provider (
 - **Whether to include billing in this testing round at all.** Recommend treating it as a separate, later round once Stripe test-mode keys are configured — bundling an unconfigured checkout flow into a workflow-testing round risks testers hitting a dead end and reading it as broken rather than "not turned on yet."
 - **Google/Apple OAuth** are still unconfigured — decide whether email/password alone is acceptable for this round or whether testers specifically need social login.
 - Carried forward from the prior audit: sample size (n=6) is small; migration-tool priority contradicts the original brief; which streaming provider is actually configured in production was never determinable from the local repo.
+- **Resolved 2026-08-15:** the eight claimed-vs-built capabilities and four AI-roadmap items are **funding application commitments**, confirmed by the founder. No deadline attached yet. This has been folded into the Gap List priority ordering above — the four confirmed-not-built items (raw file sharing, proxies, community, AI-scraping protection) now rank ahead of lower-stakes backlog items regardless of survey priority. Still open: whether there's a milestone/reporting cadence tied to the funding (quarterly update, board deck, etc.) that would turn "no deadline yet" into a real one — worth checking with whoever manages that relationship before assuming there's no time pressure.
