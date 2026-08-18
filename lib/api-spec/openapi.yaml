@@ -1812,6 +1812,9 @@ components:
           type: ["string", "null"]
         streamPlaybackId:
           type: ["string", "null"]
+        streamPlaybackToken:
+          type: ["string", "null"]
+          description: Short-lived signed playback JWT for Mux videos using a signed playback policy.
         duration:
           type: ["number", "null"]
         fileSizeBytes:
@@ -2451,6 +2454,9 @@ components:
           type: ["string", "null"]
         streamPlaybackId:
           type: ["string", "null"]
+        streamPlaybackToken:
+          type: ["string", "null"]
+          description: Short-lived signed playback JWT for Mux videos using a signed playback policy.
         streamUid:
           type: ["string", "null"]
         videoUrl:

@@ -22,4 +22,11 @@ export interface StreamingProvider {
     uid: string,
     playbackId?: string | null,
   ): Promise<string | null>;
+  /**
+   * For providers using signed/private playback, mint short-lived tokens for
+   * a playback ID. Returns null for providers that don't require signing.
+   */
+  signPlaybackTokens?(
+    playbackId: string,
+  ): Promise<{ video: string; thumbnail: string } | null>;
 }

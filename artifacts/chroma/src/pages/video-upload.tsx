@@ -419,7 +419,6 @@ export function VideoUpload() {
               noDrop
               noProgress
               noStatus
-              noRetry
               style={{ display: "none" }}
               onProgress={(event) =>
                 setProgress((event as CustomEvent<number>).detail)

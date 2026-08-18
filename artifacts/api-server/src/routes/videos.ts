@@ -76,8 +76,26 @@ export async function buildVideoResponse(
   }
 
   const { sharePasswordHash, shareToken, ratingSum, ...rest } = video;
+
+  let streamPlaybackToken: string | undefined;
+  let thumbnailUrl = video.thumbnailUrl;
+  if (video.streamProvider === "mux" && video.streamPlaybackId) {
+    const provider = getStreamingProvider();
+    const tokens = await provider?.signPlaybackTokens?.(
+      video.streamPlaybackId,
+    );
+    if (tokens) {
+      streamPlaybackToken = tokens.video;
+      if (thumbnailUrl?.startsWith("https://image.mux.com/")) {
+        thumbnailUrl = `${thumbnailUrl}?token=${tokens.thumbnail}`;
+      }
+    }
+  }
+
   return {
     ...rest,
+    thumbnailUrl,
+    ...(streamPlaybackToken ? { streamPlaybackToken } : {}),
     tags: video.tags ?? [],
     shareToken: currentUserId === video.userId ? (shareToken ?? null) : null,
     hasSharePassword: !!sharePasswordHash,

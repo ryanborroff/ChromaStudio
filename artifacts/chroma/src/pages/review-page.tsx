@@ -173,7 +173,11 @@ export function ReviewPage() {
   const format = selectedFormat || session.downloadFormats?.[0] || "";
   const downloadHref =
     session.streamProvider === "mux" && session.streamPlaybackId
-      ? `https://stream.mux.com/${session.streamPlaybackId}/high.mp4`
+      ? `https://stream.mux.com/${session.streamPlaybackId}/high.mp4${
+          session.streamPlaybackToken
+            ? `?token=${session.streamPlaybackToken}`
+            : ""
+        }`
       : session.streamUid
         ? `https://videodelivery.net/${session.streamUid}/downloads/default.mp4?filename=${encodeURIComponent(`${safeTitle}-${format}.mp4`)}`
         : session.videoUrl || "";
@@ -288,6 +292,11 @@ export function ReviewPage() {
                 <MuxPlayer
                   ref={muxPlayerRef}
                   playbackId={session.streamPlaybackId}
+                  tokens={
+                    session.streamPlaybackToken
+                      ? { playback: session.streamPlaybackToken }
+                      : undefined
+                  }
                   streamType="on-demand"
                   metadataVideoTitle={session.title}
                   className="h-full w-full"

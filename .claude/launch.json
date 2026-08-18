@@ -6,6 +6,18 @@
       "runtimeExecutable": "env",
       "runtimeArgs": ["PORT=5173", "BASE_PATH=/", "API_PORT=8090", "pnpm", "--filter", "@workspace/chroma", "exec", "vite", "--config", "vite.config.ts", "--host", "0.0.0.0"],
       "port": 5173
+    },
+    {
+      "name": "chroma-api-server",
+      "runtimeExecutable": "env",
+      "runtimeArgs": [
+        "PORT=8090",
+        "NODE_ENV=development",
+        "DATABASE_URL=postgresql://ryanborroff@localhost:5432/chroma_dev",
+        "SESSION_SECRET=558433be6781afdf7fc4a19bd3762c16dba0525583e149ee8b653724c543c1d3",
+        "pnpm", "--filter", "@workspace/api-server", "run", "dev"
+      ],
+      "port": 8090
     }
   ]
 }

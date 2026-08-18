@@ -37,6 +37,7 @@ import {
   SelectReviewVersionResponse,
 } from "@workspace/api-zod";
 import { getCurrentUser, requireAuth } from "../lib/auth";
+import { getStreamingProvider } from "../lib/streaming/index.js";
 
 const router: IRouter = Router();
 const guestAttempts = new Map<string, { count: number; resetAt: number }>();
@@ -181,10 +182,24 @@ async function buildSession(
   // Version metadata is withheld pre-unlock along with everything else media-
   // related, so a locked link can't be used to enumerate video ids.
   const versions = includeMedia ? await listGroupVersions(video) : [];
+
+  let streamPlaybackToken: string | null = null;
+  let thumbnailUrl = video.thumbnailUrl ?? null;
+  if (includeMedia && video.streamProvider === "mux" && video.streamPlaybackId) {
+    const provider = getStreamingProvider();
+    const tokens = await provider?.signPlaybackTokens?.(video.streamPlaybackId);
+    if (tokens) {
+      streamPlaybackToken = tokens.video;
+      if (thumbnailUrl?.startsWith("https://image.mux.com/")) {
+        thumbnailUrl = `${thumbnailUrl}?token=${tokens.thumbnail}`;
+      }
+    }
+  }
+
   return {
     title: video.title,
     description: video.description ?? null,
-    thumbnailUrl: video.thumbnailUrl ?? null,
+    thumbnailUrl,
     requiresPassword: !includeMedia && !!link.passwordHash,
     allowDownload: link.allowDownload,
     allowComments: link.allowComments,
@@ -193,6 +208,7 @@ async function buildSession(
       "pending",
     streamProvider: includeMedia ? (video.streamProvider ?? null) : null,
     streamPlaybackId: includeMedia ? (video.streamPlaybackId ?? null) : null,
+    streamPlaybackToken,
     streamUid: includeMedia ? (video.streamUid ?? null) : null,
     videoUrl: includeMedia ? (video.videoUrl ?? null) : null,
     downloadFormats:

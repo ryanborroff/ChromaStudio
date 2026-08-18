@@ -130,6 +130,11 @@ export interface Video {
   streamAssetId?: string | null;
   /** @nullable */
   streamPlaybackId?: string | null;
+  /**
+     * Short-lived signed playback JWT for Mux videos using a signed playback policy.
+     * @nullable
+     */
+  streamPlaybackToken?: string | null;
   /** @nullable */
   duration?: number | null;
   /** @nullable */
@@ -599,6 +604,11 @@ export interface ReviewSession {
   streamProvider?: string | null;
   /** @nullable */
   streamPlaybackId?: string | null;
+  /**
+     * Short-lived signed playback JWT for Mux videos using a signed playback policy.
+     * @nullable
+     */
+  streamPlaybackToken?: string | null;
   /** @nullable */
   streamUid?: string | null;
   /** @nullable */

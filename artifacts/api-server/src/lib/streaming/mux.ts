@@ -18,7 +18,7 @@ export const muxProvider: StreamingProvider = {
     const upload = await mux.video.uploads.create({
       cors_origin: "*",
       new_asset_settings: {
-        playback_policy: ["public"],
+        playback_policy: ["signed"],
         mp4_support: "standard",
         passthrough: uid,
       },
@@ -37,9 +37,30 @@ export const muxProvider: StreamingProvider = {
     _uid: string,
     playbackId?: string | null,
   ): Promise<string | null> {
-    return playbackId
-      ? `https://stream.mux.com/${encodeURIComponent(playbackId)}/high.mp4`
-      : null;
+    if (!playbackId) return null;
+    const tokens = await muxProvider.signPlaybackTokens!(playbackId);
+    const base = `https://stream.mux.com/${encodeURIComponent(playbackId)}/high.mp4`;
+    return tokens ? `${base}?token=${tokens.video}` : base;
+  },
+
+  async signPlaybackTokens(
+    playbackId: string,
+  ): Promise<{ video: string; thumbnail: string } | null> {
+    if (!process.env.MUX_SIGNING_KEY || !process.env.MUX_PRIVATE_KEY) {
+      // Signing key not configured — asset was created with a public policy
+      // (or the deployment predates signed playback). Callers should fall
+      // back to unsigned URLs in that case.
+      return null;
+    }
+    const mux = getMuxClient();
+    const tokens = await mux.jwt.signPlaybackId(playbackId, {
+      type: ["video", "thumbnail"],
+      expiration: "6h",
+    });
+    const video = tokens["playback-token"];
+    const thumbnail = tokens["thumbnail-token"];
+    if (!video || !thumbnail) return null;
+    return { video, thumbnail };
   },
 };
 

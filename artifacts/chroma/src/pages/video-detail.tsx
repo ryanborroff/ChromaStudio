@@ -365,7 +365,6 @@ export function VideoDetail() {
           noDrop
           noProgress
           noStatus
-          noRetry
           style={{ display: "none" }}
         />
       )}
@@ -375,6 +374,11 @@ export function VideoDetail() {
             <MuxPlayer
               ref={muxPlayerRef}
               playbackId={video.streamPlaybackId}
+              tokens={
+                video.streamPlaybackToken
+                  ? { playback: video.streamPlaybackToken }
+                  : undefined
+              }
               poster={video.thumbnailUrl || undefined}
               style={{ width: "100%", height: "100%" }}
               accentColor="#f59e0b"
