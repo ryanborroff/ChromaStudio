@@ -127,7 +127,7 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
             {isSignUp ? "Join ChromaStudio" : "Sign in to ChromaStudio"}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {isSignUp ? "The platform for serious filmmakers" : "Enter the professional ecosystem"}
+            {isSignUp ? "The platform for serious filmmakers" : "Enter our filmmaker-first hosting platform"}
           </p>
 
           <div className="mt-8 w-full flex flex-col gap-3">
