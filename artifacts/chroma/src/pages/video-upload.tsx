@@ -1,9 +1,11 @@
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   useCreateVideo,
   useCreateVideoUploadUrl,
   useUpdateVideo,
   useConfirmVideoUpload,
+  useGetVideo,
+  getGetVideoQueryKey,
 } from "@workspace/api-client-react";
 import MuxUploader, {
   type MuxUploaderRefAttributes,
@@ -74,7 +76,7 @@ export function VideoUpload() {
   const search = useSearch();
   const searchParams = new URLSearchParams(search);
   const reviewGroupId = searchParams.get("reviewGroupId") || undefined;
-  const revisionTitle = searchParams.get("title") || undefined;
+  const sourceVideoId = Number(searchParams.get("sourceVideoId")) || undefined;
   const fileInputRef = useRef<HTMLInputElement>(null);
   const muxUploaderRef = useRef<MuxUploaderRefAttributes | null>(null);
   const [file, setFile] = useState<File | null>(null);
@@ -102,7 +104,7 @@ export function VideoUpload() {
   const form = useForm<UploadFormValues>({
     resolver: zodResolver(uploadSchema),
     defaultValues: {
-      title: revisionTitle ?? "",
+      title: "",
       description: "",
       privacy: "public",
       credits: "",
@@ -110,6 +112,28 @@ export function VideoUpload() {
       downloadFormats: ["1080p", "720p"],
     },
   });
+
+  const { data: sourceVideo } = useGetVideo(sourceVideoId ?? 0, {
+    query: {
+      enabled: !!sourceVideoId,
+      queryKey: getGetVideoQueryKey(sourceVideoId ?? 0),
+    },
+  });
+
+  // Carry the prior version's metadata forward so re-uploading a revised
+  // cut doesn't mean re-typing title, tags, credits, etc. from scratch.
+  useEffect(() => {
+    if (!sourceVideo) return;
+    form.reset({
+      title: sourceVideo.title,
+      description: sourceVideo.description ?? "",
+      privacy: sourceVideo.privacy,
+      credits: sourceVideo.credits ?? "",
+      tags: sourceVideo.tags ?? [],
+      downloadFormats: sourceVideo.downloadFormats ?? ["1080p", "720p"],
+    });
+    if (sourceVideo.thumbnailUrl) setThumbnailUrl(sourceVideo.thumbnailUrl);
+  }, [sourceVideo, form]);
 
   const uploadUrlMutation = useCreateVideoUploadUrl();
   const createMutation = useCreateVideo();

@@ -216,6 +216,9 @@ export function VideoDetail() {
           title: video!.title,
           description: video!.description ?? undefined,
           privacy: video!.privacy,
+          tags: video!.tags ?? [],
+          credits: video!.credits ?? undefined,
+          downloadFormats: video!.downloadFormats ?? [],
           fileSizeBytes: file.size,
           ...(isObjectStorage
             ? { videoUrl: `/api/storage${ticket.uid}` }
@@ -559,7 +562,7 @@ export function VideoDetail() {
                 {isOwner && (
                   <Button asChild className="rounded-full font-semibold">
                     <Link
-                      href={`/videos/upload?reviewGroupId=${encodeURIComponent(groupId)}&title=${encodeURIComponent(video.title)}`}
+                      href={`/videos/upload?reviewGroupId=${encodeURIComponent(groupId)}&sourceVideoId=${video.id}`}
                     >
                       <UploadCloud className="w-5 h-5 mr-2" />
                       Upload new version
