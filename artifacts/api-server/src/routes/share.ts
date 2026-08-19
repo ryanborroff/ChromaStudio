@@ -2,7 +2,7 @@ import { Router, type IRouter } from "express";
 import { randomBytes } from "node:crypto";
 import bcrypt from "bcryptjs";
 import { eq, and } from "drizzle-orm";
-import { db, videosTable } from "@workspace/db";
+import { db, videosTable, notDeleted } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import {
   UpdateVideoShareBody,
@@ -47,7 +47,13 @@ router.put("/videos/:id/share", requireAuth, async (req, res): Promise<void> => 
   const [video] = await db
     .select()
     .from(videosTable)
-    .where(and(eq(videosTable.id, id), eq(videosTable.userId, user.id)))
+    .where(
+      and(
+        eq(videosTable.id, id),
+        eq(videosTable.userId, user.id),
+        notDeleted(),
+      ),
+    )
     .limit(1);
   if (!video) {
     res.status(404).json({ error: "Video not found" });
@@ -93,7 +99,13 @@ router.get("/share/:token", async (req, res): Promise<void> => {
   const [video] = await db
     .select()
     .from(videosTable)
-    .where(and(eq(videosTable.shareToken, token), eq(videosTable.shareEnabled, true)))
+    .where(
+      and(
+        eq(videosTable.shareToken, token),
+        eq(videosTable.shareEnabled, true),
+        notDeleted(),
+      ),
+    )
     .limit(1);
   if (!video) {
     res.status(404).json({ error: "Shared video not found" });
@@ -113,7 +125,13 @@ router.post("/share/:token/unlock", async (req, res): Promise<void> => {
   const [video] = await db
     .select()
     .from(videosTable)
-    .where(and(eq(videosTable.shareToken, token), eq(videosTable.shareEnabled, true)))
+    .where(
+      and(
+        eq(videosTable.shareToken, token),
+        eq(videosTable.shareEnabled, true),
+        notDeleted(),
+      ),
+    )
     .limit(1);
   if (!video) {
     res.status(404).json({ error: "Shared video not found" });

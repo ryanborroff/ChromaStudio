@@ -1,4 +1,5 @@
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadObjectCommand,
   PutObjectCommand,
@@ -45,6 +46,15 @@ export class ObjectStorageService {
    * Generate a presigned PUT URL for a new private upload.
    * Returns a signed R2 URL; call normalizeObjectEntityPath() to get the
    * internal /objects/<key> path to store in the database.
+   *
+   * Keys are currently flat under private/uploads/<uuid> since there is no
+   * transcode/derivative pipeline in this codebase today (renditions are
+   * generated externally by the streaming provider, when one is configured).
+   * If a derivatives pipeline is ever added, split keys into
+   * private/originals/<uuid> (write-once, never overwritten) and
+   * private/derivatives/<uuid>/<variant> (regenerable) — and make sure any
+   * purge job only ever deletes originals/-scoped keys tied to a specific
+   * soft-deleted row, never a blanket prefix delete.
    */
   async getObjectEntityUploadURL(): Promise<string> {
     const key = `${PRIVATE_PREFIX}/uploads/${randomUUID()}`;
@@ -110,6 +120,34 @@ export class ObjectStorageService {
       throw new ObjectNotFoundError();
     }
     return { key };
+  }
+
+  /**
+   * Re-fetch an uploaded object's metadata from R2 to confirm it actually
+   * landed before marking a video "ready". Throws ObjectNotFoundError if
+   * the object is missing.
+   */
+  async verifyObjectUpload(
+    objectPath: string,
+  ): Promise<{ key: string; sizeBytes: number }> {
+    const { key } = await this.getObjectEntityFile(objectPath);
+    const head = await getR2Client().send(
+      new HeadObjectCommand({ Bucket: getR2Bucket(), Key: key }),
+    );
+    if (head.ContentLength == null) {
+      throw new ObjectNotFoundError();
+    }
+    return { key, sizeBytes: head.ContentLength };
+  }
+
+  /**
+   * Permanently delete an object from R2. Used by the video purge job once
+   * a soft-deleted video's grace period has passed.
+   */
+  async deleteObject(key: string): Promise<void> {
+    await getR2Client().send(
+      new DeleteObjectCommand({ Bucket: getR2Bucket(), Key: key }),
+    );
   }
 
   async trySetObjectEntityAclPolicy(

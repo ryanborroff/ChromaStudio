@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { and, desc, eq } from "drizzle-orm";
-import { db, exportJobsTable, videosTable } from "@workspace/db";
+import { db, exportJobsTable, videosTable, notDeleted } from "@workspace/db";
 import {
   RequestBulkExportBody,
   ListExportJobsResponse,
@@ -31,7 +31,13 @@ router.post(
     const [video] = await db
       .select()
       .from(videosTable)
-      .where(and(eq(videosTable.id, id), eq(videosTable.userId, user.id)))
+      .where(
+        and(
+          eq(videosTable.id, id),
+          eq(videosTable.userId, user.id),
+          notDeleted(),
+        ),
+      )
       .limit(1);
     if (!video) {
       res.status(404).json({ error: "Video not found" });
@@ -73,6 +79,7 @@ router.post("/exports", requireAuth, async (req, res): Promise<void> => {
         and(
           eq(videosTable.id, Number(targetId)),
           eq(videosTable.userId, user.id),
+          notDeleted(),
         ),
       );
   } else if (scope === "project") {
@@ -87,7 +94,7 @@ router.post("/exports", requireAuth, async (req, res): Promise<void> => {
     videos = await db
       .select()
       .from(videosTable)
-      .where(eq(videosTable.userId, user.id));
+      .where(and(eq(videosTable.userId, user.id), notDeleted()));
   }
 
   const downloadUrls = (await Promise.all(videos.map(directExportUrl))).filter(

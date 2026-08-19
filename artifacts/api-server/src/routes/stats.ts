@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { sql, desc, eq } from "drizzle-orm";
-import { db, usersTable, videosTable, projectsTable } from "@workspace/db";
+import { and, sql, desc, eq } from "drizzle-orm";
+import { db, usersTable, videosTable, projectsTable, notDeleted } from "@workspace/db";
 import { GetPlatformStatsResponse, GetFeaturedContentResponse } from "@workspace/api-zod";
 
 const router: IRouter = Router();
@@ -8,7 +8,7 @@ const router: IRouter = Router();
 // GET /stats/platform
 router.get("/stats/platform", async (_req, res): Promise<void> => {
   const [userCount] = await db.select({ count: sql<number>`count(*)::int` }).from(usersTable);
-  const [videoCount] = await db.select({ count: sql<number>`count(*)::int` }).from(videosTable);
+  const [videoCount] = await db.select({ count: sql<number>`count(*)::int` }).from(videosTable).where(notDeleted());
   const [projectCount] = await db.select({ count: sql<number>`count(*)::int` }).from(projectsTable);
 
   const professions = await db
@@ -40,7 +40,7 @@ router.get("/stats/featured", async (_req, res): Promise<void> => {
   const videos = await db
     .select()
     .from(videosTable)
-    .where(eq(videosTable.privacy, "public"))
+    .where(and(eq(videosTable.privacy, "public"), notDeleted()))
     .orderBy(desc(videosTable.viewCount))
     .limit(8);
 

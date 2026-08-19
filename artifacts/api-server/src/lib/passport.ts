@@ -20,8 +20,7 @@ export function isAppleConfigured(): boolean {
 }
 
 function baseUrl(): string {
-  const host = process.env.REPLIT_DOMAINS?.split(",")[0]?.trim();
-  return host ? `https://${host}` : "";
+  return process.env.PUBLIC_APP_URL?.replace(/\/$/, "") ?? "";
 }
 
 /**

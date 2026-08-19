@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, ilike, or, sql } from "drizzle-orm";
-import { db, usersTable, videosTable, followsTable, endorsementsTable } from "@workspace/db";
+import { and, eq, ilike, or, sql } from "drizzle-orm";
+import { db, usersTable, videosTable, followsTable, endorsementsTable, notDeleted } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import {
   GetMeResponse,
@@ -26,7 +26,7 @@ async function buildUserResponse(user: typeof usersTable.$inferSelect, currentUs
   const [videoCountRow] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(videosTable)
-    .where(eq(videosTable.userId, user.id));
+    .where(and(eq(videosTable.userId, user.id), notDeleted()));
 
   const [endorsementCountRow] = await db
     .select({ count: sql<number>`count(*)::int` })
@@ -136,7 +136,7 @@ router.get("/users/:username", async (req, res): Promise<void> => {
   const videos = await db
     .select()
     .from(videosTable)
-    .where(eq(videosTable.userId, user.id))
+    .where(and(eq(videosTable.userId, user.id), notDeleted()))
     .orderBy(sql`${videosTable.createdAt} desc`)
     .limit(20);
 

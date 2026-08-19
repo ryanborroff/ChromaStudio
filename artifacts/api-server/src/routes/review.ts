@@ -9,6 +9,7 @@ import {
   reviewNotificationsTable,
   projectsTable,
   videosTable,
+  notDeleted,
 } from "@workspace/db";
 import {
   CreateReviewLinkBody,
@@ -77,6 +78,7 @@ async function getLatestVideo(groupId: string) {
       and(
         eq(videosTable.reviewGroupId, groupId),
         eq(videosTable.streamStatus, "ready"),
+        notDeleted(),
       ),
     )
     .orderBy(desc(videosTable.versionNumber), desc(videosTable.createdAt))
@@ -92,7 +94,11 @@ async function getLatestVideo(groupId: string) {
     .select()
     .from(videosTable)
     .where(
-      and(eq(videosTable.id, fallbackId), isNull(videosTable.reviewGroupId)),
+      and(
+        eq(videosTable.id, fallbackId),
+        isNull(videosTable.reviewGroupId),
+        notDeleted(),
+      ),
     )
     .limit(1);
   return fallback?.streamStatus === "ready" || fallback?.videoUrl
@@ -110,7 +116,11 @@ async function getVideoInGroup(groupId: string, videoId: number) {
       .select()
       .from(videosTable)
       .where(
-        and(eq(videosTable.id, videoId), isNull(videosTable.reviewGroupId)),
+        and(
+          eq(videosTable.id, videoId),
+          isNull(videosTable.reviewGroupId),
+          notDeleted(),
+        ),
       )
       .limit(1);
     return video?.streamStatus === "ready" || video?.videoUrl ? video : null;
@@ -123,6 +133,7 @@ async function getVideoInGroup(groupId: string, videoId: number) {
         eq(videosTable.id, videoId),
         eq(videosTable.reviewGroupId, groupId),
         eq(videosTable.streamStatus, "ready"),
+        notDeleted(),
       ),
     )
     .limit(1);
@@ -140,6 +151,7 @@ async function listGroupVersions(video: ReviewVideo) {
       and(
         eq(videosTable.reviewGroupId, video.reviewGroupId),
         eq(videosTable.streamStatus, "ready"),
+        notDeleted(),
       ),
     )
     .orderBy(asc(videosTable.versionNumber));
@@ -291,6 +303,7 @@ router.post(
         and(
           eq(videosTable.id, params.data.id),
           eq(videosTable.userId, user.id),
+          notDeleted(),
         ),
       )
       .limit(1);
@@ -357,6 +370,7 @@ router.get(
         and(
           eq(videosTable.id, params.data.id),
           eq(videosTable.userId, user.id),
+          notDeleted(),
         ),
       )
       .limit(1);
@@ -390,6 +404,7 @@ router.post(
         and(
           eq(videosTable.id, params.data.id),
           eq(videosTable.userId, user.id),
+          notDeleted(),
         ),
       )
       .limit(1);
@@ -433,6 +448,7 @@ router.post(
           eq(reviewCommentsTable.id, params.data.commentId),
           eq(videosTable.id, params.data.id),
           eq(videosTable.userId, user.id),
+          notDeleted(),
         ),
       )
       .limit(1);

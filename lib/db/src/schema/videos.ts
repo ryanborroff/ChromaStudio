@@ -9,6 +9,7 @@ import {
   real,
   bigint,
 } from "drizzle-orm/pg-core";
+import { isNull } from "drizzle-orm";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 import { usersTable } from "./users";
@@ -36,6 +37,11 @@ export const videosTable = pgTable("videos", {
     .default(0),
   uploadError: text("upload_error"),
   retryCount: integer("retry_count").notNull().default(0),
+  storageKey: text("storage_key"),
+  checksumSha256: text("checksum_sha256"),
+  originalVerifiedAt: timestamp("original_verified_at"),
+  deletedAt: timestamp("deleted_at"),
+  purgeAfter: timestamp("purge_after"),
   reviewGroupId: text("review_group_id"),
   versionNumber: integer("version_number").notNull().default(1),
   approvalStatus: text("approval_status").notNull().default("pending"),
@@ -174,6 +180,10 @@ export const reviewNotificationsTable = pgTable("review_notifications", {
   read: boolean("read").notNull().default(false),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
+
+export function notDeleted() {
+  return isNull(videosTable.deletedAt);
+}
 
 export const insertVideoSchema = createInsertSchema(videosTable).omit({
   id: true,

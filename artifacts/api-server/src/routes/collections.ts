@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, sql, desc, inArray, like } from "drizzle-orm";
-import { db, collectionsTable, videosTable } from "@workspace/db";
+import { db, collectionsTable, videosTable, notDeleted } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import { buildVideoResponse } from "./videos";
 import {
@@ -16,7 +16,7 @@ async function withVideoCount(collection: typeof collectionsTable.$inferSelect) 
   const [row] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(videosTable)
-    .where(eq(videosTable.collectionId, collection.id));
+    .where(and(eq(videosTable.collectionId, collection.id), notDeleted()));
   return { ...collection, videoCount: row?.count ?? 0 };
 }
 
@@ -127,7 +127,11 @@ router.get("/collections/:id", requireAuth, async (req, res): Promise<void> => {
       .select()
       .from(videosTable)
       .where(
-        and(eq(videosTable.collectionId, id), eq(videosTable.userId, user.id)),
+        and(
+          eq(videosTable.collectionId, id),
+          eq(videosTable.userId, user.id),
+          notDeleted(),
+        ),
       )
       .orderBy(desc(videosTable.createdAt)),
     (async () => {

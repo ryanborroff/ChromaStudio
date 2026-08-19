@@ -1,5 +1,5 @@
 import { and, inArray, lt } from "drizzle-orm";
-import { db, videosTable } from "@workspace/db";
+import { db, videosTable, notDeleted } from "@workspace/db";
 import { logger } from "./logger";
 
 export async function sweepStuckUploads(): Promise<void> {
@@ -11,6 +11,7 @@ export async function sweepStuckUploads(): Promise<void> {
       and(
         inArray(videosTable.streamStatus, ["uploading", "processing"]),
         lt(videosTable.createdAt, cutoff),
+        notDeleted(),
       ),
     )
     .returning({ id: videosTable.id });

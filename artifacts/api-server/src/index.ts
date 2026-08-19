@@ -2,6 +2,8 @@ import app from "./app";
 import { logger } from "./lib/logger";
 import { clearDevSessions } from "./lib/devAuth";
 import { startUploadSweep } from "./lib/uploadSweep";
+import { startVideoPurge } from "./lib/videoPurge";
+import { startVideoIntegrityCheck } from "./lib/videoIntegrityCheck";
 import { pool } from "@workspace/db";
 
 const rawPort = process.env["PORT"];
@@ -35,6 +37,8 @@ function startDbKeepalive(): void {
 
 async function start(): Promise<void> {
   startUploadSweep();
+  startVideoPurge();
+  startVideoIntegrityCheck();
   startDbKeepalive();
   // In development the app starts signed out: clear stale sessions before we
   // accept traffic so the very first request can't race ahead of the wipe.

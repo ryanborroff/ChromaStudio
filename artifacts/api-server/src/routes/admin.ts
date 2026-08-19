@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, ilike, sql } from "drizzle-orm";
-import { db, usersTable, videosTable, followsTable } from "@workspace/db";
+import { and, eq, ilike, sql } from "drizzle-orm";
+import { db, usersTable, videosTable, followsTable, notDeleted } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import { AdminToggleFeaturedBody } from "@workspace/api-zod";
 
@@ -23,7 +23,7 @@ async function buildAdminUserResponse(user: typeof usersTable.$inferSelect) {
   const [videoCountRow] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(videosTable)
-    .where(eq(videosTable.userId, user.id));
+    .where(and(eq(videosTable.userId, user.id), notDeleted()));
   const { googleId: _g, appleId: _a, email: _e, passwordHash: _p, ...safe } = user;
   return {
     ...safe,

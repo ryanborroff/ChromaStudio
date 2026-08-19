@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { and, eq } from "drizzle-orm";
-import { db, videosTable } from "@workspace/db";
+import { db, videosTable, notDeleted } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import { getStreamingProvider } from "../lib/streaming/index.js";
 
@@ -45,7 +45,13 @@ router.get(
     const [video] = await db
       .select()
       .from(videosTable)
-      .where(and(eq(videosTable.id, id), eq(videosTable.userId, user.id)))
+      .where(
+        and(
+          eq(videosTable.id, id),
+          eq(videosTable.userId, user.id),
+          notDeleted(),
+        ),
+      )
       .limit(1);
     if (!video) {
       res.status(404).json({ error: "Video not found" });

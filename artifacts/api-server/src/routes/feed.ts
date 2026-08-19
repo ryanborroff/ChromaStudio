@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
-import { eq, sql, desc, inArray } from "drizzle-orm";
-import { db, videosTable, usersTable, followsTable } from "@workspace/db";
+import { and, eq, sql, desc, inArray } from "drizzle-orm";
+import { db, videosTable, usersTable, followsTable, notDeleted } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import { GetFeedResponse } from "@workspace/api-zod";
 
@@ -25,7 +25,7 @@ router.get("/feed", requireAuth, async (req, res): Promise<void> => {
     videos = await db
       .select()
       .from(videosTable)
-      .where(sql`${videosTable.userId} = ANY(${followingIds}) AND ${videosTable.privacy} = 'public'`)
+      .where(sql`${videosTable.userId} = ANY(${followingIds}) AND ${videosTable.privacy} = 'public' AND ${videosTable.deletedAt} IS NULL`)
       .orderBy(desc(videosTable.createdAt))
       .limit(Math.min(Math.max(parseInt(limit) || 20, 1), 100))
       .offset(Math.max(parseInt(offset) || 0, 0))
@@ -33,7 +33,7 @@ router.get("/feed", requireAuth, async (req, res): Promise<void> => {
         db
           .select()
           .from(videosTable)
-          .where(eq(videosTable.privacy, "public"))
+          .where(and(eq(videosTable.privacy, "public"), notDeleted()))
           .orderBy(desc(videosTable.createdAt))
           .limit(Math.min(Math.max(parseInt(limit) || 20, 1), 100))
           .offset(Math.max(parseInt(offset) || 0, 0)),
@@ -43,7 +43,7 @@ router.get("/feed", requireAuth, async (req, res): Promise<void> => {
     videos = await db
       .select()
       .from(videosTable)
-      .where(eq(videosTable.privacy, "public"))
+      .where(and(eq(videosTable.privacy, "public"), notDeleted()))
       .orderBy(desc(videosTable.isFeatured), desc(videosTable.viewCount))
       .limit(Math.min(Math.max(parseInt(limit) || 20, 1), 100))
       .offset(Math.max(parseInt(offset) || 0, 0));
