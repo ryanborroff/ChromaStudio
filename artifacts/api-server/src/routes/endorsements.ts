@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, and, sql } from "drizzle-orm";
-import { db, endorsementsTable, usersTable, followsTable, videosTable } from "@workspace/db";
+import { db, endorsementsTable, usersTable, followsTable, videosTable, notDeleted } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import {
   ListEndorsementsResponse,
@@ -21,7 +21,7 @@ async function buildUserSnippet(user: typeof usersTable.$inferSelect) {
   const [videoCountRow] = await db
     .select({ count: sql<number>`count(*)::int` })
     .from(videosTable)
-    .where(eq(videosTable.userId, user.id));
+    .where(and(eq(videosTable.userId, user.id), notDeleted()));
   const { googleId: _g, appleId: _a, email: _e, passwordHash: _p, ...safe } = user;
   return {
     ...safe,
@@ -45,7 +45,8 @@ router.get("/users/:userId/endorsements", async (req, res): Promise<void> => {
     return;
   }
 
-  const currentUserId = (req as any).session?.userId as number | undefined;
+  const currentUserId = (req.user as typeof usersTable.$inferSelect | undefined)
+    ?.id;
 
   const rows = await db
     .select()

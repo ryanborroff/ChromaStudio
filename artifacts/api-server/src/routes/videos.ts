@@ -10,6 +10,7 @@ import {
   commentsTable,
   streamUploadTicketsTable,
   collectionsTable,
+  notDeleted,
 } from "@workspace/db";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import {
@@ -141,7 +142,7 @@ router.get("/videos", async (req, res): Promise<void> => {
     offset = "0",
   } = req.query as Record<string, string>;
 
-  const conditions: any[] = [];
+  const conditions: any[] = [notDeleted()];
 
   // "mine" returns the authenticated user's own library (incl. private videos);
   // otherwise only public videos are listed.
@@ -383,6 +384,7 @@ router.get(
         and(
           eq(videosTable.reviewGroupId, params.data.reviewGroupId),
           eq(videosTable.userId, user.id),
+          notDeleted(),
         ),
       )
       .orderBy(asc(videosTable.versionNumber));
@@ -411,9 +413,21 @@ router.get("/videos/:id", async (req, res): Promise<void> => {
   const [video] = await db
     .select()
     .from(videosTable)
-    .where(eq(videosTable.id, id))
+    .where(and(eq(videosTable.id, id), notDeleted()))
     .limit(1);
   if (!video) {
+    res.status(404).json({ error: "Video not found" });
+    return;
+  }
+
+  const viewer = (req.user as typeof usersTable.$inferSelect | undefined)?.id;
+
+  // Non-public videos (private/password_protected) are only visible to their
+  // owner here — everyone else gets the same 404 as a nonexistent video, so
+  // guessing/incrementing an id can't be used to probe for or read another
+  // user's unlisted video. Password-protected/shared access goes through the
+  // dedicated /share/:token flow instead, not this endpoint.
+  if (video.privacy !== "public" && viewer !== video.userId) {
     res.status(404).json({ error: "Video not found" });
     return;
   }
@@ -423,8 +437,6 @@ router.get("/videos/:id", async (req, res): Promise<void> => {
     .update(videosTable)
     .set({ viewCount: (video.viewCount ?? 0) + 1 })
     .where(eq(videosTable.id, id));
-
-  const viewer = (req.user as typeof usersTable.$inferSelect | undefined)?.id;
   const full = await buildVideoResponse(
     { ...video, viewCount: (video.viewCount ?? 0) + 1 },
     viewer,
@@ -440,6 +452,17 @@ router.patch("/videos/:id", requireAuth, async (req, res): Promise<void> => {
   if (!parsed.success) {
     res.status(400).json({ error: parsed.error.message });
     return;
+  }
+  // Only allow videoUrl/thumbnailUrl to point at our own object storage —
+  // never an arbitrary external URL, which would let an owner turn a public
+  // video/share/review page into a trusted-domain redirect to phishing or
+  // malicious content. Mirrors the attachmentUrl check in routes/messages.ts.
+  for (const field of ["videoUrl", "thumbnailUrl"] as const) {
+    const value = parsed.data[field];
+    if (value && !/^\/api\/storage\/objects\//.test(value)) {
+      res.status(400).json({ error: `Invalid ${field}` });
+      return;
+    }
   }
   const user = await getCurrentUser(req);
   if (typeof parsed.data.collectionId === "number") {
@@ -458,14 +481,22 @@ router.patch("/videos/:id", requireAuth, async (req, res): Promise<void> => {
       return;
     }
   }
-  // Strip streamStatus — it must only be set by internal webhook processing
-  // or the trusted /confirm-upload endpoint, never by direct client input.
-  const { streamStatus: _stripped, ...clientFields } = parsed.data;
+  // Strip fields that must only be set by internal processes (webhook
+  // handlers, the trusted /confirm-upload endpoint, or the upload-progress
+  // pipeline) — never by direct client input. videoUrl/thumbnailUrl are
+  // client-settable but were already validated above.
+  const {
+    streamStatus: _streamStatus,
+    uploadProgressPercent: _uploadProgressPercent,
+    uploadError: _uploadError,
+    retryCount: _retryCount,
+    ...clientFields
+  } = parsed.data;
   const [video] = await db
     .update(videosTable)
     .set(clientFields as Partial<typeof videosTable.$inferInsert>)
     .where(
-      sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id}`,
+      sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id} AND ${videosTable.deletedAt} IS NULL`,
     )
     .returning();
   if (!video) {
@@ -492,7 +523,7 @@ router.post(
       .select()
       .from(videosTable)
       .where(
-        sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id}`,
+        sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id} AND ${videosTable.deletedAt} IS NULL`,
       )
       .limit(1);
 
@@ -513,9 +544,43 @@ router.post(
       return;
     }
 
+    // Re-fetch the object's metadata from R2 to confirm it actually landed
+    // before flipping status to "ready". A size mismatch doesn't block the
+    // confirm (the client's reported size may simply be stale/wrong), but it
+    // is surfaced by leaving originalVerifiedAt unset for later inspection.
+    const objectPath = video.videoUrl!.replace(/^\/api\/storage/, "");
+    let verification: { key: string; sizeBytes: number } | undefined;
+    try {
+      const svc = new ObjectStorageService();
+      verification = await svc.verifyObjectUpload(objectPath);
+    } catch (err) {
+      req.log.error({ err, videoId: id }, "Failed to verify uploaded object");
+      res.status(502).json({ error: "Could not verify uploaded file" });
+      return;
+    }
+
+    const sizeVerified =
+      video.fileSizeBytes == null ||
+      video.fileSizeBytes === verification.sizeBytes;
+    if (!sizeVerified) {
+      req.log.warn(
+        {
+          videoId: id,
+          expected: video.fileSizeBytes,
+          actual: verification.sizeBytes,
+        },
+        "Uploaded video size mismatch",
+      );
+    }
+
     const [updated] = await db
       .update(videosTable)
-      .set({ streamStatus: "ready" })
+      .set({
+        streamStatus: "ready",
+        storageKey: verification.key,
+        fileSizeBytes: verification.sizeBytes,
+        ...(sizeVerified ? { originalVerifiedAt: new Date() } : {}),
+      })
       .where(eq(videosTable.id, id))
       .returning();
 
@@ -525,15 +590,32 @@ router.post(
 );
 
 // DELETE /videos/:id
+const PURGE_GRACE_PERIOD_MS =
+  (parseInt(process.env.VIDEO_PURGE_GRACE_DAYS ?? "30", 10) || 30) *
+  24 *
+  60 *
+  60 *
+  1000;
+
 router.delete("/videos/:id", requireAuth, async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(rawId, 10);
   const user = await getCurrentUser(req);
-  await db
-    .delete(videosTable)
+  const now = new Date();
+  const [updated] = await db
+    .update(videosTable)
+    .set({
+      deletedAt: now,
+      purgeAfter: new Date(now.getTime() + PURGE_GRACE_PERIOD_MS),
+    })
     .where(
-      sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id}`,
-    );
+      sql`${videosTable.id} = ${id} AND ${videosTable.userId} = ${user.id} AND ${videosTable.deletedAt} IS NULL`,
+    )
+    .returning({ id: videosTable.id });
+  if (!updated) {
+    res.status(404).json({ error: "Video not found" });
+    return;
+  }
   res.sendStatus(204);
 });
 
@@ -707,14 +789,22 @@ router.post(
       .update(videosTable)
       .set({ collectionId })
       .where(
-        and(eq(videosTable.userId, user.id), inArray(videosTable.id, ids)),
+        and(
+          eq(videosTable.userId, user.id),
+          inArray(videosTable.id, ids),
+          notDeleted(),
+        ),
       );
 
     const moved = await db
       .select()
       .from(videosTable)
       .where(
-        and(eq(videosTable.userId, user.id), inArray(videosTable.id, ids)),
+        and(
+          eq(videosTable.userId, user.id),
+          inArray(videosTable.id, ids),
+          notDeleted(),
+        ),
       )
       .orderBy(desc(videosTable.createdAt));
     const enriched = await Promise.all(
@@ -741,14 +831,22 @@ router.post(
       .update(videosTable)
       .set({ category })
       .where(
-        and(eq(videosTable.userId, user.id), inArray(videosTable.id, ids)),
+        and(
+          eq(videosTable.userId, user.id),
+          inArray(videosTable.id, ids),
+          notDeleted(),
+        ),
       );
 
     const updated = await db
       .select()
       .from(videosTable)
       .where(
-        and(eq(videosTable.userId, user.id), inArray(videosTable.id, ids)),
+        and(
+          eq(videosTable.userId, user.id),
+          inArray(videosTable.id, ids),
+          notDeleted(),
+        ),
       )
       .orderBy(desc(videosTable.createdAt));
     const enriched = await Promise.all(
@@ -762,6 +860,17 @@ router.post(
 router.get("/videos/:id/comments", async (req, res): Promise<void> => {
   const rawId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
   const id = parseInt(rawId, 10);
+
+  const [video] = await db
+    .select({ userId: videosTable.userId, privacy: videosTable.privacy })
+    .from(videosTable)
+    .where(and(eq(videosTable.id, id), notDeleted()))
+    .limit(1);
+  const viewer = (req.user as typeof usersTable.$inferSelect | undefined)?.id;
+  if (!video || (video.privacy !== "public" && viewer !== video.userId)) {
+    res.status(404).json({ error: "Video not found" });
+    return;
+  }
 
   const comments = await db
     .select()
@@ -820,6 +929,17 @@ router.post(
       return;
     }
     const user = await getCurrentUser(req);
+
+    const [video] = await db
+      .select({ userId: videosTable.userId, privacy: videosTable.privacy })
+      .from(videosTable)
+      .where(and(eq(videosTable.id, id), notDeleted()))
+      .limit(1);
+    if (!video || (video.privacy !== "public" && video.userId !== user.id)) {
+      res.status(404).json({ error: "Video not found" });
+      return;
+    }
+
     const [comment] = await db
       .insert(commentsTable)
       .values({ videoId: id, userId: user.id, body: parsed.data.body })

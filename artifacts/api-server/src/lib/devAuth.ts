@@ -7,8 +7,8 @@ import { logger } from "./logger";
 // user so the full signed-in experience loads by default in the preview, letting
 // you walk the whole app flow without real OAuth. Visit /api/dev/logout to drop
 // to the signed-out, pre-login experience (landing/sign-up), and /api/dev/login
-// to jump back in. Wired up ONLY when NODE_ENV === "development" (see app.ts);
-// production always requires real auth.
+// to jump back in. Wired up ONLY when NODE_ENV === "development" AND
+// ENABLE_DEV_AUTH === "true" (see app.ts); production always requires real auth.
 const DEMO_USER_ID = 1;
 
 // Clear all dev sessions on boot so every restart begins from a clean slate

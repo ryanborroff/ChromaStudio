@@ -37,12 +37,11 @@ app.use(
   }),
 );
 
-// The SPA and API are same-origin behind the Replit proxy, so cross-origin
-// credentialed requests are limited to our own domains rather than reflected
+// The SPA and API are same-origin in production, so cross-origin credentialed
+// requests are limited to our own configured domain rather than reflected
 // back with `origin: true` (which is unsafe when combined with credentials).
-const allowedOrigins = (process.env.REPLIT_DOMAINS?.split(",") ?? [])
-  .map((d) => `https://${d.trim()}`)
-  .filter(Boolean);
+const configuredOrigin = process.env.PUBLIC_APP_URL?.replace(/\/$/, "");
+const allowedOrigins = configuredOrigin ? [configuredOrigin] : [];
 app.use(
   cors({ credentials: true, origin: allowedOrigins.length ? allowedOrigins : false }),
 );
@@ -98,7 +97,14 @@ app.use(passport.session());
 // Development-only: auto-sign-in as a demo user so the full signed-in app loads
 // by default in the preview. Visit /api/dev/logout to see the public, pre-login
 // experience, and /api/dev/login to jump back in. Never enabled in production.
-if (process.env.NODE_ENV === "development") {
+// Gated on two independent env vars (not just NODE_ENV) so a missing or
+// misconfigured NODE_ENV alone can't silently enable this in production —
+// it also auto-authenticates anonymous visitors and exposes a free plan
+// upgrade endpoint (/api/dev/plan/:plan).
+if (
+  process.env.NODE_ENV === "development" &&
+  process.env.ENABLE_DEV_AUTH === "true"
+) {
   app.use("/api/dev", devAuthToggleRouter);
   app.use(devAutoLogin);
   logger.warn("dev auth helpers enabled — auto-login as demo user (use /api/dev/logout to sign out)");
