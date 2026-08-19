@@ -13,7 +13,7 @@ jobs:
     container:
       image: semgrep/semgrep
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       # --config=auto pulls Semgrep's default registry rulesets for whatever
       # languages it finds in the repo (TS/JS/React here), including secret
