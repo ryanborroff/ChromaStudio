@@ -1,0 +1,23 @@
+name: Semgrep
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  semgrep:
+    name: Semgrep scan
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+
+      # --config=auto pulls Semgrep's default registry rulesets for whatever
+      # languages it finds in the repo (TS/JS/React here), including secret
+      # detection, OWASP-style injection patterns, and framework-specific
+      # known-bad patterns. No account or token required for this mode.
+      - name: Run Semgrep
+        run: semgrep scan --config=auto --error --metrics=off
