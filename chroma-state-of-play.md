@@ -1,7 +1,7 @@
 # Chroma – State of Play (v2)
 
 **Prepared:** 2026-08-13 (updated from the 2026-08-12 audit)
-**Repo audited:** ChromaStudio (local checkout, `main` @ `327e9b2`, plus uncommitted billing work — see note below)
+**Repo audited:** Chroma (local checkout, `main` @ `327e9b2`, plus uncommitted billing work — see note below)
 **Survey source:** Tally "Filmmaker & Agency Research Survey" (form `WOBbDe`), **n = 6 completed responses**, collected 2026-07-16 to 2026-07-30
 
 > ⚠️ **Sample size caveat:** the survey has only 6 completed responses. Every percentage below is out of 6 — treat directional signal as hypothesis-confirming, not statistically reliable.
@@ -144,7 +144,7 @@ Status tags: **WORKING** (built and reachable end-to-end) · **PARTIAL** (built 
 | Password-protected share links | **WORKING (3x over)** | Unchanged |
 | Domain-restricted share links | **MISSING** | Unchanged |
 | Delivery downloads/exports | **WORKING (deliveries)** / **PARTIAL (project export)** | Unchanged |
-| **Bug found and fixed this session** | — | On a public (no-password) review link, a newly posted comment or approval decision saved correctly to the DB but never appeared in the UI until something else happened to populate local state. Fixed — see [commit 327e9b2](https://github.com/ryanborroff/ChromaStudio/commit/327e9b2). |
+| **Bug found and fixed this session** | — | On a public (no-password) review link, a newly posted comment or approval decision saved correctly to the DB but never appeared in the UI until something else happened to populate local state. Fixed — see [commit 327e9b2](https://github.com/ryanborroff/Chroma/commit/327e9b2). |
 
 ### Portfolio / Public Hosting — unchanged since last audit
 
@@ -200,7 +200,7 @@ Deployed to Railway this session: Mux is now the configured streaming provider (
 **Confirmed 2026-08-15: items 5–7 are funding-application commitments, not hypothetical asks** — reordered above #8 (domain-restricted links) accordingly, since that one was never committed anywhere and was already low priority per survey data. No deadline attached yet, but "funded commitment with no deadline" still outranks "backlog item with low survey priority."
 
 1. **Configure and commit the Stripe billing work.** The code is done — this is now an operational task: create Stripe Products/Prices, set five env vars, register the webhook endpoint, run the DB migration in the real environment. Recommend a separate, later test round once configured — don't bundle into the review-workflow round.
-2. **Move Mux playback from `public` to `signed` policy.** Assets are currently created with `playback_policy: ["public"]` ([mux.ts:21](artifacts/api-server/src/lib/streaming/mux.ts#L21)) — Mux itself performs no per-user auth on playback, so a leaked/extracted playback URL bypasses ChromaStudio's own access control (login gate / share-link token / password) for that video, similar to an "unlisted" video. Fine for this test round; fix before handling sensitive/unreleased footage. Requires signed-token generation (JWT) and a token-issuing endpoint — a real code change, not a config flip.
+2. **Move Mux playback from `public` to `signed` policy.** Assets are currently created with `playback_policy: ["public"]` ([mux.ts:21](artifacts/api-server/src/lib/streaming/mux.ts#L21)) — Mux itself performs no per-user auth on playback, so a leaked/extracted playback URL bypasses Chroma's own access control (login gate / share-link token / password) for that video, similar to an "unlisted" video. Fine for this test round; fix before handling sensitive/unreleased footage. Requires signed-token generation (JWT) and a token-issuing endpoint — a real code change, not a config flip.
 3. **Ship an anti-AI-scraping posture.** *Funder commitment.* Validated demand too, zero implementation, cheap first step (robots.txt disallow rules for AI crawlers).
 4. **Surface curated collections as a public portfolio feature.** *Funder commitment.* Backend already built; needs a public read route and a profile-page surface. Cheapest of the funder-committed gaps to close — this is real wiring work, not new architecture.
 5. **High-resolution raw file sharing for production collaboration.** *Funder commitment.* Currently capped at 50 MB/file with no chunked upload — nowhere near camera-original scale. Real scope: a much higher (or removed) size ceiling, real multipart/resumable upload (the existing Uppy `ObjectUploader` already has multipart support in its dependency, just disabled — `shouldUseMultipart: false`), and either relaxing or removing the `video/*` MIME check for this specific upload path so RAW camera formats aren't rejected client-side. This is the biggest engineering lift of the funder-committed items — sequence it first among them regardless, since #6 depends on it existing.
@@ -209,7 +209,7 @@ Deployed to Railway this session: Mux is now the configured streaming provider (
 8. **Add domain-restricted share links.** Low priority per survey, not a funder commitment, cheap to bolt onto the existing password-check pattern whenever it's picked up.
 9. **Decide on migration tooling — likely deprioritize.** Survey data doesn't support it as a priority.
 10. **Backfill test/CI coverage.** More urgent now that billing exists — a regression in checkout or webhook handling is a money bug, not just a UX bug. Recommend this lands before or alongside the billing configuration work in #1.
-11. **Isolate ChromaStudio's Mux usage from the account owner's personal assets**, if that separation ever matters (e.g. cost tracking, avoiding mixing personal and product video). Currently both share one Mux account/token — normal for a single-tenant-infra SaaS setup, but worth a dedicated Mux account later if it becomes a practical problem.
+11. **Isolate Chroma's Mux usage from the account owner's personal assets**, if that separation ever matters (e.g. cost tracking, avoiding mixing personal and product video). Currently both share one Mux account/token — normal for a single-tenant-infra SaaS setup, but worth a dedicated Mux account later if it becomes a practical problem.
 
 ### AI roadmap — funder commitments, not yet prioritized against the above
 

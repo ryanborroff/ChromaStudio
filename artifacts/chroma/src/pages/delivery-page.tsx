@@ -133,7 +133,7 @@ export function DeliveryPage() {
 
       <div className="mt-12 pt-6 border-t border-border/40 flex items-center justify-center">
         <Link href="/" className="text-xs text-muted-foreground hover:text-white transition-colors">
-          Delivered with <span className="font-bold text-white">ChromaStudio</span>
+          Delivered with <span className="font-bold text-white">Chroma</span>
         </Link>
       </div>
     </div>

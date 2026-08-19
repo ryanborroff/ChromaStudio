@@ -615,7 +615,7 @@ export function VideoUpload() {
                 ? "Uploading…"
                 : phase === "saving"
                   ? "Saving…"
-                  : "Publish to ChromaStudio"}
+                  : "Publish to Chroma"}
             </Button>
           </form>
         </Form>

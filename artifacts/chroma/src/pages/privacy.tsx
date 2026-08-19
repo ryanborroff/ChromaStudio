@@ -36,7 +36,7 @@ export function PrivacyPolicy() {
           <div>
             <p className="text-white font-semibold mb-1">We never train AI on your content.</p>
             <p className="text-white/55 text-sm leading-relaxed">
-              Your videos, images, and files are never used to train any AI or machine-learning model — by ChromaStudio or any third party. Your creative work belongs entirely to you.
+              Your videos, images, and files are never used to train any AI or machine-learning model — by Chroma or any third party. Your creative work belongs entirely to you.
             </p>
           </div>
         </div>
@@ -60,18 +60,18 @@ export function PrivacyPolicy() {
         </div>
 
         <Section title="1. Who we are">
-          <p>ChromaStudio ("we", "us") operates the ChromaStudio platform, accessible at chromastudio.app. Questions about this policy can be directed to <span className="text-white">privacy@chromastudio.app</span>.</p>
+          <p>Chroma ("we", "us") operates the Chroma platform, accessible at chromastudio.app. Questions about this policy can be directed to <span className="text-white">privacy@chromastudio.app</span>.</p>
         </Section>
 
         <Section title="2. What we collect">
           <p><span className="text-white font-medium">Account information</span> — your name, email address, and profile details you provide when signing up or editing your profile.</p>
-          <p><span className="text-white font-medium">Content you upload</span> — videos, images, and files you store on ChromaStudio. This content is yours. We store it to provide the service and for no other purpose.</p>
+          <p><span className="text-white font-medium">Content you upload</span> — videos, images, and files you store on Chroma. This content is yours. We store it to provide the service and for no other purpose.</p>
           <p><span className="text-white font-medium">Usage data</span> — pages visited, features used, and device/browser information collected automatically. This helps us understand how the platform is used and fix problems.</p>
           <p><span className="text-white font-medium">Payment data</span> — if you subscribe to a paid plan, payment is processed by our payment provider. We do not store full card numbers.</p>
         </Section>
 
         <Section title="3. How we use your data">
-          <p>We use your information solely to operate and improve ChromaStudio:</p>
+          <p>We use your information solely to operate and improve Chroma:</p>
           <ul className="list-disc list-inside space-y-1.5 ml-1">
             <li>Providing video hosting, delivery, and messaging features</li>
             <li>Authenticating your account and keeping it secure</li>
@@ -115,7 +115,7 @@ export function PrivacyPolicy() {
         </Section>
 
         <Section title="9. Children">
-          <p>ChromaStudio is intended for users aged 16 and over. We do not knowingly collect data from children under 16. If you believe a child has created an account, please contact us and we will delete it promptly.</p>
+          <p>Chroma is intended for users aged 16 and over. We do not knowingly collect data from children under 16. If you believe a child has created an account, please contact us and we will delete it promptly.</p>
         </Section>
 
         <Section title="10. Changes to this policy">
@@ -124,7 +124,7 @@ export function PrivacyPolicy() {
 
         <div className="mt-12 pt-8 border-t border-white/08 flex flex-wrap gap-6 text-sm text-white/35">
           <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
-          <Link href="/" className="hover:text-white transition-colors">Back to ChromaStudio</Link>
+          <Link href="/" className="hover:text-white transition-colors">Back to Chroma</Link>
         </div>
       </div>
     </div>

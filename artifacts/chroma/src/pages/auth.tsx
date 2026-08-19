@@ -124,7 +124,7 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
       <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="bg-[#181818] rounded-2xl w-full overflow-hidden p-8 flex flex-col items-center text-center">
           <h1 className="text-2xl font-bold tracking-tight text-white">
-            {isSignUp ? "Join ChromaStudio" : "Sign in to ChromaStudio"}
+            {isSignUp ? "Join Chroma" : "Sign in to Chroma"}
           </h1>
           <p className="text-muted-foreground mt-2">
             {isSignUp ? "The platform for serious filmmakers" : "Enter our filmmaker-first hosting platform"}
@@ -231,7 +231,7 @@ function AuthForm({ mode }: { mode: "sign-in" | "sign-up" }) {
           </p>
 
           <p className="text-xs text-muted-foreground mt-4 leading-relaxed">
-            By continuing you agree to ChromaStudio&apos;s Terms and Privacy Policy.
+            By continuing you agree to Chroma&apos;s Terms and Privacy Policy.
           </p>
 
           <div className="mt-6 w-full border-t border-white/10 pt-4">

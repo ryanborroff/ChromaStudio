@@ -1,4 +1,4 @@
-# ChromaStudio
+# Chroma
 
 A premium, cinematic professional filmmaker platform for video hosting, networking, and client delivery.
 

@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-ChromaStudio is a Node.js/Express API (port 8080) with a React/Vite frontend — a premium cinematic platform for video hosting, networking, and client delivery. Users can upload and share videos, exchange direct messages with file attachments, deliver files to clients via password-protected delivery links, and collaborate via review links. Auth is Express-session backed by PostgreSQL, using Google OAuth, Apple OAuth, or email/password. Deployed publicly on Replit.
+Chroma is a Node.js/Express API (port 8080) with a React/Vite frontend — a premium cinematic platform for video hosting, networking, and client delivery. Users can upload and share videos, exchange direct messages with file attachments, deliver files to clients via password-protected delivery links, and collaborate via review links. Auth is Express-session backed by PostgreSQL, using Google OAuth, Apple OAuth, or email/password. Deployed publicly on Replit.
 
 ## Assets
 

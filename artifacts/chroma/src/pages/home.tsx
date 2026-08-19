@@ -23,14 +23,14 @@ const stagger = {
 const TESTIMONIALS = [
   {
     quote:
-      "ChromaStudio replaced my Vimeo Pro account and my LinkedIn profile in one shot. My reel has never looked better, and I've already landed two jobs through direct introductions on the platform.",
+      "Chroma replaced my Vimeo Pro account and my LinkedIn profile in one shot. My reel has never looked better, and I've already landed two jobs through direct introductions on the platform.",
     name: "Maya Osei",
     role: "Cinematographer",
     location: "London, UK",
   },
   {
     quote:
-      "As a director, finding the right editor used to take weeks of cold emails. ChromaStudio profiles give me everything I need to evaluate someone's work before I even reach out. It's a proper industry tool.",
+      "As a director, finding the right editor used to take weeks of cold emails. Chroma profiles give me everything I need to evaluate someone's work before I even reach out. It's a proper industry tool.",
     name: "Andrés Fuentes",
     role: "Director",
     location: "Madrid, Spain",
@@ -46,12 +46,12 @@ const TESTIMONIALS = [
 
 const FAQS = [
   {
-    q: "Is ChromaStudio free to use?",
+    q: "Is Chroma free to use?",
     a: "Yes. The Reel plan is completely free and lets you upload videos, build your profile, and access the community. Creator and Studio plans unlock advanced features like embed links, client delivery, and higher storage limits.",
   },
   {
-    q: "What video formats does ChromaStudio support?",
-    a: "ChromaStudio supports MP4, MOV, and MKV uploads. Videos are stored and streamed in high quality with no re-encoding artefacts.",
+    q: "What video formats does Chroma support?",
+    a: "Chroma supports MP4, MOV, and MKV uploads. Videos are stored and streamed in high quality with no re-encoding artefacts.",
   },
   {
     q: "Can I keep videos private?",
@@ -59,11 +59,11 @@ const FAQS = [
   },
   {
     q: "Is my work protected from being copied?",
-    a: "Videos are served directly from ChromaStudio's infrastructure and are never publicly downloadable. Password protection and private links give you an extra layer of control.",
+    a: "Videos are served directly from Chroma's infrastructure and are never publicly downloadable. Password protection and private links give you an extra layer of control.",
   },
   {
-    q: "Who is ChromaStudio for?",
-    a: "ChromaStudio is built for working film professionals — directors, cinematographers, editors, producers, composers, sound designers, colourists, and students. If you make films, ChromaStudio is your home.",
+    q: "Who is Chroma for?",
+    a: "Chroma is built for working film professionals — directors, cinematographers, editors, producers, composers, sound designers, colourists, and students. If you make films, Chroma is your home.",
   },
 ];
 
@@ -175,7 +175,7 @@ export function Home() {
               }}
               data-testid="hero-join-btn"
             >
-              Join ChromaStudio
+              Join Chroma
             </Link>
             <Link
               href="/explore"
@@ -416,7 +416,7 @@ export function Home() {
             <p className="text-white/35 text-sm">
               Still have questions?{" "}
               <Link href="/sign-up" className="text-primary hover:underline">
-                Join ChromaStudio
+                Join Chroma
               </Link>{" "}
               and get in touch with the team.
             </p>
@@ -449,7 +449,7 @@ export function Home() {
             transition={{ duration: 0.6, ease: "easeOut" }}
             className="text-white/45 mb-8 text-lg"
           >
-            Join thousands of filmmakers already on ChromaStudio.
+            Join thousands of filmmakers already on Chroma.
           </motion.p>
           <motion.div
             variants={fadeUp}
@@ -466,7 +466,7 @@ export function Home() {
                   "0 4px 24px rgba(245,158,11,0.35), inset 0 1px 0 rgba(255,255,255,0.15)",
               }}
             >
-              Join ChromaStudio — it's free
+              Join Chroma — it's free
             </Link>
             <Link
               href="/explore"

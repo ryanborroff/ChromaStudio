@@ -1,5 +1,5 @@
 /**
- * Demo fixtures for ChromaStudio prototype mode.
+ * Demo fixtures for Chroma prototype mode.
  * All data is fictional — thumbnails are public Unsplash photos.
  */
 
@@ -20,7 +20,7 @@ export const DEMO_USER = {
   name: "Demo Viewer",
   profession: "Producer",
   location: "Los Angeles, CA",
-  bio: "Exploring ChromaStudio — the professional home for filmmakers.",
+  bio: "Exploring Chroma — the professional home for filmmakers.",
   website: "https://chromastudio.app",
   avatarUrl:
     "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&q=80",

@@ -1,6 +1,6 @@
 kind = "web"
 previewPath = "/"
-title = "ChromaStudio"
+title = "Chroma"
 version = "1.0.0"
 id = "artifacts/chroma"
 router = "path"

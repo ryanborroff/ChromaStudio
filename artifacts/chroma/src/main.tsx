@@ -11,7 +11,7 @@ async function bootstrap() {
         url: `${import.meta.env.BASE_URL}mockServiceWorker.js`,
       },
     });
-    console.info("[ChromaStudio] 🎬 Demo mode active — API calls intercepted by MSW");
+    console.info("[Chroma] 🎬 Demo mode active — API calls intercepted by MSW");
   }
 
   createRoot(document.getElementById("root")!).render(<App />);

@@ -38,9 +38,9 @@ export function TermsOfService() {
 
         <Section title="1. Acceptance">
           <p>
-            By creating a ChromaStudio account or using any part of the
+            By creating a Chroma account or using any part of the
             platform, you agree to these Terms of Service. If you do not agree,
-            please do not use ChromaStudio.
+            please do not use Chroma.
           </p>
         </Section>
 
@@ -56,7 +56,7 @@ export function TermsOfService() {
         <Section title="3. Your content">
           <p>
             You retain full ownership of every video, image, and file you upload
-            to ChromaStudio. By uploading content you grant ChromaStudio a
+            to Chroma. By uploading content you grant Chroma a
             limited, non-exclusive licence to host, store, and deliver that
             content solely for the purpose of providing the service to you and
             the recipients you designate.
@@ -83,7 +83,7 @@ export function TermsOfService() {
 
         <Section title="5. Plans and billing">
           <p>
-            ChromaStudio offers a free plan and paid Creator, Studio, and Team
+            Chroma offers a free plan and paid Creator, Studio, and Team
             plans billed monthly or annually. Prices are shown on the{" "}
             <Link href="/pricing" className="text-primary hover:underline">
               Pricing page
@@ -101,14 +101,14 @@ export function TermsOfService() {
           <p>
             We aim for high availability but do not guarantee uninterrupted
             service. Planned maintenance will be communicated in advance where
-            possible. ChromaStudio is provided "as is" and we disclaim all
+            possible. Chroma is provided "as is" and we disclaim all
             warranties to the extent permitted by law.
           </p>
         </Section>
 
         <Section title="7. Limitation of liability">
           <p>
-            ChromaStudio's total liability to you for any claim arising from
+            Chroma's total liability to you for any claim arising from
             these terms or your use of the platform is limited to the fees you
             paid in the 12 months before the claim arose. We are not liable for
             indirect, incidental, or consequential damages.
@@ -153,7 +153,7 @@ export function TermsOfService() {
             Privacy Policy
           </Link>
           <Link href="/" className="hover:text-white transition-colors">
-            Back to ChromaStudio
+            Back to Chroma
           </Link>
         </div>
       </div>

@@ -180,7 +180,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             >
               <SheetHeader className="px-4 h-12 flex flex-row items-center justify-start border-b border-white/10 space-y-0">
                 <SheetTitle className="flex items-center gap-2 text-white">
-                  <span className="font-black text-2xl tracking-tight">ChromaStudio</span>
+                  <span className="font-black text-2xl tracking-tight">Chroma</span>
                 </SheetTitle>
               </SheetHeader>
 
@@ -284,7 +284,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       style={{ background: "linear-gradient(135deg, #f59e0b 0%, #d97706 100%)" }}
                       data-testid="mobile-btn-join"
                     >
-                      Join ChromaStudio
+                      Join Chroma
                     </Link>
                   </div>
                 )}
@@ -294,7 +294,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group min-w-0" data-testid="link-home">
-            <span className="font-black text-lg sm:text-2xl md:text-3xl lg:text-4xl tracking-tight text-white whitespace-nowrap">ChromaStudio</span>
+            <span className="font-black text-lg sm:text-2xl md:text-3xl lg:text-4xl tracking-tight text-white whitespace-nowrap">Chroma</span>
           </Link>
 
           {/* ── Flat top-level nav — no dropdowns ───────────────────────── */}
@@ -453,7 +453,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 data-testid="btn-join"
               >
                 <span className="sm:hidden">Join</span>
-                <span className="hidden sm:inline">Join ChromaStudio</span>
+                <span className="hidden sm:inline">Join Chroma</span>
               </Link>
             </>
           )}
@@ -565,7 +565,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <div className="flex items-center gap-2 text-muted-foreground">
               <Clapperboard className="w-4 h-4 opacity-40" />
               <span className="text-sm font-medium">
-                © {new Date().getFullYear()} ChromaStudio. For serious filmmakers.
+                © {new Date().getFullYear()} Chroma. For serious filmmakers.
               </span>
             </div>
             <div className="flex gap-6 text-sm text-muted-foreground font-medium">
