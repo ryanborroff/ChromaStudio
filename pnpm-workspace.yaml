@@ -9,6 +9,8 @@ allowBuilds:
   msw: true
 
 autoInstallPeers: false
+blockExoticSubdeps: true
+trustPolicy: no-downgrade
 
 catalog:
   '@replit/vite-plugin-cartographer': ^0.5.1
@@ -34,7 +36,7 @@ catalog:
   wouter: ^3.3.5
   zod: 3.25.76
 
-minimumReleaseAge: 1440
+minimumReleaseAge: 10080
 
 minimumReleaseAgeExclude:
   - '@replit/*'
