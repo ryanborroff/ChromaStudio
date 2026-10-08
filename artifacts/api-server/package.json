@@ -22,7 +22,7 @@
     "drizzle-orm": "catalog:",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
-    "google-auth-library": "^10.7.0",
+    "google-auth-library": "^11.1.0",
     "passport": "^0.7.0",
     "passport-apple": "^2.0.2",
     "passport-google-oauth20": "^2.0.0",
