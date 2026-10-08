@@ -17,6 +17,7 @@ vi.mock("@workspace/db", () => ({
 
 const getObjectEntityFile = vi.fn();
 const getObjectEntityDownloadURL = vi.fn();
+const canAccessObjectEntity = vi.fn();
 
 vi.mock("../lib/objectStorage", async (importOriginal) => {
   const actual = await importOriginal<typeof import("../lib/objectStorage")>();
@@ -25,6 +26,7 @@ vi.mock("../lib/objectStorage", async (importOriginal) => {
     ObjectStorageService: vi.fn(function MockObjectStorageService(this: Record<string, unknown>) {
       this.getObjectEntityFile = getObjectEntityFile;
       this.getObjectEntityDownloadURL = getObjectEntityDownloadURL;
+      this.canAccessObjectEntity = canAccessObjectEntity;
     }),
   };
 });
@@ -41,7 +43,7 @@ const baseFile = {
   objectPath: "/objects/private/uploads/abc",
 };
 
-const baseDelivery = { id: 42, token: "tok123", passwordHash: null };
+const baseDelivery = { id: 42, userId: 7, token: "tok123", passwordHash: null };
 
 describe("GET /deliveries/shared/:token/files/:fileId/download", () => {
   beforeAll(() => {
@@ -50,6 +52,7 @@ describe("GET /deliveries/shared/:token/files/:fileId/download", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    canAccessObjectEntity.mockResolvedValue(true);
   });
 
   it("returns 404 when the delivery token does not exist", async () => {
