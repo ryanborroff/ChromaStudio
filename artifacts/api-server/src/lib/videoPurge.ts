@@ -1,5 +1,5 @@
-import { and, eq, isNotNull, lt } from "drizzle-orm";
-import { db, videosTable } from "@workspace/db";
+import { and, eq, isNotNull, lt, sql } from "drizzle-orm";
+import { db, videosTable, mediaAssetsTable } from "@workspace/db";
 import { ObjectStorageService } from "./objectStorage";
 import { getStreamingProvider } from "./streaming/index.js";
 import { logger } from "./logger";
@@ -22,7 +22,18 @@ export async function purgeExpiredVideos(): Promise<void> {
   for (const video of candidates) {
     try {
       if (video.storageKey) {
-        await objectStorage.deleteObject(video.storageKey);
+        // Never delete an original registered in the shared Media Warehouse.
+        const [sharedAsset] = await db.select({ id: mediaAssetsTable.id })
+          .from(mediaAssetsTable)
+          .where(eq(mediaAssetsTable.storageKey, video.storageKey)).limit(1);
+        const [otherVideo] = await db.select({ id: videosTable.id })
+          .from(videosTable)
+          .where(and(eq(videosTable.storageKey, video.storageKey),
+            // Do not delete if any other presentation references this object.
+            sql`${videosTable.id} <> ${video.id}`)).limit(1);
+        if (!sharedAsset && !otherVideo) {
+          await objectStorage.deleteObject(video.storageKey);
+        }
       }
       if (video.streamProvider && video.streamUid) {
         const provider = getStreamingProvider();
