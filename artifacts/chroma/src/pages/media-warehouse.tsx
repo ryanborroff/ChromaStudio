@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useListVideos } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/queryClient";
 import { Download, FileVideo2, Loader2, Search } from "lucide-react";
@@ -28,17 +28,48 @@ function formatSize(bytes: number | null) {
 
 /** A read-only view of verified original files. Does not expose raw R2 keys. */
 export function MediaWarehouse() {
+  const [, navigate] = useLocation();
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedVideo, setSelectedVideo] = useState<Record<number, number>>({});
   const [attaching, setAttaching] = useState<number | null>(null);
+  const [creatingVideo, setCreatingVideo] = useState<number | null>(null);
   const [attachError, setAttachError] = useState<string | null>(null);
   const videosQuery = useListVideos({ mine: true, limit: 100 });
   const eligibleVideos = (videosQuery.data?.videos ?? []).filter(
     (video) => video.privacy === "private" && !video.videoUrl && !video.streamProvider,
   );
+
+  async function createVideo(asset: MediaAsset) {
+    const title = asset.originalFilename.replace(/\\.[^.]+$/, "").trim();
+    if (title.length < 2) {
+      setAttachError("Please rename the original before creating a video.");
+      return;
+    }
+    setCreatingVideo(asset.id);
+    setAttachError(null);
+    try {
+      const response = await fetch(`/api/media-assets/${asset.id}/create-video`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      if (!response.ok) {
+        const payload: { error?: string } = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Could not create video");
+      }
+      const result: { video: { id: number } } = await response.json();
+      await queryClient.invalidateQueries();
+      navigate(`/videos/${result.video.id}`);
+    } catch (error) {
+      setAttachError(error instanceof Error ? error.message : "Could not create video");
+    } finally {
+      setCreatingVideo(null);
+    }
+  }
 
   async function attach(assetId: number) {
     const videoId = selectedVideo[assetId];
@@ -151,6 +182,11 @@ export function MediaWarehouse() {
                 </div>
                 {asset.status === "verified" && (
                   <div className="flex flex-wrap items-center gap-2">
+                    <Button variant="secondary" size="sm"
+                      disabled={creatingVideo !== null || attaching !== null}
+                      onClick={() => void createVideo(asset)}>
+                      {creatingVideo === asset.id ? "Creating…" : "Create private video"}
+                    </Button>
                     {eligibleVideos.length > 0 && (
                       <>
                         <select
