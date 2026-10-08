@@ -45,3 +45,26 @@ Create one private, owner-scoped catalogue of source media that can be reused by
 ## Scope
 
 This document establishes the Stage B architecture and implementation sequence. It does **not** claim the Media Warehouse is implemented. Stage A's pnpm trust-policy finding remains a tracked follow-up.
+
+## Implementation checkpoint: B5
+
+The attach endpoint now connects an existing verified original to an owned **private**
+object-storage video, setting its storage key and internal playback URL. This is
+not yet full review-to-release reuse: guest review pages and public distribution
+must receive media through explicitly authorised access mechanisms, not through
+the owner-only `/storage/objects/*` endpoint.
+
+**Do not** change private originals to public ACLs to make review or embeds work.
+Implement time-limited, review-token-scoped playback access and an explicit
+publish/derivative flow first. The streaming-provider path must not be
+overwritten by a warehouse attachment.
+
+Open validation work:
+- Test guest review playback, private owner playback, and public embed access separately.
+- Verify owner-only original downloads and revoked ACL handling.
+- Replace placeholder video MIME type / original filename with verified upload metadata.
+- Ensure storage usage counts warehouse originals once and legacy uploads correctly.
+- Check the video purge path for provider assets and shared originals.
+- Add integration tests for cross-account attachment and retry behaviour.
+- CI passed at commit 1adb134; Semgrep still failed on that commit. Check the
+  latest commit's checks before review or merge.
