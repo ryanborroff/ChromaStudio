@@ -64,7 +64,10 @@ router.get(
       return;
     }
 
-    const duration = Math.max(video.duration ?? 1, 1);
+    const parsedDuration = Number(video.duration);
+    const duration = Number.isFinite(parsedDuration)
+      ? Math.min(Math.max(parsedDuration, 1), 86400)
+      : 1;
     const title = escapeXml(video.title || `Video ${video.id}`);
     const fileName = `${(video.title || `video-${video.id}`).replace(/[^\w.-]+/g, "_")}.fcpxml`;
     const xml = `<?xml version="1.0" encoding="UTF-8"?>
