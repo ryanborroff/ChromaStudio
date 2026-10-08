@@ -14,6 +14,7 @@ import {
 } from "@workspace/api-zod";
 import { requireAuth, getCurrentUser } from "../lib/auth";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
+import { ObjectPermission } from "../lib/objectAcl";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -238,6 +239,27 @@ router.post("/deliveries/:id/files", requireAuth, async (req: Request, res: Resp
     return;
   }
 
+  // A delivery owner must also own the underlying object. An internal path
+  // alone is not proof of ownership, even when the delivery belongs to them.
+  try {
+    const objectFile = await objectStorageService.getObjectEntityFile(parsed.data.objectPath);
+    const canAttach = await objectStorageService.canAccessObjectEntity({
+      userId: String(user.id),
+      objectFile,
+      requestedPermission: ObjectPermission.WRITE,
+    });
+    if (!canAttach) {
+      res.status(403).json({ error: "File is not owned by this account" });
+      return;
+    }
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) {
+      res.status(404).json({ error: "File not found" });
+      return;
+    }
+    throw error;
+  }
+
   await db.insert(deliveryFilesTable).values({
     deliveryId: delivery.id,
     objectPath: parsed.data.objectPath,
@@ -383,6 +405,17 @@ router.get(
 
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(file.objectPath);
+      // Recheck object ownership at download time: legacy delivery rows may
+      // predate attachment checks, and permissions can change after sharing.
+      const stillOwned = await objectStorageService.canAccessObjectEntity({
+        userId: String(delivery.userId),
+        objectFile,
+        requestedPermission: ObjectPermission.WRITE,
+      });
+      if (!stillOwned) {
+        res.status(403).json({ error: "File access revoked" });
+        return;
+      }
 
       const asciiName = file.name.replace(/[^\x20-\x7E]/g, "_").replace(/["\\]/g, "_");
       const downloadUrl = await objectStorageService.getObjectEntityDownloadURL(objectFile, {
