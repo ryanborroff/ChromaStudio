@@ -15,9 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # --config=auto pulls Semgrep's default registry rulesets for whatever
-      # languages it finds in the repo (TS/JS/React here), including secret
-      # detection, OWASP-style injection patterns, and framework-specific
-      # known-bad patterns. No account or token required for this mode.
+      # Explicit registry ruleset is compatible with metrics disabled.
       - name: Run Semgrep
-        run: semgrep scan --config=auto --error --metrics=off
+        run: semgrep scan --config=p/owasp-top-ten --error --metrics=off
