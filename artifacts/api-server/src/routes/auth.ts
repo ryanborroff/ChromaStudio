@@ -83,7 +83,39 @@ const loginSchema = z.object({
   password: z.string().min(1).max(200),
 });
 
+// Temporary per-process abuse protection. A shared Redis/DB limiter is required
+// before running multiple API instances; see docs/stage-a-security.md.
+const AUTH_WINDOW_MS = 15 * 60 * 1000;
+const AUTH_MAX_ATTEMPTS = 10;
+const authAttempts = new Map<string, { count: number; resetAt: number }>();
+
+function allowAuthAttempt(req: import("express").Request, res: import("express").Response): boolean {
+  const now = Date.now();
+  if (authAttempts.size > 10000) {
+    for (const [key, value] of authAttempts) {
+      if (value.resetAt <= now) authAttempts.delete(key);
+    }
+  }
+  const email = typeof req.body?.email === "string"
+    ? req.body.email.trim().toLowerCase().slice(0, 255)
+    : "unknown";
+  const key = `${req.ip ?? "unknown"}:${email}`;
+  const current = authAttempts.get(key);
+  if (!current || current.resetAt <= now) {
+    authAttempts.set(key, { count: 1, resetAt: now + AUTH_WINDOW_MS });
+    return true;
+  }
+  if (current.count >= AUTH_MAX_ATTEMPTS) {
+    res.setHeader("Retry-After", String(Math.ceil((current.resetAt - now) / 1000)));
+    res.status(429).json({ error: "Too many attempts. Please try again later." });
+    return false;
+  }
+  current.count += 1;
+  return true;
+}
+
 router.post("/auth/register", async (req, res, next) => {
+  if (!allowAuthAttempt(req, res)) return;
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Invalid email or password (min 8 characters)" });
@@ -117,6 +149,7 @@ router.post("/auth/register", async (req, res, next) => {
 });
 
 router.post("/auth/login", async (req, res, next) => {
+  if (!allowAuthAttempt(req, res)) return;
   const parsed = loginSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Email and password are required" });
@@ -210,8 +243,8 @@ const devLoginSchema = z.object({ password: z.string().min(1).max(200) });
 
 router.post("/auth/dev-login", async (req, res, next) => {
   const expected = process.env.DEV_LOGIN_PASSWORD;
-  if (!expected) {
-    res.status(503).json({ error: "Dev login is not configured" });
+  if (!expected || process.env.NODE_ENV === "production") {
+    res.status(503).json({ error: "Dev login is not available" });
     return;
   }
 
