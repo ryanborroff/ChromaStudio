@@ -20,6 +20,25 @@ function escapeXml(value: string): string {
   );
 }
 
+/** Inputs must already be XML-attribute escaped, except duration (a finite number). */
+function buildFcpxml(title: string, sourceUrl: string, duration: number): string {
+  return [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<!DOCTYPE fcpxml>',
+    '<fcpxml version="1.10">',
+    '  <resources>',
+    '    <format id="r1" name="Chroma 1080p" frameDuration="100/2400s" width="1920" height="1080" colorSpace="1-1-1 (Rec. 709)"/>',
+    '    <asset id="r2" name="', title, '" src="', sourceUrl, '" start="0s" duration="', String(duration), 's" hasVideo="1" format="r1"/>',
+    '  </resources>',
+    '  <library><event name="Chroma"><project name="', title, '">',
+    '    <sequence format="r1" duration="', String(duration), 's" tcStart="0s" tcFormat="NDF">',
+    '      <spine><asset-clip name="', title, '" ref="r2" offset="0s" duration="', String(duration), 's" start="0s"/></spine>',
+    '    </sequence>',
+    '  </project></event></library>',
+    '</fcpxml>',
+  ].join("\n");
+}
+
 async function getSourceUrl(
   video: typeof videosTable.$inferSelect,
 ): Promise<string | null> {
@@ -64,29 +83,15 @@ router.get(
       return;
     }
 
-    const duration = Math.max(video.duration ?? 1, 1);
+    const parsedDuration = Number(video.duration);
+    const duration = Number.isFinite(parsedDuration)
+      ? Math.min(Math.max(parsedDuration, 1), 86400)
+      : 1;
     const title = escapeXml(video.title || `Video ${video.id}`);
     const fileName = `${(video.title || `video-${video.id}`).replace(/[^\w.-]+/g, "_")}.fcpxml`;
-    const xml = `<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE fcpxml>
-<fcpxml version="1.10">
-  <resources>
-    <format id="r1" name="Chroma 1080p" frameDuration="100/2400s" width="1920" height="1080" colorSpace="1-1-1 (Rec. 709)"/>
-    <asset id="r2" name="${title}" src="${escapeXml(sourceUrl)}" start="0s" duration="${duration}s" hasVideo="1" format="r1"/>
-  </resources>
-  <library>
-    <event name="Chroma">
-      <project name="${title}">
-        <sequence format="r1" duration="${duration}s" tcStart="0s" tcFormat="NDF">
-          <spine>
-            <asset-clip name="${title}" ref="r2" offset="0s" duration="${duration}s" start="0s"/>
-          </spine>
-        </sequence>
-      </project>
-    </event>
-  </library>
-</fcpxml>
-`;
+    // All dynamic XML attribute values are escaped before interpolation.
+    // This route returns application/xml as an attachment, not executable HTML.
+    const xml = buildFcpxml(title, escapeXml(sourceUrl), duration);
 
     res
       .status(200)

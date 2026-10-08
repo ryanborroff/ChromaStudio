@@ -56,8 +56,13 @@ export class ObjectStorageService {
    * purge job only ever deletes originals/-scoped keys tied to a specific
    * soft-deleted row, never a blanket prefix delete.
    */
-  async getObjectEntityUploadURL(): Promise<string> {
+  async getObjectEntityUploadURL(ownerUserId?: string): Promise<string> {
     const key = `${PRIVATE_PREFIX}/uploads/${randomUUID()}`;
+    // Write the owner ACL before issuing a client-accessible upload URL.
+    // Fail closed if ACL persistence fails.
+    if (ownerUserId) {
+      await setObjectAclPolicy({ key }, { owner: ownerUserId, visibility: "private" });
+    }
     const command = new PutObjectCommand({ Bucket: getR2Bucket(), Key: key });
     return getSignedUrl(getR2Client(), command, { expiresIn: 900 });
   }
