@@ -25,3 +25,6 @@ jobs:
 
       - name: Typecheck
         run: pnpm run typecheck
+
+      - name: API security regression tests
+        run: pnpm --filter @workspace/api-server test
