@@ -86,7 +86,9 @@ router.post(
     }
 
     try {
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL(
+        String((req.user as { id: number }).id),
+      );
       const objectPath =
         objectStorageService.normalizeObjectEntityPath(uploadURL);
 
@@ -129,7 +131,9 @@ router.post(
     }
 
     try {
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL(
+        String((req.user as { id: number }).id),
+      );
       const objectPath =
         objectStorageService.normalizeObjectEntityPath(uploadURL);
 
