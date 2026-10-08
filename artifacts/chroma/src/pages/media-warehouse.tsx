@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "wouter";
+import { useListVideos } from "@workspace/api-client-react";
+import { queryClient } from "@/lib/queryClient";
 import { Download, FileVideo2, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +32,40 @@ export function MediaWarehouse() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
+  const [selectedVideo, setSelectedVideo] = useState<Record<number, number>>({});
+  const [attaching, setAttaching] = useState<number | null>(null);
+  const [attachError, setAttachError] = useState<string | null>(null);
+  const videosQuery = useListVideos({ mine: true, limit: 100 });
+  const eligibleVideos = (videosQuery.data?.videos ?? []).filter(
+    (video) => video.privacy === "private" && !video.mediaAssetId &&
+      !video.storageKey && !video.videoUrl && !video.streamProvider,
+  );
+
+  async function attach(assetId: number) {
+    const videoId = selectedVideo[assetId];
+    if (!videoId) return;
+    setAttaching(assetId);
+    setAttachError(null);
+    try {
+      const response = await fetch(`/api/media-assets/${assetId}/attach`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ videoId }),
+      });
+      if (!response.ok) {
+        const payload: { error?: string } = await response.json().catch(() => ({}));
+        throw new Error(payload.error || "Could not attach original");
+      }
+      await queryClient.invalidateQueries();
+      await videosQuery.refetch();
+      setSelectedVideo((previous) => ({ ...previous, [assetId]: 0 }));
+    } catch (error) {
+      setAttachError(error instanceof Error ? error.message : "Could not attach original");
+    } finally {
+      setAttaching(null);
+    }
+  }
 
   useEffect(() => {
     const controller = new AbortController();
@@ -81,6 +117,7 @@ export function MediaWarehouse() {
             className="pl-9" value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
       </div>
+      {attachError && <p role="alert" className="mb-4 text-sm text-red-400">{attachError}</p>}
       {loading ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" /> Loading originals…
@@ -114,11 +151,35 @@ export function MediaWarehouse() {
                   </div>
                 </div>
                 {asset.status === "verified" && (
-                  <Button variant="outline" size="sm" asChild>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {eligibleVideos.length > 0 && (
+                      <>
+                        <select
+                          aria-label={`Select private video for ${asset.originalFilename}`}
+                          className="max-w-52 rounded-md border border-border bg-background px-3 py-2 text-sm text-white"
+                          value={selectedVideo[asset.id] || ""}
+                          onChange={(event) => setSelectedVideo((previous) => ({
+                            ...previous, [asset.id]: Number(event.target.value),
+                          }))}
+                        >
+                          <option value="">Reuse in private video…</option>
+                          {eligibleVideos.map((video) => (
+                            <option key={video.id} value={video.id}>{video.title}</option>
+                          ))}
+                        </select>
+                        <Button size="sm" variant="secondary"
+                          disabled={!selectedVideo[asset.id] || attaching !== null}
+                          onClick={() => void attach(asset.id)}>
+                          {attaching === asset.id ? "Attaching…" : "Attach"}
+                        </Button>
+                      </>
+                    )}
+                    <Button variant="outline" size="sm" asChild>
                     <a href={`/api/media-assets/${asset.id}/download`}>
                       <Download className="mr-2 h-4 w-4" /> Download original
                     </a>
                   </Button>
+                  </div>
                 )}
               </li>
             ))}
