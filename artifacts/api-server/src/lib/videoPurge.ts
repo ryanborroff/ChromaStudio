@@ -1,4 +1,4 @@
-import { and, eq, isNotNull, lt, sql } from "drizzle-orm";
+import { and, eq, isNotNull, lt, sql, or } from "drizzle-orm";
 import { db, videosTable, mediaAssetsTable } from "@workspace/db";
 import { ObjectStorageService } from "./objectStorage";
 import { getStreamingProvider } from "./streaming/index.js";
@@ -12,6 +12,7 @@ export async function purgeExpiredVideos(): Promise<void> {
     .select({
       id: videosTable.id,
       storageKey: videosTable.storageKey,
+      mediaAssetId: videosTable.mediaAssetId,
       streamProvider: videosTable.streamProvider,
       streamUid: videosTable.streamUid,
     })
@@ -28,7 +29,9 @@ export async function purgeExpiredVideos(): Promise<void> {
           .where(eq(mediaAssetsTable.storageKey, video.storageKey)).limit(1);
         const [otherVideo] = await db.select({ id: videosTable.id })
           .from(videosTable)
-          .where(and(eq(videosTable.storageKey, video.storageKey),
+          .where(and(
+            or(eq(videosTable.storageKey, video.storageKey),
+              ...(video.mediaAssetId ? [eq(videosTable.mediaAssetId, video.mediaAssetId)] : [])),
             // Do not delete if any other presentation references this object.
             sql`${videosTable.id} <> ${video.id}`)).limit(1);
         if (!sharedAsset && !otherVideo) {
