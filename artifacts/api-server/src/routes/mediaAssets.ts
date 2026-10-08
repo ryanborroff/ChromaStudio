@@ -125,11 +125,22 @@ router.post("/media-assets/:id/attach", requireAuth, async (req, res) => {
     req.log.error({ err: error }, "Media asset ownership check failed");
     res.status(500).json({ error: "Failed to attach asset" }); return;
   }
-  const [video] = await db.update(videosTable).set({ mediaAssetId: asset.id }).where(and(
+  // Only attach to a private, object-storage presentation. Never overwrite
+  // provider-managed streaming assets or silently publish a private original.
+  const [video] = await db.update(videosTable).set({
+    mediaAssetId: asset.id,
+    storageKey: asset.storageKey,
+    videoUrl: "/api/storage/objects/" + asset.storageKey,
+    fileSizeBytes: asset.sizeBytes,
+    streamStatus: "ready",
+    originalVerifiedAt: asset.verifiedAt,
+  }).where(and(
     eq(videosTable.id, body.data.videoId), eq(videosTable.userId, userId),
+    eq(videosTable.privacy, "private"),
     isNull(videosTable.deletedAt),
+    isNull(videosTable.streamProvider),
   )).returning({ id: videosTable.id, mediaAssetId: videosTable.mediaAssetId });
-  if (!video) { res.status(404).json({ error: "Video not found" }); return; }
+  if (!video) { res.status(409).json({ error: "Only owned, private object-storage videos can attach an original" }); return; }
   res.json({ video });
 });
 
