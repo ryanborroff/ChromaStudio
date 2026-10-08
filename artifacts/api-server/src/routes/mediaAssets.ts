@@ -1,4 +1,5 @@
 import { Router, type IRouter } from "express";
+import { randomUUID } from "node:crypto";
 import { and, desc, eq, isNull } from "drizzle-orm";
 import { z } from "zod/v4";
 import { db, mediaAssetsTable, videosTable } from "@workspace/db";
@@ -99,6 +100,47 @@ router.post("/media-assets", requireAuth, async (req, res) => {
     if (error instanceof ObjectNotFoundError) { res.status(404).json({ error: "Uploaded file not found" }); return; }
     req.log.error({ err: error }, "Media asset registration failed");
     res.status(500).json({ error: "Failed to register asset" });
+  }
+});
+
+/** Create a new private video from an existing verified original, without a re-upload. */
+router.post("/media-assets/:id/create-video", requireAuth, async (req, res) => {
+  const id = assetIdSchema.safeParse(req.params.id);
+  const body = z.object({
+    title: z.string().trim().min(2).max(200),
+    description: z.string().trim().max(5000).optional(),
+  }).safeParse(req.body);
+  if (!id.success || !body.success) { res.status(400).json({ error: "Invalid video details" }); return; }
+  const userId = ownerId(req);
+  const [asset] = await db.select().from(mediaAssetsTable).where(and(
+    eq(mediaAssetsTable.id, id.data), eq(mediaAssetsTable.ownerId, userId),
+    eq(mediaAssetsTable.status, "verified"), isNull(mediaAssetsTable.deletedAt),
+  )).limit(1);
+  if (!asset) { res.status(404).json({ error: "Asset not found" }); return; }
+  try {
+    const objectFile = await storage.getObjectEntityFile("/objects/" + asset.storageKey);
+    const permitted = await storage.canAccessObjectEntity({
+      userId: String(userId), objectFile, requestedPermission: ObjectPermission.READ,
+    });
+    if (!permitted) { res.status(403).json({ error: "Forbidden" }); return; }
+    const [video] = await db.insert(videosTable).values({
+      userId,
+      title: body.data.title,
+      description: body.data.description,
+      privacy: "private",
+      reviewGroupId: `edit-${randomUUID()}`,
+      streamStatus: "ready",
+      mediaAssetId: asset.id,
+      storageKey: asset.storageKey,
+      videoUrl: "/api/storage/objects/" + asset.storageKey,
+      fileSizeBytes: asset.sizeBytes,
+      originalVerifiedAt: asset.verifiedAt,
+    }).returning({ id: videosTable.id, mediaAssetId: videosTable.mediaAssetId });
+    res.status(201).json({ video });
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) { res.status(404).json({ error: "Source object missing" }); return; }
+    req.log.error({ err: error }, "Creating video from original failed");
+    res.status(500).json({ error: "Failed to create video" });
   }
 });
 
