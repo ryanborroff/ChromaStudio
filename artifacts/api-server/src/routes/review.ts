@@ -73,13 +73,14 @@ async function getLink(token: string) {
   return link;
 }
 
-async function getLatestVideo(groupId: string) {
+async function getLatestVideo(groupId: string, ownerId: number) {
   const [video] = await db
     .select()
     .from(videosTable)
     .where(
       and(
         eq(videosTable.reviewGroupId, groupId),
+        eq(videosTable.userId, ownerId),
         eq(videosTable.streamStatus, "ready"),
         notDeleted(),
       ),
@@ -99,6 +100,7 @@ async function getLatestVideo(groupId: string) {
     .where(
       and(
         eq(videosTable.id, fallbackId),
+        eq(videosTable.userId, ownerId),
         isNull(videosTable.reviewGroupId),
         notDeleted(),
       ),
@@ -111,7 +113,7 @@ async function getLatestVideo(groupId: string) {
 
 // A specific, non-latest version within a group. Used when a guest switches
 // the version picker away from "latest" to compare against an earlier cut.
-async function getVideoInGroup(groupId: string, videoId: number) {
+async function getVideoInGroup(groupId: string, videoId: number, ownerId: number) {
   if (groupId.startsWith("video-")) {
     const fallbackId = Number(groupId.slice(6));
     if (fallbackId !== videoId) return null;
@@ -121,6 +123,7 @@ async function getVideoInGroup(groupId: string, videoId: number) {
       .where(
         and(
           eq(videosTable.id, videoId),
+          eq(videosTable.userId, ownerId),
           isNull(videosTable.reviewGroupId),
           notDeleted(),
         ),
@@ -134,6 +137,7 @@ async function getVideoInGroup(groupId: string, videoId: number) {
     .where(
       and(
         eq(videosTable.id, videoId),
+        eq(videosTable.userId, ownerId),
         eq(videosTable.reviewGroupId, groupId),
         eq(videosTable.streamStatus, "ready"),
         notDeleted(),
@@ -153,6 +157,7 @@ async function listGroupVersions(video: ReviewVideo) {
     .where(
       and(
         eq(videosTable.reviewGroupId, video.reviewGroupId),
+        eq(videosTable.userId, video.userId),
         eq(videosTable.streamStatus, "ready"),
         notDeleted(),
       ),
@@ -265,8 +270,8 @@ async function authorizeGuest(
   }
   const video =
     videoId != null
-      ? await getVideoInGroup(link.videoGroupId, videoId)
-      : await getLatestVideo(link.videoGroupId);
+      ? await getVideoInGroup(link.videoGroupId, videoId, link.createdBy)
+      : await getLatestVideo(link.videoGroupId, link.createdBy);
   if (!video) return null;
   return { link, video, groupId: getGroupId(video) };
 }
