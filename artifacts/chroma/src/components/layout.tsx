@@ -80,6 +80,7 @@ const SIDEBAR_CONTENT: Record<Section, { label: string; items: NavItem[]; discov
     items: [
       { href: "/studio/portfolio", label: "Portfolio Collections", icon: FolderOpen },
       { href: "/studio/storage",   label: "Media Library",        icon: Cloud },
+      { href: "/studio/warehouse", label: "Media Warehouse", icon: FolderOpen },
       { href: "/studio/delivery",  label: "Client Delivery",      icon: Send },
       { href: "/studio/embeds",    label: "Website Embedding",    icon: Code2 },
       { href: "/studio/analytics", label: "Analytics",            icon: BarChart3 },
