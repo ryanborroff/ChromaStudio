@@ -22,6 +22,7 @@ import { ProfileEdit } from "@/pages/profile-edit";
 import { VideoUpload } from "@/pages/video-upload";
 import { VideoDetail } from "@/pages/video-detail";
 import { Library } from "@/pages/library";
+import { MediaWarehouse } from "@/pages/media-warehouse";
 import { Pricing } from "@/pages/pricing";
 import { SharePage } from "@/pages/share-page";
 import { EmbedPlayer } from "@/pages/embed-player";
@@ -163,6 +164,7 @@ function AppRoutes() {
           )}
         />
         <ProtectedRoute path="/studio/storage" component={Library} />
+        <ProtectedRoute path="/studio/warehouse" component={MediaWarehouse} />
         <ProtectedRoute path="/studio/delivery" component={Deliveries} />
         <ProtectedRoute
           path="/studio/delivery/:id"
