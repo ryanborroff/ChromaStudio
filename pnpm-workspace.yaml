@@ -10,7 +10,6 @@ allowBuilds:
 
 autoInstallPeers: false
 blockExoticSubdeps: true
-trustPolicy: no-downgrade
 
 catalog:
   '@replit/vite-plugin-cartographer': ^0.5.1
