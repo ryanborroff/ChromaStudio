@@ -97,6 +97,24 @@ describe("GET /deliveries/shared/:token/files/:fileId/download", () => {
     expect(getObjectEntityDownloadURL).not.toHaveBeenCalled();
   });
 
+  it("refuses to download a file when the delivery owner has lost access", async () => {
+    limitMock.mockResolvedValueOnce([baseDelivery]).mockResolvedValueOnce([baseFile]);
+    getObjectEntityFile.mockResolvedValue({ key: "private/uploads/abc" });
+    canAccessObjectEntity.mockResolvedValue(false);
+
+    const { default: deliveriesRouter } = await import("./deliveries");
+    const app = buildApp();
+    app.use(deliveriesRouter);
+    const res = await request(app).get("/deliveries/shared/tok123/files/1/download");
+
+    expect(res.status).toBe(403);
+    expect(canAccessObjectEntity).toHaveBeenCalledWith(expect.objectContaining({
+      userId: "7",
+      objectFile: { key: "private/uploads/abc" },
+    }));
+    expect(getObjectEntityDownloadURL).not.toHaveBeenCalled();
+  });
+
   it("redirects to a signed download URL for an unlocked delivery and existing file", async () => {
     limitMock
       .mockResolvedValueOnce([baseDelivery]) // delivery lookup
