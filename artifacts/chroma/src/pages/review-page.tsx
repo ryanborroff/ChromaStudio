@@ -109,7 +109,7 @@ export function ReviewPage() {
 
   const reviewPassword = unlocked ? password : undefined;
   const privateOriginal = !!session?.videoUrl &&
-    /^\\/api\\/storage\\/objects\\/private\\//.test(session.videoUrl);
+    session.videoUrl.startsWith("/api/storage/objects/private/");
   const selectedVideoId = session?.videoId;
 
   useEffect(() => {
