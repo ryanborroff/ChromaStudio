@@ -37,6 +37,36 @@ router.get("/media-assets/:id", requireAuth, async (req, res) => {
   res.json({ asset });
 });
 
+/** Download the original through a short-lived URL, after rechecking ownership. */
+router.get("/media-assets/:id/download", requireAuth, async (req, res) => {
+  const parsed = assetIdSchema.safeParse(req.params.id);
+  if (!parsed.success) { res.status(400).json({ error: "Invalid asset ID" }); return; }
+  const userId = ownerId(req);
+  const [asset] = await db.select().from(mediaAssetsTable).where(and(
+    eq(mediaAssetsTable.id, parsed.data),
+    eq(mediaAssetsTable.ownerId, userId),
+    eq(mediaAssetsTable.status, "verified"),
+    isNull(mediaAssetsTable.deletedAt),
+  )).limit(1);
+  if (!asset) { res.status(404).json({ error: "Asset not found" }); return; }
+  try {
+    const objectFile = await storage.getObjectEntityFile("/objects/" + asset.storageKey);
+    const permitted = await storage.canAccessObjectEntity({
+      userId: String(userId), objectFile, requestedPermission: ObjectPermission.READ,
+    });
+    if (!permitted) { res.status(403).json({ error: "Forbidden" }); return; }
+    const downloadUrl = await storage.getObjectEntityDownloadURL(objectFile, {
+      responseContentDisposition: "attachment",
+    });
+    res.setHeader("Cache-Control", "no-store");
+    res.redirect(302, downloadUrl);
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) { res.status(404).json({ error: "Source object missing" }); return; }
+    req.log.error({ err: error }, "Media asset download failed");
+    res.status(500).json({ error: "Failed to download asset" });
+  }
+});
+
 /** Register an existing, completed private upload. Never accept an arbitrary R2 key. */
 router.post("/media-assets", requireAuth, async (req, res) => {
   const parsed = registerSchema.safeParse(req.body);
