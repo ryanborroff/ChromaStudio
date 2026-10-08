@@ -9,6 +9,7 @@ import {
   reviewNotificationsTable,
   projectsTable,
   videosTable,
+  mediaAssetsTable,
   notDeleted,
 } from "@workspace/db";
 import {
@@ -526,6 +527,15 @@ router.post("/review/:token/playback", async (req, res): Promise<void> => {
   if (!video.storageKey || !video.mediaAssetId || video.streamProvider) {
     res.status(409).json({ error: "Object-storage playback unavailable for this version" }); return;
   }
+  const [asset] = await db.select({ storageKey: mediaAssetsTable.storageKey })
+    .from(mediaAssetsTable).where(and(
+      eq(mediaAssetsTable.id, video.mediaAssetId),
+      eq(mediaAssetsTable.ownerId, video.userId),
+      eq(mediaAssetsTable.storageKey, video.storageKey),
+      eq(mediaAssetsTable.status, "verified"),
+      isNull(mediaAssetsTable.deletedAt),
+    )).limit(1);
+  if (!asset) { res.status(404).json({ error: "Source media unavailable" }); return; }
   const storage = new ObjectStorageService();
   try {
     const objectFile = await storage.getObjectEntityFile("/objects/" + video.storageKey);
