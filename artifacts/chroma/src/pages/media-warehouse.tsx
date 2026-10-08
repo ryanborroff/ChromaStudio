@@ -37,8 +37,7 @@ export function MediaWarehouse() {
   const [attachError, setAttachError] = useState<string | null>(null);
   const videosQuery = useListVideos({ mine: true, limit: 100 });
   const eligibleVideos = (videosQuery.data?.videos ?? []).filter(
-    (video) => video.privacy === "private" && !video.mediaAssetId &&
-      !video.storageKey && !video.videoUrl && !video.streamProvider,
+    (video) => video.privacy === "private" && !video.videoUrl && !video.streamProvider,
   );
 
   async function attach(assetId: number) {
