@@ -269,8 +269,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </div>
                 )}
 
-                {isSignedIn && (
-                  <div className="mt-5">
+                <div className="mt-5">
                     <p className="px-3 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">Workspace</p>
                     {ACTION_MENUS.map(menu => (
                       <div key={menu.label} className="mb-3">
@@ -287,7 +286,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                       </div>
                     ))}
                   </div>
-                )}
 
                 {/* Upload — signed-in */}
                 {isSignedIn && (
@@ -358,8 +356,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-          {isSignedIn && (
-            <nav className="hidden md:flex items-center gap-0.5" aria-label="Workspace actions">
+          <nav className="hidden md:flex items-center gap-0.5" aria-label="Workspace actions">
               {ACTION_MENUS.map(menu => (
                 <DropdownMenu key={menu.label} modal={false}>
                   <DropdownMenuTrigger asChild>
@@ -390,7 +387,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 </DropdownMenu>
               ))}
             </nav>
-          )}
         </div>
 
         {/* Center — search */}
