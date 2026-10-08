@@ -20,7 +20,7 @@ import {
   Film, LogOut, Settings, User as UserIcon,
   Clapperboard, Sparkles, Rss, Menu, Search, Bookmark,
   Radio, History, FolderOpen, Cloud, Send, Code2, BarChart3, TrendingUp,
-  ShieldCheck, KeyRound, type LucideIcon,
+  ShieldCheck, KeyRound, ChevronDown, Upload, type LucideIcon,
 } from "lucide-react";
 import {
   Sheet,
@@ -97,6 +97,22 @@ const TOP_NAV: { label: string; href: string; section: Section; testid: string; 
   { label: "Community", href: "/community",        section: "community", testid: "link-community" },
   { label: "Pricing",   href: "/pricing",          section: "pricing",   testid: "link-pricing" },
 ];
+
+/** Workspace actions use existing application routes only. */
+const ACTION_MENUS = [
+  { label: "Create", items: [
+    { label: "Upload video", description: "Add a film to Chroma", href: "/videos/upload", icon: Upload },
+    { label: "Portfolio", description: "Open your creator workspace", href: "/studio/portfolio", icon: FolderOpen },
+  ] },
+  { label: "Projects", items: [
+    { label: "Portfolio collections", description: "Organise your work", href: "/studio/portfolio", icon: FolderOpen },
+    { label: "Client delivery", description: "Manage shared deliveries", href: "/studio/delivery", icon: Send },
+  ] },
+  { label: "Media", items: [
+    { label: "Media library", description: "Browse your uploaded files", href: "/studio/storage", icon: Cloud },
+    { label: "Upload media", description: "Add new files", href: "/videos/upload", icon: Upload },
+  ] },
+] as const;
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -253,6 +269,26 @@ export function Layout({ children }: { children: React.ReactNode }) {
                   </div>
                 )}
 
+                {isSignedIn && (
+                  <div className="mt-5">
+                    <p className="px-3 mb-1 text-[10px] font-semibold text-white/25 uppercase tracking-widest">Workspace</p>
+                    {ACTION_MENUS.map(menu => (
+                      <div key={menu.label} className="mb-3">
+                        <p className="px-3 py-1 text-xs font-semibold text-white/70">{menu.label}</p>
+                        {menu.items.map(item => {
+                          const Icon = item.icon;
+                          return (
+                            <Link key={item.href + item.label} href={item.href} onClick={() => setMobileOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-white/50 hover:text-white hover:bg-white/5">
+                              <Icon className="w-4 h-4" />{item.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Upload — signed-in */}
                 {isSignedIn && (
                   <Link
@@ -322,6 +358,39 @@ export function Layout({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
+          {isSignedIn && (
+            <nav className="hidden md:flex items-center gap-0.5" aria-label="Workspace actions">
+              {ACTION_MENUS.map(menu => (
+                <DropdownMenu key={menu.label} modal={false}>
+                  <DropdownMenuTrigger asChild>
+                    <button type="button"
+                      className="flex items-center gap-1 px-2.5 py-1 rounded-md text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 data-[state=open]:bg-white/10 data-[state=open]:text-white outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                      data-testid={`nav-popover-${menu.label.toLowerCase()}`}>
+                      {menu.label}<ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" sideOffset={10}
+                    className="w-72 p-1.5 border border-white/10 bg-[#181818] text-white shadow-2xl">
+                    {menu.items.map(item => {
+                      const Icon = item.icon;
+                      return (
+                        <DropdownMenuItem key={item.href + item.label} asChild
+                          className="p-0 cursor-pointer focus:bg-white/10 focus:text-white rounded-md">
+                          <Link href={item.href} className="flex items-start gap-3 px-3 py-3 w-full">
+                            <Icon className="w-5 h-5 mt-0.5 shrink-0 text-primary" />
+                            <span className="flex flex-col gap-0.5">
+                              <span className="text-sm font-semibold">{item.label}</span>
+                              <span className="text-xs text-white/50">{item.description}</span>
+                            </span>
+                          </Link>
+                        </DropdownMenuItem>
+                      );
+                    })}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ))}
+            </nav>
+          )}
         </div>
 
         {/* Center — search */}
