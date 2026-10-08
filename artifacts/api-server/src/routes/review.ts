@@ -575,7 +575,7 @@ router.get("/review/:token", async (req, res): Promise<void> => {
     res.status(410).json({ error: "This review link is no longer active" });
     return;
   }
-  const video = await getLatestVideo(link.videoGroupId);
+  const video = await getLatestVideo(link.videoGroupId, link.createdBy);
   if (!video) {
     res.status(409).json({ error: "The latest video is still processing" });
     return;
