@@ -39,6 +39,8 @@ import {
 } from "@workspace/api-zod";
 import { getCurrentUser, requireAuth } from "../lib/auth";
 import { getStreamingProvider } from "../lib/streaming/index.js";
+import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
+import { ObjectPermission } from "../lib/objectAcl";
 
 const router: IRouter = Router();
 const guestAttempts = new Map<string, { count: number; resetAt: number }>();
@@ -501,6 +503,51 @@ router.post(
     );
   },
 );
+
+// Resolve playback only after validating the active review token, optional
+// password, selected version, and current storage ACL. Never expose the
+// original as a public object or grant unauthenticated general storage access.
+router.post("/review/:token/playback", async (req, res): Promise<void> => {
+  const token = typeof req.params.token === "string" ? req.params.token : "";
+  if (!/^[A-Za-z0-9_-]{16,128}$/.test(token)) {
+    res.status(404).json({ error: "Review link not found" }); return;
+  }
+  const body = req.body ?? {};
+  const password = typeof body.password === "string" ? body.password : undefined;
+  const videoId = body.videoId === undefined ? undefined : body.videoId;
+  if (videoId !== undefined && (!Number.isSafeInteger(videoId) || videoId <= 0)) {
+    res.status(400).json({ error: "Invalid version" }); return;
+  }
+  const authorized = await authorizeGuest(token, password, videoId);
+  if (!authorized) {
+    res.status(401).json({ error: "Invalid or expired review link" }); return;
+  }
+  const video = authorized.video;
+  if (!video.storageKey || !video.mediaAssetId || video.streamProvider) {
+    res.status(409).json({ error: "Object-storage playback unavailable for this version" }); return;
+  }
+  const storage = new ObjectStorageService();
+  try {
+    const objectFile = await storage.getObjectEntityFile("/objects/" + video.storageKey);
+    const permitted = await storage.canAccessObjectEntity({
+      userId: String(video.userId),
+      objectFile,
+      requestedPermission: ObjectPermission.READ,
+    });
+    if (!permitted) { res.status(403).json({ error: "Playback unavailable" }); return; }
+    const playbackUrl = await storage.getObjectEntityDownloadURL(objectFile, {
+      responseContentDisposition: "inline",
+    });
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ playbackUrl, expiresInSeconds: 120, videoId: video.id });
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) {
+      res.status(404).json({ error: "Media not found" }); return;
+    }
+    req.log.error({ err: error }, "Review playback signing failed");
+    res.status(500).json({ error: "Playback unavailable" });
+  }
+});
 
 router.get("/review/:token", async (req, res): Promise<void> => {
   const params = GetReviewLinkParams.safeParse(req.params);
