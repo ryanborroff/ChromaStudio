@@ -15,6 +15,7 @@ import { z } from "zod/v4";
 import { usersTable } from "./users";
 import { collectionsTable } from "./collections";
 import { projectsTable } from "./projects";
+import { mediaAssetsTable } from "./mediaAssets";
 
 export const videosTable = pgTable("videos", {
   id: serial("id").primaryKey(),
@@ -38,6 +39,8 @@ export const videosTable = pgTable("videos", {
   uploadError: text("upload_error"),
   retryCount: integer("retry_count").notNull().default(0),
   storageKey: text("storage_key"),
+  // Optional: legacy videos remain valid without a Media Warehouse asset.
+  mediaAssetId: integer("media_asset_id").references(() => mediaAssetsTable.id, { onDelete: "set null" }),
   checksumSha256: text("checksum_sha256"),
   originalVerifiedAt: timestamp("original_verified_at"),
   deletedAt: timestamp("deleted_at"),
