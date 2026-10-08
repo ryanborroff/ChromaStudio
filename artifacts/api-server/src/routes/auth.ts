@@ -91,6 +91,8 @@ const authAttempts = new Map<string, { count: number; resetAt: number }>();
 
 function allowAuthAttempt(req: import("express").Request, res: import("express").Response): boolean {
   const now = Date.now();
+  // Two limits: per IP (password spraying) and per IP+email (targeted guessing).
+  // In-memory only: production must move to a shared store before scaling.
   if (authAttempts.size > 10000) {
     for (const [key, value] of authAttempts) {
       if (value.resetAt <= now) authAttempts.delete(key);
@@ -99,18 +101,27 @@ function allowAuthAttempt(req: import("express").Request, res: import("express")
   const email = typeof req.body?.email === "string"
     ? req.body.email.trim().toLowerCase().slice(0, 255)
     : "unknown";
-  const key = `${req.ip ?? "unknown"}:${email}`;
-  const current = authAttempts.get(key);
-  if (!current || current.resetAt <= now) {
-    authAttempts.set(key, { count: 1, resetAt: now + AUTH_WINDOW_MS });
-    return true;
+  const ip = req.ip ?? "unknown";
+  const keys = [
+    { key: `ip:${ip}`, max: 40 },
+    { key: `account:${ip}:${email}`, max: AUTH_MAX_ATTEMPTS },
+  ];
+  for (const { key, max } of keys) {
+    const current = authAttempts.get(key);
+    if (current && current.resetAt > now && current.count >= max) {
+      res.setHeader("Retry-After", String(Math.ceil((current.resetAt - now) / 1000)));
+      res.status(429).json({ error: "Too many attempts. Please try again later." });
+      return false;
+    }
   }
-  if (current.count >= AUTH_MAX_ATTEMPTS) {
-    res.setHeader("Retry-After", String(Math.ceil((current.resetAt - now) / 1000)));
-    res.status(429).json({ error: "Too many attempts. Please try again later." });
-    return false;
+  for (const { key } of keys) {
+    const current = authAttempts.get(key);
+    if (!current || current.resetAt <= now) {
+      authAttempts.set(key, { count: 1, resetAt: now + AUTH_WINDOW_MS });
+    } else {
+      current.count += 1;
+    }
   }
-  current.count += 1;
   return true;
 }
 
