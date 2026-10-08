@@ -139,6 +139,9 @@ router.post("/media-assets/:id/attach", requireAuth, async (req, res) => {
     eq(videosTable.privacy, "private"),
     isNull(videosTable.deletedAt),
     isNull(videosTable.streamProvider),
+    isNull(videosTable.mediaAssetId),
+    isNull(videosTable.storageKey),
+    isNull(videosTable.videoUrl),
   )).returning({ id: videosTable.id, mediaAssetId: videosTable.mediaAssetId });
   if (!video) { res.status(409).json({ error: "Only owned, private object-storage videos can attach an original" }); return; }
   res.json({ video });
