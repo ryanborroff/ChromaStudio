@@ -134,7 +134,7 @@ export class ObjectStorageService {
    */
   async verifyObjectUpload(
     objectPath: string,
-  ): Promise<{ key: string; sizeBytes: number }> {
+  ): Promise<{ key: string; sizeBytes: number; contentType: string | null; originalFilename: string | null }> {
     const { key } = await this.getObjectEntityFile(objectPath);
     const head = await getR2Client().send(
       new HeadObjectCommand({ Bucket: getR2Bucket(), Key: key }),
@@ -142,7 +142,12 @@ export class ObjectStorageService {
     if (head.ContentLength == null) {
       throw new ObjectNotFoundError();
     }
-    return { key, sizeBytes: head.ContentLength };
+    return {
+      key,
+      sizeBytes: head.ContentLength,
+      contentType: head.ContentType ?? null,
+      originalFilename: head.Metadata?.["original-filename"] ?? null,
+    };
   }
 
   /**
