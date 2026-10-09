@@ -208,7 +208,7 @@ router.get("/media-assets", requireAuth, async (req, res) => {
       eq(mediaAssetsTable.ownerId, ownerId(req)),
       isNull(mediaAssetsTable.deletedAt),
       beforeId ? lt(mediaAssetsTable.id, beforeId) : undefined,
-      search ? ilike(mediaAssetsTable.originalFilename, `%${search.replace(/[\\%_]/g, "\\search ? ilike(mediaAssetsTable.originalFilename, `%${search}%`) : undefined,")}%`) : undefined,
+      search ? ilike(mediaAssetsTable.originalFilename, `%${search.replace(/[\\%_]/g, (char) => "\\" + char)}%`) : undefined,
     ))
     .orderBy(desc(mediaAssetsTable.id)).limit(limit + 1);
   const hasMore = rows.length > limit;
