@@ -171,8 +171,15 @@ export function MediaWarehouse() {
         objectPath = path;
         setUploadProgress(100);
       }
+      // Small files can be verified end-to-end without excessive browser memory.
+      // Large files remain unverified until a streaming client hashing path exists.
+      let checksumSha256: string | undefined;
+      if (file.size <= 32 * 1024 * 1024 && globalThis.crypto?.subtle) {
+        const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
+        checksumSha256 = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
+      }
       const { asset }: { asset: MediaAsset } = await jsonPost("/api/media-assets", {
-        objectPath, originalFilename: file.name, contentType,
+        objectPath, originalFilename: file.name, contentType, checksumSha256,
       });
       localStorage.removeItem(sessionKey);
       setAssets((previous) => [asset, ...previous.filter((item) => item.id !== asset.id)]);
