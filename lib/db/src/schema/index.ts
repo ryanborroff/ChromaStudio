@@ -7,3 +7,4 @@ export * from "./projects";
 export * from "./deliveries";
 export * from "./endorsements";
 export * from "./mediaAssets";
+export * from "./mediaVerificationJobs";
