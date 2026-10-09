@@ -69,7 +69,7 @@ describe("Media Warehouse multipart access and completion", () => {
     });
     expect(result.status).toBe(422);
     expect(result.body.error).toMatch(/checksum does not match/);
-    expect(calculateObjectSha256).toHaveBeenCalledWith(objectPath);
+    expect(calculateObjectSha256).toHaveBeenCalledWith(objectPath, 8);
   });
 
   it("does not read R2 bytes for a checksum when storage access is denied", async () => {
