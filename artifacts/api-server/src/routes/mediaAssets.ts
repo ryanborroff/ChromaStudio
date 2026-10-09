@@ -301,6 +301,11 @@ router.post("/media-assets", requireAuth, async (req, res) => {
       eq(mediaAssetsTable.ownerId, userId), eq(mediaAssetsTable.storageKey, verified.key),
     )).limit(1);
     if (!existing || existing.deletedAt) { res.status(409).json({ error: "Asset is unavailable" }); return; }
+    // Idempotent retries must not silently claim integrity that the existing
+    // record never verified, or discard a previously verified checksum.
+    if (parsed.data.checksumSha256 && existing.checksumSha256 !== verifiedSha256) {
+      res.status(409).json({ error: "Existing asset checksum differs from verified upload" }); return;
+    }
     res.json({ asset: existing });
   } catch (error) {
     if (error instanceof ObjectNotFoundError) { res.status(404).json({ error: "Uploaded file not found" }); return; }
