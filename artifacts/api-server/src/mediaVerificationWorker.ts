@@ -2,6 +2,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { GetObjectCommand, HeadObjectCommand } from "@aws-sdk/client-s3";
 import { pool } from "@workspace/db";
 import { getR2Bucket, getR2Client } from "./lib/r2Client";
+import { getObjectAclPolicy } from "./lib/objectAcl";
 
 /**
  * Single-job invocation for an external scheduler. The SQL claim is atomic
@@ -10,6 +11,13 @@ import { getR2Bucket, getR2Client } from "./lib/r2Client";
  */
 export async function runVerificationJob(): Promise<boolean> {
   const workerId = randomUUID();
+  // A crash on the last attempt must not leave a running job stuck forever.
+  await pool.query(`
+    UPDATE media_verification_jobs SET status = 'failed',
+      lease_owner = NULL, lease_expires_at = NULL,
+      last_error_code = 'retry_exhausted', completed_at = now(), updated_at = now()
+    WHERE status = 'running' AND lease_expires_at < now() AND attempts >= 3
+  `);
   const claimed = await pool.query<{
     id: number; asset_id: number; owner_id: number; expected_sha256: string;
     storage_key: string; size_bytes: string | number | null;
@@ -40,6 +48,10 @@ export async function runVerificationJob(): Promise<boolean> {
   const expectedSize = Number(job.size_bytes);
   try {
     if (!Number.isSafeInteger(expectedSize) || expectedSize < 0) throw new Error("invalid_size");
+    const acl = await getObjectAclPolicy({ key });
+    if (!acl || acl.owner !== String(job.owner_id) || acl.visibility !== "private") {
+      throw new Error("ownership_changed");
+    }
     const client = getR2Client();
     const bucket = getR2Bucket();
     const before = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
@@ -71,6 +83,10 @@ export async function runVerificationJob(): Promise<boolean> {
       throw new Error("object_changed");
     }
     const digest = hash.digest("hex");
+    const finalAcl = await getObjectAclPolicy({ key });
+    if (!finalAcl || finalAcl.owner !== String(job.owner_id) || finalAcl.visibility !== "private") {
+      throw new Error("ownership_changed");
+    }
     const status = digest === job.expected_sha256 ? "verified" : "mismatch";
     const connection = await pool.connect();
     try {
@@ -103,7 +119,7 @@ export async function runVerificationJob(): Promise<boolean> {
     }
   } catch (error) {
     const code = error instanceof Error ? error.message : "unknown";
-    const safeCode = ["invalid_size", "size_changed", "missing_body", "object_changed", "lease_lost", "asset_changed"].includes(code)
+    const safeCode = ["invalid_size", "size_changed", "missing_body", "object_changed", "lease_lost", "asset_changed", "ownership_changed"].includes(code)
       ? code : "storage_error";
     await pool.query(`
       UPDATE media_verification_jobs SET

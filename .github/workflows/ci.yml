@@ -28,3 +28,11 @@ jobs:
 
       - name: API security regression tests
         run: pnpm --filter @workspace/api-server test
+
+      - name: Production builds
+        run: pnpm run build
+
+      - name: Verification worker build and import
+        run: |
+          pnpm --filter @workspace/api-server build:verification-worker
+          DATABASE_URL=postgres://localhost/chroma_build_check node artifacts/api-server/dist/mediaVerificationWorker.mjs

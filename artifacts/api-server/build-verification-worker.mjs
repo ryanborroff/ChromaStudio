@@ -10,6 +10,7 @@ await build({
   target: "node20",
   format: "esm",
   bundle: true,
-  packages: "external",
+  external: ["pg-native", "@aws-sdk/*"],
+  banner: { js: "import { createRequire } from 'node:module'; globalThis.require = createRequire(import.meta.url);" },
   sourcemap: true,
 });
