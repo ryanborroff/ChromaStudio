@@ -82,12 +82,17 @@ export async function runVerificationJob(): Promise<boolean> {
         WHERE id = $1 AND lease_owner = $2 AND status = 'running'
         RETURNING asset_id, owner_id
       `, [job.id, workerId, status, processed]);
-      if (finished.rowCount && status === "verified") {
-        await connection.query(`
+      if (!finished.rowCount) throw new Error("lease_lost");
+      if (status === "verified") {
+        const assetUpdate = await connection.query(`
           UPDATE media_assets SET checksum_sha256 = $3, updated_at = now()
           WHERE id = $1 AND owner_id = $2 AND deleted_at IS NULL
             AND checksum_sha256 IS NULL AND storage_key = $4
+          RETURNING id
         `, [job.asset_id, job.owner_id, digest, key]);
+        // Never mark a job verified unless the corresponding asset was updated
+        // in the same transaction. Deletion or concurrent mutation rolls back.
+        if (!assetUpdate.rowCount) throw new Error("asset_changed");
       }
       await connection.query("COMMIT");
     } catch (error) {
@@ -98,7 +103,7 @@ export async function runVerificationJob(): Promise<boolean> {
     }
   } catch (error) {
     const code = error instanceof Error ? error.message : "unknown";
-    const safeCode = ["invalid_size", "size_changed", "missing_body", "object_changed", "lease_lost"].includes(code)
+    const safeCode = ["invalid_size", "size_changed", "missing_body", "object_changed", "lease_lost", "asset_changed"].includes(code)
       ? code : "storage_error";
     await pool.query(`
       UPDATE media_verification_jobs SET
