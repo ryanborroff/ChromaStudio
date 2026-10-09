@@ -29,3 +29,9 @@ A synchronous API route must not stream hundreds of gigabytes of camera original
 ## Known adjacent blocker
 
 The current signed direct PUT may be replayable until expiry and R2 keys may be overwritten. Registration retry checks on size and MIME do **not** detect replacement by equal-size, equal-type bytes. Write-once storage/object identity protection is a prerequisite for a trustworthy verified checksum.
+
+## Release decision record (9 October 2026)
+
+The founders' instruction is to **finish Stage B before starting Stage C**. Do not merge the Stage B branch into main, execute production migrations, or deploy to Railway without explicit approval following release-gate evidence. This restriction is deliberate, not a technical limitation. A passing CI/Semgrep run is necessary but insufficient. Real R2 upload/download/recovery exercises, browser tests, owner-isolation checks, a rehearsed database backup/migration/rollback, and verification-worker operational testing remain mandatory.
+
+The worker and queue have initial implementations, but are **not production-ready**. The browser still does not compute large-file incremental SHA-256, the worker has not been deployed or scheduled, and object overwrite protection and quota controls are incomplete. No live integration test or database migration has been performed as part of these commits.
