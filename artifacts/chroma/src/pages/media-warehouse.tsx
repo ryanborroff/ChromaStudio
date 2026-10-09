@@ -34,6 +34,7 @@ export function MediaWarehouse() {
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadController, setUploadController] = useState<AbortController | null>(null);
+  const cancelRequestedRef = useRef(false);
   const uploadControllerRef = useRef<AbortController | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [error, setError] = useState(false);
@@ -51,6 +52,7 @@ export function MediaWarehouse() {
 
   async function uploadFile(file: File) {
     setUploading(true);
+    cancelRequestedRef.current = false;
     setUploadProgress(0);
     setUploadError(null);
     const controller = new AbortController();
@@ -59,6 +61,7 @@ export function MediaWarehouse() {
     const signal = controller.signal;
     const contentType = file.type || "application/octet-stream";
     let multipart: { objectPath: string; uploadId: string } | null = null;
+    const sessionKey = `chroma:multipart:${file.name}:${file.size}:${file.lastModified}`;
     const jsonPost = async (path: string, body: unknown) => {
       const response = await fetch(path, {
         method: "POST", credentials: "include", signal,
@@ -71,12 +74,29 @@ export function MediaWarehouse() {
     try {
       let objectPath: string;
       if (file.size > 32 * 1024 * 1024) {
-        multipart = await jsonPost("/api/media-assets/multipart/start", {
-          originalFilename: file.name, contentType, sizeBytes: file.size,
-        }) as { objectPath: string; uploadId: string };
+        const saved = localStorage.getItem(sessionKey);
+        if (saved) {
+          try {
+            const parsed: unknown = JSON.parse(saved);
+            if (parsed && typeof parsed === "object" &&
+                "objectPath" in parsed && typeof parsed.objectPath === "string" &&
+                "uploadId" in parsed && typeof parsed.uploadId === "string") {
+              multipart = { objectPath: parsed.objectPath, uploadId: parsed.uploadId };
+            }
+          } catch { localStorage.removeItem(sessionKey); }
+        }
+        if (!multipart) {
+          multipart = await jsonPost("/api/media-assets/multipart/start", {
+            originalFilename: file.name, contentType, sizeBytes: file.size,
+          }) as { objectPath: string; uploadId: string };
+          localStorage.setItem(sessionKey, JSON.stringify(multipart));
+        }
         const partSize = 32 * 1024 * 1024;
         const count = Math.ceil(file.size / partSize);
         if (count > 10000) throw new Error("File exceeds multipart part limit");
+        const { parts: uploadedParts }: { parts: { partNumber: number; etag: string; size: number }[] } =
+          await jsonPost("/api/media-assets/multipart/parts", multipart);
+        const completed = new Map(uploadedParts.map((part) => [part.partNumber, part]));
         const parts: { partNumber: number; etag: string }[] = [];
         for (let index = 0; index < count; index++) {
           if (signal.aborted) throw new DOMException("Cancelled", "AbortError");
@@ -85,8 +105,9 @@ export function MediaWarehouse() {
             ...multipart, partNumber,
           });
           const chunk = file.slice(index * partSize, Math.min((index + 1) * partSize, file.size));
-          let etag: string | null = null;
-          for (let attempt = 0; attempt < 3; attempt++) {
+          let etag: string | null = completed.get(partNumber)?.size === chunk.size
+            ? completed.get(partNumber)!.etag : null;
+          for (let attempt = 0; !etag && attempt < 3; attempt++) {
             const response = await fetch(uploadURL, { method: "PUT", body: chunk, signal });
             if (response.ok) {
               etag = response.headers.get("ETag");
@@ -102,6 +123,7 @@ export function MediaWarehouse() {
         await jsonPost("/api/media-assets/multipart/complete", { ...multipart, parts });
         objectPath = multipart.objectPath;
         multipart = null;
+        localStorage.removeItem(sessionKey);
       } else {
         const { uploadURL, objectPath: path }: { uploadURL: string; objectPath: string } =
           await jsonPost("/api/media-assets/upload-url", {
@@ -121,8 +143,9 @@ export function MediaWarehouse() {
       });
       setAssets((previous) => [asset, ...previous.filter((item) => item.id !== asset.id)]);
     } catch (error) {
-      if (multipart) {
-        // Abort with a fresh request because the original signal may have been cancelled.
+      if (multipart && cancelRequestedRef.current) {
+        localStorage.removeItem(sessionKey);
+        // Explicit cancellation aborts; transient failures preserve the session for recovery.
         void fetch("/api/media-assets/multipart/abort", {
           method: "POST", credentials: "include",
           headers: { "Content-Type": "application/json" },
@@ -262,7 +285,7 @@ export function MediaWarehouse() {
             className="pl-9" value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
       </div>
-      {uploading && <div className="mb-4 flex items-center gap-3"><progress aria-label="Upload progress" value={uploadProgress} max={100} className="w-full" /><Button variant="outline" size="sm" onClick={() => uploadController?.abort()}>Cancel</Button></div>}
+      {uploading && <div className="mb-4 flex items-center gap-3"><progress aria-label="Upload progress" value={uploadProgress} max={100} className="w-full" /><Button variant="outline" size="sm" onClick={() => { cancelRequestedRef.current = true; uploadController?.abort(); }}>Cancel</Button></div>}
       {uploadError && <p role="alert" className="mb-4 text-sm text-red-400">{uploadError}</p>}
       {attachError && <p role="alert" className="mb-4 text-sm text-red-400">{attachError}</p>}
       {loading ? (
