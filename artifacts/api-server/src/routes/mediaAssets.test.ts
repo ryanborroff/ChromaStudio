@@ -107,6 +107,49 @@ describe("Media Warehouse multipart access and completion", () => {
     expect(result.body.asset.id).toBe(15);
   });
 
+  it("rejects an integrity claim that conflicts with an existing unverified record", async () => {
+    const existing = {
+      id: 15, ownerId: 1, storageKey: objectPath.slice("/objects/".length),
+      sizeBytes: 8, contentType: "application/octet-stream",
+      checksumSha256: null, deletedAt: null,
+    };
+    dbInsert.mockReturnValue({
+      values: () => ({ onConflictDoNothing: () => ({ returning: async () => [] }) }),
+    });
+    dbSelect.mockReturnValue({
+      from: () => ({ where: () => ({ limit: async () => [existing] }) }),
+    });
+    const app = await buildApp(1);
+    const result = await request(app).post("/media-assets").send({
+      objectPath, originalFilename: "camera-original.braw",
+      contentType: "application/octet-stream", checksumSha256: "b".repeat(64),
+    });
+    expect(result.status).toBe(409);
+    expect(result.body.error).toMatch(/checksum differs/);
+    expect(calculateObjectSha256).toHaveBeenCalledWith(objectPath, 8);
+  });
+
+  it("accepts an idempotent retry of a previously verified checksum", async () => {
+    const existing = {
+      id: 15, ownerId: 1, storageKey: objectPath.slice("/objects/".length),
+      sizeBytes: 8, contentType: "application/octet-stream",
+      checksumSha256: "b".repeat(64), deletedAt: null,
+    };
+    dbInsert.mockReturnValue({
+      values: () => ({ onConflictDoNothing: () => ({ returning: async () => [] }) }),
+    });
+    dbSelect.mockReturnValue({
+      from: () => ({ where: () => ({ limit: async () => [existing] }) }),
+    });
+    const app = await buildApp(1);
+    const result = await request(app).post("/media-assets").send({
+      objectPath, originalFilename: "camera-original.braw",
+      contentType: "application/octet-stream", checksumSha256: "b".repeat(64),
+    });
+    expect(result.status).toBe(200);
+    expect(result.body.asset.checksumSha256).toBe("b".repeat(64));
+  });
+
   it("rejects a checksum that does not match independently hashed stored bytes", async () => {
     const app = await buildApp(1);
     const result = await request(app).post("/media-assets").send({
