@@ -57,12 +57,7 @@ router.get("/media-assets", requireAuth, async (req, res) => {
       eq(mediaAssetsTable.ownerId, ownerId(req)),
       isNull(mediaAssetsTable.deletedAt),
       beforeId ? lt(mediaAssetsTable.id, beforeId) : undefined,
-      search ? ilike(mediaAssetsTable.originalFilename, `%${search.replace(/[\\%_]/g, "\\router.get("/media-assets", requireAuth, async (req, res) => {
-  const rows = await db.select().from(mediaAssetsTable)
-    .where(and(eq(mediaAssetsTable.ownerId, ownerId(req)), isNull(mediaAssetsTable.deletedAt)))
-    .orderBy(desc(mediaAssetsTable.createdAt)).limit(100);
-  res.json({ assets: rows });
-});")}%`) : undefined,
+      search ? ilike(mediaAssetsTable.originalFilename, `%${search}%`) : undefined,
     ))
     .orderBy(desc(mediaAssetsTable.id)).limit(limit + 1);
   const hasMore = rows.length > limit;
