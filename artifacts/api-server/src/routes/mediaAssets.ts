@@ -23,8 +23,8 @@ const attachSchema = z.object({ videoId: z.number().int().positive() });
 const uploadRequestSchema = z.object({
   originalFilename: z.string().trim().min(1).max(255),
   contentType: z.string().trim().min(1).max(200).default("application/octet-stream"),
-  // R2 follows the S3 multipart object size ceiling (5 TiB).
-  sizeBytes: z.number().int().positive().max(5 * 1024 ** 4),
+  // Single PUT is reserved for small uploads; large originals use multipart.
+  sizeBytes: z.number().int().positive().max(32 * 1024 ** 2),
 });
 
 function ownerId(req: { user?: Express.User }): number {
