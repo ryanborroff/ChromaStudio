@@ -5,7 +5,7 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getR2Client, getR2Bucket } from "../lib/r2Client";
 import { and, desc, eq, ilike, isNull, lt } from "drizzle-orm";
 import { z } from "zod/v4";
-import { db, mediaAssetsTable, videosTable } from "@workspace/db";
+import { db, mediaAssetsTable, mediaVerificationJobsTable, videosTable } from "@workspace/db";
 import { requireAuth } from "../lib/auth";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 import { ObjectPermission } from "../lib/objectAcl";
@@ -227,6 +227,72 @@ router.get("/media-assets/:id", requireAuth, async (req, res) => {
     .where(and(eq(mediaAssetsTable.id, parsed.data), eq(mediaAssetsTable.ownerId, ownerId(req)), isNull(mediaAssetsTable.deletedAt))).limit(1);
   if (!asset) { res.status(404).json({ error: "Asset not found" }); return; }
   res.json({ asset });
+});
+
+/**
+ * Queue an independent checksum verification for a large stored original.
+ * A separate durable worker must be deployed before jobs can progress.
+ * Existing verified checksums cannot be overwritten through this endpoint.
+ */
+router.post("/media-assets/:id/verify", requireAuth, async (req, res) => {
+  const id = assetIdSchema.safeParse(req.params.id);
+  const body = z.object({ expectedSha256: z.string().regex(/^[a-f0-9]{64}$/i) }).safeParse(req.body);
+  if (!id.success || !body.success) { res.status(400).json({ error: "Invalid verification request" }); return; }
+  const userId = ownerId(req);
+  try {
+    const [asset] = await db.select().from(mediaAssetsTable).where(and(
+      eq(mediaAssetsTable.id, id.data),
+      eq(mediaAssetsTable.ownerId, userId),
+      eq(mediaAssetsTable.status, "verified"),
+      isNull(mediaAssetsTable.deletedAt),
+    )).limit(1);
+    if (!asset) { res.status(404).json({ error: "Asset not found" }); return; }
+    if (asset.checksumSha256) {
+      res.status(409).json({ error: "Asset checksum has already been verified" }); return;
+    }
+    const objectFile = await storage.getObjectEntityFile("/objects/" + asset.storageKey);
+    const permitted = await storage.canAccessObjectEntity({
+      userId: String(userId), objectFile, requestedPermission: ObjectPermission.READ,
+    });
+    if (!permitted) { res.status(403).json({ error: "Forbidden" }); return; }
+    const digest = body.data.expectedSha256.toLowerCase();
+    const [created] = await db.insert(mediaVerificationJobsTable).values({
+      assetId: asset.id, ownerId: userId, expectedSha256: digest,
+    }).onConflictDoNothing({ target: mediaVerificationJobsTable.assetId }).returning();
+    if (created) { res.status(202).json({ job: created }); return; }
+    const [existing] = await db.select().from(mediaVerificationJobsTable).where(and(
+      eq(mediaVerificationJobsTable.assetId, asset.id),
+      eq(mediaVerificationJobsTable.ownerId, userId),
+    )).limit(1);
+    if (!existing) { res.status(409).json({ error: "Verification request conflict" }); return; }
+    if (existing.expectedSha256 !== digest) {
+      res.status(409).json({ error: "Existing verification job has a different checksum" }); return;
+    }
+    res.status(202).json({ job: existing });
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) {
+      res.status(404).json({ error: "Source object missing" }); return;
+    }
+    req.log.error({ err: error }, "Media verification queue failed");
+    res.status(500).json({ error: "Could not queue verification" });
+  }
+});
+
+router.get("/media-assets/:id/verification", requireAuth, async (req, res) => {
+  const id = assetIdSchema.safeParse(req.params.id);
+  if (!id.success) { res.status(400).json({ error: "Invalid asset ID" }); return; }
+  const userId = ownerId(req);
+  const [asset] = await db.select().from(mediaAssetsTable).where(and(
+    eq(mediaAssetsTable.id, id.data), eq(mediaAssetsTable.ownerId, userId),
+    isNull(mediaAssetsTable.deletedAt),
+  )).limit(1);
+  if (!asset) { res.status(404).json({ error: "Asset not found" }); return; }
+  const [job] = await db.select().from(mediaVerificationJobsTable).where(and(
+    eq(mediaVerificationJobsTable.assetId, asset.id),
+    eq(mediaVerificationJobsTable.ownerId, userId),
+  )).limit(1);
+  res.setHeader("Cache-Control", "no-store");
+  res.json({ job: job ?? null });
 });
 
 /** Download the original through a short-lived URL, after rechecking ownership. */
