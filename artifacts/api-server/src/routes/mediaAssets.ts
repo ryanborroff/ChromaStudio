@@ -276,7 +276,7 @@ router.post("/media-assets", requireAuth, async (req, res) => {
       if (verified.sizeBytes > 32 * 1024 * 1024) {
         res.status(422).json({ error: "Synchronous checksum verification is limited to 32 MiB" }); return;
       }
-      verifiedSha256 = await storage.calculateObjectSha256(parsed.data.objectPath);
+      verifiedSha256 = await storage.calculateObjectSha256(parsed.data.objectPath, verified.sizeBytes);
       if (verifiedSha256 !== parsed.data.checksumSha256.toLowerCase()) {
         res.status(422).json({ error: "Stored file checksum does not match" }); return;
       }
