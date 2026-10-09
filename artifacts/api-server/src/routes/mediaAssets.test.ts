@@ -9,9 +9,11 @@ const signedUrl = vi.fn();
 const getObjectEntityFile = vi.fn();
 const verifyObjectUpload = vi.fn();
 const calculateObjectSha256 = vi.fn();
+const dbInsert = vi.fn();
+const dbSelect = vi.fn();
 
 vi.mock("@workspace/db", () => ({
-  db: {}, mediaAssetsTable: {}, videosTable: {},
+  db: { insert: dbInsert, select: dbSelect }, mediaAssetsTable: { ownerId: "ownerId", storageKey: "storageKey" }, videosTable: {},
 }));
 vi.mock("../lib/objectStorage", () => ({
   ObjectNotFoundError: class ObjectNotFoundError extends Error {},
@@ -57,6 +59,52 @@ describe("Media Warehouse multipart access and completion", () => {
     getObjectEntityFile.mockResolvedValue({ key: objectPath.slice("/objects/".length) });
     verifyObjectUpload.mockResolvedValue({ key: objectPath.slice("/objects/".length), sizeBytes: 8, contentType: "application/octet-stream", originalFilename: "camera-original.braw" });
     calculateObjectSha256.mockResolvedValue("b".repeat(64));
+  });
+
+  it("rejects registration retries when stored object metadata differs", async () => {
+    const existing = {
+      id: 15, ownerId: 1, storageKey: objectPath.slice("/objects/".length),
+      sizeBytes: 7, contentType: "application/octet-stream",
+      checksumSha256: null, deletedAt: null,
+    };
+    dbInsert.mockReturnValue({
+      values: () => ({
+        onConflictDoNothing: () => ({ returning: async () => [] }),
+      }),
+    });
+    dbSelect.mockReturnValue({
+      from: () => ({ where: () => ({ limit: async () => [existing] }) }),
+    });
+    const app = await buildApp(1);
+    const result = await request(app).post("/media-assets").send({
+      objectPath, originalFilename: "camera-original.braw",
+      contentType: "application/octet-stream",
+    });
+    expect(result.status).toBe(409);
+    expect(result.body.error).toMatch(/metadata changed/);
+  });
+
+  it("allows an idempotent retry when registered object metadata is unchanged", async () => {
+    const existing = {
+      id: 15, ownerId: 1, storageKey: objectPath.slice("/objects/".length),
+      sizeBytes: 8, contentType: "application/octet-stream",
+      checksumSha256: null, deletedAt: null,
+    };
+    dbInsert.mockReturnValue({
+      values: () => ({
+        onConflictDoNothing: () => ({ returning: async () => [] }),
+      }),
+    });
+    dbSelect.mockReturnValue({
+      from: () => ({ where: () => ({ limit: async () => [existing] }) }),
+    });
+    const app = await buildApp(1);
+    const result = await request(app).post("/media-assets").send({
+      objectPath, originalFilename: "camera-original.braw",
+      contentType: "application/octet-stream",
+    });
+    expect(result.status).toBe(200);
+    expect(result.body.asset.id).toBe(15);
   });
 
   it("rejects a checksum that does not match independently hashed stored bytes", async () => {
