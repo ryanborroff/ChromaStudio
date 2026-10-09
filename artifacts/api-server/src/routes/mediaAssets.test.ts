@@ -6,6 +6,9 @@ const canAccessObjectEntity = vi.fn();
 const getObjectEntityFileForUpload = vi.fn();
 const send = vi.fn();
 const signedUrl = vi.fn();
+const getObjectEntityFile = vi.fn();
+const verifyObjectUpload = vi.fn();
+const calculateObjectSha256 = vi.fn();
 
 vi.mock("@workspace/db", () => ({
   db: {}, mediaAssetsTable: {}, videosTable: {},
@@ -14,6 +17,9 @@ vi.mock("../lib/objectStorage", () => ({
   ObjectNotFoundError: class ObjectNotFoundError extends Error {},
   ObjectStorageService: class {
     getObjectEntityFileForUpload = getObjectEntityFileForUpload;
+    getObjectEntityFile = getObjectEntityFile;
+    verifyObjectUpload = verifyObjectUpload;
+    calculateObjectSha256 = calculateObjectSha256;
     canAccessObjectEntity = canAccessObjectEntity;
   },
 }));
@@ -48,9 +54,12 @@ describe("Media Warehouse multipart access and completion", () => {
     getObjectEntityFileForUpload.mockResolvedValue({ key: objectPath.slice("/objects/".length) });
     canAccessObjectEntity.mockResolvedValue(true);
     signedUrl.mockResolvedValue("https://example.invalid/signed");
+    getObjectEntityFile.mockResolvedValue({ key: objectPath.slice("/objects/".length) });
+    verifyObjectUpload.mockResolvedValue({ key: objectPath.slice("/objects/".length), sizeBytes: 8, contentType: "application/octet-stream", originalFilename: "camera-original.braw" });
+    calculateObjectSha256.mockResolvedValue("b".repeat(64));
   });
 
-  it("rejects an unverified client checksum before any database write", async () => {
+  it("rejects a checksum that does not match independently hashed stored bytes", async () => {
     const app = await buildApp(1);
     const result = await request(app).post("/media-assets").send({
       objectPath,
@@ -59,7 +68,8 @@ describe("Media Warehouse multipart access and completion", () => {
       checksumSha256: "a".repeat(64),
     });
     expect(result.status).toBe(422);
-    expect(result.body.error).toMatch(/Checksum verification/);
+    expect(result.body.error).toMatch(/checksum does not match/);
+    expect(calculateObjectSha256).toHaveBeenCalledWith(objectPath);
   });
 
   it("requires authentication before listing uploaded parts", async () => {
