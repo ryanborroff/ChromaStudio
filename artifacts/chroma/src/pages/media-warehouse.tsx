@@ -76,9 +76,15 @@ export function MediaWarehouse() {
       let objectPath: string;
       if (file.size > 32 * 1024 * 1024) {
         const saved = localStorage.getItem(sessionKey);
+        let completedObjectPath: string | null = null;
         if (saved) {
           try {
             const parsed: unknown = JSON.parse(saved);
+            if (parsed && typeof parsed === "object" &&
+                "completed" in parsed && parsed.completed === true &&
+                "objectPath" in parsed && typeof parsed.objectPath === "string") {
+              completedObjectPath = parsed.objectPath;
+            }
             if (parsed && typeof parsed === "object" &&
                 "objectPath" in parsed && typeof parsed.objectPath === "string" &&
                 "uploadId" in parsed && typeof parsed.uploadId === "string") {
@@ -86,53 +92,60 @@ export function MediaWarehouse() {
             }
           } catch { localStorage.removeItem(sessionKey); }
         }
-        if (!multipart) {
+        if (!multipart && !completedObjectPath) {
           multipart = await jsonPost("/api/media-assets/multipart/start", {
             originalFilename: file.name, contentType, sizeBytes: file.size,
           }) as { objectPath: string; uploadId: string };
           localStorage.setItem(sessionKey, JSON.stringify(multipart));
         }
-        const partSize = 32 * 1024 * 1024;
-        const count = Math.ceil(file.size / partSize);
-        if (count > 10000) throw new Error("File exceeds multipart part limit");
-        let uploadedParts: { partNumber: number; etag: string; size: number }[];
-        try {
-          ({ parts: uploadedParts } = await jsonPost("/api/media-assets/multipart/parts", multipart) as {
-            parts: { partNumber: number; etag: string; size: number }[];
-          });
-        } catch (error) {
-          // Do not silently create a new upload if a saved session is inaccessible.
-          throw new Error("Unable to recover the saved upload. Please cancel it before retrying.", { cause: error });
-        }
-        const completed = new Map(uploadedParts.map((part) => [part.partNumber, part]));
-        const parts: { partNumber: number; etag: string }[] = [];
-        for (let index = 0; index < count; index++) {
-          if (signal.aborted) throw new DOMException("Cancelled", "AbortError");
-          const partNumber = index + 1;
-          const chunk = file.slice(index * partSize, Math.min((index + 1) * partSize, file.size));
-          let etag: string | null = completed.get(partNumber)?.size === chunk.size
-            ? completed.get(partNumber)!.etag : null;
-          for (let attempt = 0; !etag && attempt < 3; attempt++) {
-            // Sign each attempt separately: a previous URL may have expired.
-            const { uploadURL }: { uploadURL: string } = await jsonPost("/api/media-assets/multipart/part-url", {
-              ...multipart, partNumber,
+        if (completedObjectPath) {
+          objectPath = completedObjectPath;
+        } else {
+          if (!multipart) throw new Error("Missing multipart upload session");
+          const partSize = 32 * 1024 * 1024;
+          const count = Math.ceil(file.size / partSize);
+          if (count > 10000) throw new Error("File exceeds multipart part limit");
+          let uploadedParts: { partNumber: number; etag: string; size: number }[];
+          try {
+            ({ parts: uploadedParts } = await jsonPost("/api/media-assets/multipart/parts", multipart) as {
+              parts: { partNumber: number; etag: string; size: number }[];
             });
-            const response = await fetch(uploadURL, { method: "PUT", body: chunk, signal });
-            if (response.ok) {
-              etag = response.headers.get("ETag");
-              break;
-            }
-            if (attempt === 2) throw new Error(`Part ${partNumber} failed`);
-            await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+          } catch (error) {
+            // Do not silently create a new upload if a saved session is inaccessible.
+            throw new Error("Unable to recover the saved upload. Please cancel it before retrying.", { cause: error });
           }
-          if (!etag) throw new Error("Storage did not expose ETag. Check R2 CORS ExposeHeaders.");
-          parts.push({ partNumber, etag });
-          setUploadProgress(Math.round((partNumber / count) * 100));
-        }
-        await jsonPost("/api/media-assets/multipart/complete", { ...multipart, parts });
-        objectPath = multipart.objectPath;
-        multipart = null;
-        localStorage.removeItem(sessionKey);
+          const completed = new Map(uploadedParts.map((part) => [part.partNumber, part]));
+          const parts: { partNumber: number; etag: string }[] = [];
+          for (let index = 0; index < count; index++) {
+            if (signal.aborted) throw new DOMException("Cancelled", "AbortError");
+            const partNumber = index + 1;
+            const chunk = file.slice(index * partSize, Math.min((index + 1) * partSize, file.size));
+            let etag: string | null = completed.get(partNumber)?.size === chunk.size
+              ? completed.get(partNumber)!.etag : null;
+            for (let attempt = 0; !etag && attempt < 3; attempt++) {
+              // Sign each attempt separately: a previous URL may have expired.
+              const { uploadURL }: { uploadURL: string } = await jsonPost("/api/media-assets/multipart/part-url", {
+                ...multipart, partNumber,
+              });
+              const response = await fetch(uploadURL, { method: "PUT", body: chunk, signal });
+              if (response.ok) {
+                etag = response.headers.get("ETag");
+                break;
+              }
+              if (attempt === 2) throw new Error(`Part ${partNumber} failed`);
+              await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+            }
+            if (!etag) throw new Error("Storage did not expose ETag. Check R2 CORS ExposeHeaders.");
+            parts.push({ partNumber, etag });
+            setUploadProgress(Math.round((partNumber / count) * 100));
+          }
+          await jsonPost("/api/media-assets/multipart/complete", { ...multipart, parts });
+          objectPath = multipart.objectPath;
+          // Keep the completed object's path until database registration succeeds.
+          // A failed registration can then be retried without uploading the file again.
+          localStorage.setItem(sessionKey, JSON.stringify({ objectPath, completed: true }));
+          multipart = null;
+          }
       } else {
         const { uploadURL, objectPath: path }: { uploadURL: string; objectPath: string } =
           await jsonPost("/api/media-assets/upload-url", {
@@ -150,6 +163,7 @@ export function MediaWarehouse() {
       const { asset }: { asset: MediaAsset } = await jsonPost("/api/media-assets", {
         objectPath, originalFilename: file.name, contentType,
       });
+      localStorage.removeItem(sessionKey);
       setAssets((previous) => [asset, ...previous.filter((item) => item.id !== asset.id)]);
     } catch (error) {
       if (multipart && cancelRequestedRef.current) {
