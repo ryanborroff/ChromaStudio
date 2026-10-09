@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useListVideos } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/queryClient";
@@ -35,6 +35,8 @@ export function MediaWarehouse() {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
+  const [nextBeforeId, setNextBeforeId] = useState<number | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<Record<number, number>>({});
   const [attaching, setAttaching] = useState<number | null>(null);
   const [creatingVideo, setCreatingVideo] = useState<number | null>(null);
@@ -132,29 +134,52 @@ export function MediaWarehouse() {
     }
   }
 
+  async function loadMore() {
+    if (nextBeforeId === null || loadingMore) return;
+    setLoadingMore(true);
+    try {
+      const params = new URLSearchParams({ limit: "50", beforeId: String(nextBeforeId) });
+      if (search.trim()) params.set("search", search.trim());
+      const response = await fetch(`/api/media-assets?${params}`, { credentials: "include", cache: "no-store" });
+      if (!response.ok) throw new Error("Could not load more originals");
+      const result: { assets: MediaAsset[]; nextBeforeId: number | null } = await response.json();
+      setAssets((previous) => [...previous, ...result.assets.filter((item) => !previous.some((old) => old.id === item.id))]);
+      setNextBeforeId(result.nextBeforeId);
+    } catch {
+      setUploadError("Could not load more originals. Please retry.");
+    } finally {
+      setLoadingMore(false);
+    }
+  }
+
   useEffect(() => {
     const controller = new AbortController();
-    const load = async () => {
-      try {
-        const response = await fetch("/api/media-assets", {
-          credentials: "include",
-          signal: controller.signal,
-          cache: "no-store",
-        });
+    const timeout = setTimeout(() => {
+      setLoading(true);
+      const params = new URLSearchParams({ limit: "50" });
+      if (search.trim()) params.set("search", search.trim());
+      void fetch(`/api/media-assets?${params}`, {
+        credentials: "include", signal: controller.signal, cache: "no-store",
+      }).then(async (response) => {
         if (!response.ok) throw new Error("Unable to load originals");
-        const result: { assets: MediaAsset[] } = await response.json();
+        const result: { assets: MediaAsset[]; nextBeforeId: number | null } = await response.json();
         if (!controller.signal.aborted) {
           setAssets(result.assets);
+          setNextBeforeId(result.nextBeforeId);
           setError(false);
         }
-      } catch {
+      }).catch(() => {
         if (!controller.signal.aborted) setError(true);
-      } finally {
+      }).finally(() => {
         if (!controller.signal.aborted) setLoading(false);
-      }
-    };
-    void load();
-    return () => controller.abort();
+      });
+    }, 250);
+    return () => { clearTimeout(timeout); controller.abort(); };
+  }, [search]);
+
+  const filtered = assets;
+
+  return () => controller.abort();
   }, []);
 
   const filtered = useMemo(() => {
@@ -262,6 +287,13 @@ export function MediaWarehouse() {
               </li>
             ))}
           </ul>
+          {nextBeforeId !== null && (
+            <div className="border-t border-border/50 p-4 text-center">
+              <Button variant="outline" disabled={loadingMore} onClick={() => void loadMore()}>
+                {loadingMore ? "Loading…" : "Load more originals"}
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
