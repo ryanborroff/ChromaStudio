@@ -23,7 +23,8 @@ const attachSchema = z.object({ videoId: z.number().int().positive() });
 const uploadRequestSchema = z.object({
   originalFilename: z.string().trim().min(1).max(255),
   contentType: z.string().trim().min(1).max(200).default("application/octet-stream"),
-  sizeBytes: z.number().int().positive(),
+  // R2 follows the S3 multipart object size ceiling (5 TiB).
+  sizeBytes: z.number().int().positive().max(5 * 1024 ** 4),
 });
 
 function ownerId(req: { user?: Express.User }): number {
@@ -51,7 +52,8 @@ router.post("/media-assets/upload-url", requireAuth, async (req, res) => {
 const multipartSchema = z.object({
   originalFilename: z.string().trim().min(1).max(255),
   contentType: z.string().trim().min(1).max(200).default("application/octet-stream"),
-  sizeBytes: z.number().int().positive(),
+  // R2 follows the S3 multipart object size ceiling (5 TiB).
+  sizeBytes: z.number().int().positive().max(5 * 1024 ** 4),
 });
 const multipartSessionSchema = z.object({
   objectPath: registerSchema.shape.objectPath,
