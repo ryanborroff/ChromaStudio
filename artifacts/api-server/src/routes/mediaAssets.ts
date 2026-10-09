@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { randomUUID } from "node:crypto";
-import { AbortMultipartUploadCommand, CompleteMultipartUploadCommand, CreateMultipartUploadCommand, UploadPartCommand } from "@aws-sdk/client-s3";
+import { AbortMultipartUploadCommand, CompleteMultipartUploadCommand, CreateMultipartUploadCommand, ListPartsCommand, UploadPartCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { getR2Client, getR2Bucket } from "../lib/r2Client";
 import { and, desc, eq, ilike, isNull, lt } from "drizzle-orm";
@@ -88,6 +88,38 @@ router.post("/media-assets/multipart/start", requireAuth, async (req, res) => {
     res.status(500).json({ error: "Could not start multipart upload" });
   }
 });
+/** Return uploaded parts for an owner-authorised interrupted session. */
+router.post("/media-assets/multipart/parts", requireAuth, async (req, res) => {
+  const parsed = multipartSessionSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: "Invalid upload session" }); return; }
+  try {
+    const file = await ownedMultipart(req, parsed.data.objectPath);
+    if (!file) { res.status(403).json({ error: "Forbidden" }); return; }
+    const parts: { partNumber: number; etag: string; size: number }[] = [];
+    let marker: number | undefined;
+    do {
+      const result = await getR2Client().send(new ListPartsCommand({
+        Bucket: getR2Bucket(), Key: file.key, UploadId: parsed.data.uploadId,
+        PartNumberMarker: marker,
+      }));
+      for (const part of result.Parts ?? []) {
+        if (part.PartNumber && part.ETag && part.Size != null) {
+          parts.push({ partNumber: part.PartNumber, etag: part.ETag, size: part.Size });
+        }
+      }
+      if (!result.IsTruncated) break;
+      if (!result.NextPartNumberMarker || result.NextPartNumberMarker === marker) {
+        throw new Error("Invalid part listing pagination");
+      }
+      marker = result.NextPartNumberMarker;
+    } while (parts.length <= 10000);
+    res.json({ parts });
+  } catch (error) {
+    req.log.error({ err: error }, "Multipart part listing failed");
+    res.status(502).json({ error: "Could not recover upload session" });
+  }
+});
+
 router.post("/media-assets/multipart/part-url", requireAuth, async (req, res) => {
   const parsed = multipartSessionSchema.extend({
     partNumber: z.number().int().min(1).max(10000),
