@@ -96,7 +96,7 @@ router.post("/media-assets/multipart/parts", requireAuth, async (req, res) => {
     const file = await ownedMultipart(req, parsed.data.objectPath);
     if (!file) { res.status(403).json({ error: "Forbidden" }); return; }
     const parts: { partNumber: number; etag: string; size: number }[] = [];
-    let marker: number | undefined;
+    let marker: string | undefined;
     do {
       const result = await getR2Client().send(new ListPartsCommand({
         Bucket: getR2Bucket(), Key: file.key, UploadId: parsed.data.uploadId,
