@@ -107,6 +107,27 @@ describe("Media Warehouse multipart access and completion", () => {
     expect(result.body.asset.id).toBe(15);
   });
 
+  it("does not resurrect a soft-deleted asset during registration retry", async () => {
+    const existing = {
+      id: 15, ownerId: 1, storageKey: objectPath.slice("/objects/".length),
+      sizeBytes: 8, contentType: "application/octet-stream",
+      checksumSha256: null, deletedAt: new Date(),
+    };
+    dbInsert.mockReturnValue({
+      values: () => ({ onConflictDoNothing: () => ({ returning: async () => [] }) }),
+    });
+    dbSelect.mockReturnValue({
+      from: () => ({ where: () => ({ limit: async () => [existing] }) }),
+    });
+    const app = await buildApp(1);
+    const result = await request(app).post("/media-assets").send({
+      objectPath, originalFilename: "camera-original.braw",
+      contentType: "application/octet-stream",
+    });
+    expect(result.status).toBe(409);
+    expect(result.body.error).toMatch(/unavailable/);
+  });
+
   it("rejects an integrity claim that conflicts with an existing unverified record", async () => {
     const existing = {
       id: 15, ownerId: 1, storageKey: objectPath.slice("/objects/".length),
