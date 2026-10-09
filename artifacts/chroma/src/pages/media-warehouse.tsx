@@ -322,12 +322,12 @@ export function MediaWarehouse() {
                 </div>
                 {asset.status === "verified" && (
                   <div className="flex flex-wrap items-center gap-2">
-                    <Button variant="secondary" size="sm"
+                    {asset.contentType.startsWith("video/") && <Button variant="secondary" size="sm"
                       disabled={creatingVideo !== null || attaching !== null}
                       onClick={() => void createVideo(asset)}>
                       {creatingVideo === asset.id ? "Creating…" : "Create private video"}
-                    </Button>
-                    {eligibleVideos.length > 0 && (
+                    </Button>}
+                    {asset.contentType.startsWith("video/") && eligibleVideos.length > 0 && (
                       <>
                         <select
                           aria-label={`Select private video for ${asset.originalFilename}`}
