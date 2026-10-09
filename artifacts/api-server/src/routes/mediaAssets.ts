@@ -201,6 +201,9 @@ router.get("/media-assets/:id", requireAuth, async (req, res) => {
   const [asset] = await db.select().from(mediaAssetsTable)
     .where(and(eq(mediaAssetsTable.id, parsed.data), eq(mediaAssetsTable.ownerId, ownerId(req)), isNull(mediaAssetsTable.deletedAt))).limit(1);
   if (!asset) { res.status(404).json({ error: "Asset not found" }); return; }
+  if (!asset.contentType.startsWith("video/")) {
+    res.status(415).json({ error: "Only video files can be used as video sources" }); return;
+  }
   res.json({ asset });
 });
 
@@ -216,6 +219,9 @@ router.get("/media-assets/:id/download", requireAuth, async (req, res) => {
     isNull(mediaAssetsTable.deletedAt),
   )).limit(1);
   if (!asset) { res.status(404).json({ error: "Asset not found" }); return; }
+  if (!asset.contentType.startsWith("video/")) {
+    res.status(415).json({ error: "Only video files can be used as video sources" }); return;
+  }
   try {
     const objectFile = await storage.getObjectEntityFile("/objects/" + asset.storageKey);
     const permitted = await storage.canAccessObjectEntity({
