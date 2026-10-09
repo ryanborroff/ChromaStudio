@@ -8,7 +8,9 @@
     "build": "node ./build.mjs",
     "start": "node --enable-source-maps ./dist/index.mjs",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:verification-worker": "node ./build-verification-worker.mjs",
+    "verification:once": "CHROMA_VERIFICATION_WORKER=1 node ./dist/mediaVerificationWorker.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1098.0",
