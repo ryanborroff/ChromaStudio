@@ -44,9 +44,9 @@ export async function runVerificationJob(): Promise<boolean> {
     const bucket = getR2Bucket();
     const before = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
     if (before.ContentLength !== expectedSize) throw new Error("size_changed");
-    const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key }));
+    const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key, IfMatch: before.ETag }));
     if (!object.Body) throw new Error("missing_body");
-    if (object.ETag !== before.ETag) throw new Error("object_changed");
+    if (!before.ETag || object.ETag !== before.ETag) throw new Error("object_changed");
     const hash = createHash("sha256");
     let processed = 0;
     let lastHeartbeat = Date.now();
@@ -67,7 +67,7 @@ export async function runVerificationJob(): Promise<boolean> {
     }
     if (processed !== expectedSize) throw new Error("size_changed");
     const after = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
-    if (after.ETag !== before.ETag || after.ContentLength !== before.ContentLength) {
+    if (after.ETag !== before.ETag || after.ContentLength !== before.ContentLength || after.LastModified?.getTime() !== before.LastModified?.getTime()) {
       throw new Error("object_changed");
     }
     const digest = hash.digest("hex");
