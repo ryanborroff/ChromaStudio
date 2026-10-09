@@ -102,7 +102,10 @@ export function MediaWarehouse() {
           objectPath = completedObjectPath;
         } else {
           if (!multipart) throw new Error("Missing multipart upload session");
-          const partSize = 32 * 1024 * 1024;
+          // Stay within S3/R2's 10,000-part limit for very large camera originals.
+          // Round upward to whole MiB so resumed parts retain predictable boundaries.
+          const mib = 1024 * 1024;
+          const partSize = Math.max(32 * mib, Math.ceil(file.size / (10000 * mib)) * mib);
           const count = Math.ceil(file.size / partSize);
           if (count > 10000) throw new Error("File exceeds multipart part limit");
           let uploadedParts: { partNumber: number; etag: string; size: number }[];
