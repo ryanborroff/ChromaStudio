@@ -287,6 +287,19 @@ describe("Media Warehouse multipart access and completion", () => {
     expect(send).toHaveBeenCalledTimes(1);
   });
 
+  it("fails safely when R2 reports more than 10,000 multipart parts", async () => {
+    send.mockResolvedValueOnce({
+      Parts: Array.from({ length: 10001 }, (_, index) => ({
+        PartNumber: index + 1, ETag: `"etag-${index + 1}"`, Size: 1,
+      })),
+      IsTruncated: false,
+    });
+    const app = await buildApp(1);
+    const result = await request(app).post("/media-assets/multipart/parts").send(session);
+    expect(result.status).toBe(502);
+    expect(result.body.parts).toBeUndefined();
+  });
+
   it("lists existing parts for an authorised interrupted session", async () => {
     send.mockResolvedValueOnce({
       Parts: [{ PartNumber: 1, ETag: '"etag-1"', Size: 33554432 }],
