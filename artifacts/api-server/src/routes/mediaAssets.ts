@@ -109,6 +109,7 @@ router.post("/media-assets/multipart/parts", requireAuth, async (req, res) => {
           parts.push({ partNumber: part.PartNumber, etag: part.ETag, size: part.Size });
         }
       }
+      if (parts.length > 10000) throw new Error("Multipart session exceeds part limit");
       if (!result.IsTruncated) break;
       if (!result.NextPartNumberMarker || result.NextPartNumberMarker === marker) {
         throw new Error("Invalid part listing pagination");
@@ -161,6 +162,7 @@ router.post("/media-assets/multipart/complete", requireAuth, async (req, res) =>
       for (const part of listed.Parts ?? []) {
         if (part.PartNumber && part.ETag) actualParts.push({ partNumber: part.PartNumber, etag: part.ETag });
       }
+      if (actualParts.length > 10000) throw new Error("Multipart session exceeds part limit");
       if (!listed.IsTruncated) break;
       if (!listed.NextPartNumberMarker || listed.NextPartNumberMarker === marker) throw new Error("Invalid parts pagination");
       marker = listed.NextPartNumberMarker;
