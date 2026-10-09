@@ -50,6 +50,18 @@ describe("Media Warehouse multipart access and completion", () => {
     signedUrl.mockResolvedValue("https://example.invalid/signed");
   });
 
+  it("rejects an unverified client checksum before any database write", async () => {
+    const app = await buildApp(1);
+    const result = await request(app).post("/media-assets").send({
+      objectPath,
+      originalFilename: "camera-original.braw",
+      contentType: "application/octet-stream",
+      checksumSha256: "a".repeat(64),
+    });
+    expect(result.status).toBe(422);
+    expect(result.body.error).toMatch(/Checksum verification/);
+  });
+
   it("requires authentication before listing uploaded parts", async () => {
     const app = await buildApp(null);
     const result = await request(app).post("/media-assets/multipart/parts").send(session);
