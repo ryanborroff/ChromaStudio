@@ -113,7 +113,7 @@ describe("Media Warehouse multipart access and completion", () => {
 
   it("rejects nonpositive and oversized direct upload requests", async () => {
     const app = await buildApp(1);
-    for (const sizeBytes of [0, 5 * 1024 ** 4 + 1]) {
+    for (const sizeBytes of [0, 32 * 1024 ** 2 + 1, 5 * 1024 ** 4 + 1]) {
       const result = await request(app).post("/media-assets/upload-url").send({
         originalFilename: "invalid.braw",
         contentType: "application/octet-stream", sizeBytes,
