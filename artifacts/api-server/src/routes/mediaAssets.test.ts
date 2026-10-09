@@ -35,7 +35,7 @@ async function buildApp(userId: number | null) {
   app.use((req, _res, next) => {
     req.isAuthenticated = (() => userId !== null) as Request["isAuthenticated"];
     if (userId !== null) req.user = { id: userId } as Express.User;
-    req.log = { error: vi.fn() } as typeof req.log;
+    req.log = { error: vi.fn() } as unknown as typeof req.log;
     next();
   });
   app.use(router);
