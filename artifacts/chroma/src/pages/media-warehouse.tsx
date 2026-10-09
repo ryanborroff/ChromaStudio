@@ -14,6 +14,7 @@ type MediaAsset = {
   status: string;
   createdAt: string;
   verifiedAt: string | null;
+  checksumSha256: string | null;
 };
 
 function formatSize(bytes: number | null) {
@@ -357,7 +358,7 @@ export function MediaWarehouse() {
                       {asset.originalFilename}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {formatSize(asset.sizeBytes)} · {asset.status} · {new Date(asset.createdAt).toLocaleDateString()}
+                      {formatSize(asset.sizeBytes)} · {asset.checksumSha256 ? "SHA-256 verified" : "Stored (checksum not verified)"} · {new Date(asset.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
