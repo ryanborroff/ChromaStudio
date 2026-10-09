@@ -151,15 +151,23 @@ export class ObjectStorageService {
    * Independently hash stored bytes. Never treat an S3 multipart ETag as SHA-256.
    * The response body is streamed so large camera originals are not buffered.
    */
-  async calculateObjectSha256(objectPath: string): Promise<string> {
+  async calculateObjectSha256(objectPath: string, expectedSizeBytes?: number): Promise<string> {
     const { key } = await this.getObjectEntityFile(objectPath);
     const response = await getR2Client().send(new GetObjectCommand({
       Bucket: getR2Bucket(), Key: key,
     }));
     if (!response.Body) throw new ObjectNotFoundError();
     const hash = createHash("sha256");
+    let bytesRead = 0;
     for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
+      bytesRead += chunk.byteLength;
+      if (expectedSizeBytes !== undefined && bytesRead > expectedSizeBytes) {
+        throw new Error("Stored object size changed during checksum verification");
+      }
       hash.update(chunk);
+    }
+    if (expectedSizeBytes !== undefined && bytesRead !== expectedSizeBytes) {
+      throw new Error("Stored object size changed during checksum verification");
     }
     return hash.digest("hex");
   }
