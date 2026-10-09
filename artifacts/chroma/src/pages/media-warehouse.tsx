@@ -109,13 +109,14 @@ export function MediaWarehouse() {
         for (let index = 0; index < count; index++) {
           if (signal.aborted) throw new DOMException("Cancelled", "AbortError");
           const partNumber = index + 1;
-          const { uploadURL }: { uploadURL: string } = await jsonPost("/api/media-assets/multipart/part-url", {
-            ...multipart, partNumber,
-          });
           const chunk = file.slice(index * partSize, Math.min((index + 1) * partSize, file.size));
           let etag: string | null = completed.get(partNumber)?.size === chunk.size
             ? completed.get(partNumber)!.etag : null;
           for (let attempt = 0; !etag && attempt < 3; attempt++) {
+            // Sign each attempt separately: a previous URL may have expired.
+            const { uploadURL }: { uploadURL: string } = await jsonPost("/api/media-assets/multipart/part-url", {
+              ...multipart, partNumber,
+            });
             const response = await fetch(uploadURL, { method: "PUT", body: chunk, signal });
             if (response.ok) {
               etag = response.headers.get("ETag");
