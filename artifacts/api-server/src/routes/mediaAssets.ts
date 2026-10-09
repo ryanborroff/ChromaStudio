@@ -303,6 +303,11 @@ router.post("/media-assets", requireAuth, async (req, res) => {
       eq(mediaAssetsTable.ownerId, userId), eq(mediaAssetsTable.storageKey, verified.key),
     )).limit(1);
     if (!existing || existing.deletedAt) { res.status(409).json({ error: "Asset is unavailable" }); return; }
+    // An existing record must still describe the same stored object. A
+    // changed size or content type is evidence of replacement, not a retry.
+    if (existing.sizeBytes !== verified.sizeBytes || existing.contentType !== (verified.contentType || "application/octet-stream")) {
+      res.status(409).json({ error: "Stored object metadata changed since registration" }); return;
+    }
     // Idempotent retries must not silently claim integrity that the existing
     // record never verified, or discard a previously verified checksum.
     if (parsed.data.checksumSha256 && existing.checksumSha256 !== verifiedSha256) {
