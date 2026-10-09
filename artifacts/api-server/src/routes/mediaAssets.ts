@@ -259,11 +259,6 @@ router.get("/media-assets/:id/download", requireAuth, async (req, res) => {
 router.post("/media-assets", requireAuth, async (req, res) => {
   const parsed = registerSchema.safeParse(req.body);
   if (!parsed.success) { res.status(400).json({ error: "Invalid asset metadata" }); return; }
-  // A caller-supplied checksum is not proof of object integrity. Until the
-  // server verifies the bytes, never persist it as an authoritative hash.
-  if (parsed.data.checksumSha256) {
-    res.status(422).json({ error: "Checksum verification is not yet supported" }); return;
-  }
   const userId = ownerId(req);
   try {
     const file = await storage.getObjectEntityFile(parsed.data.objectPath);
@@ -272,13 +267,22 @@ router.post("/media-assets", requireAuth, async (req, res) => {
     });
     if (!permitted) { res.status(403).json({ error: "Forbidden" }); return; }
     const verified = await storage.verifyObjectUpload(parsed.data.objectPath);
+    // The checksum is authoritative only after independently streaming the
+    // stored R2 object and comparing its bytes with the submitted digest.
+    let verifiedSha256: string | null = null;
+    if (parsed.data.checksumSha256) {
+      verifiedSha256 = await storage.calculateObjectSha256(parsed.data.objectPath);
+      if (verifiedSha256 !== parsed.data.checksumSha256.toLowerCase()) {
+        res.status(422).json({ error: "Stored file checksum does not match" }); return;
+      }
+    }
     const [asset] = await db.insert(mediaAssetsTable).values({
       ownerId: userId,
       storageKey: verified.key,
       originalFilename: verified.originalFilename || parsed.data.originalFilename,
       contentType: verified.contentType || "application/octet-stream",
       sizeBytes: verified.sizeBytes,
-      checksumSha256: null,
+      checksumSha256: verifiedSha256,
       status: "verified",
       verifiedAt: new Date(),
     }).onConflictDoNothing({ target: [mediaAssetsTable.ownerId, mediaAssetsTable.storageKey] }).returning();
