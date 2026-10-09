@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useListVideos } from "@workspace/api-client-react";
 import { queryClient } from "@/lib/queryClient";
-import { Download, FileVideo2, Loader2, Search } from "lucide-react";
+import { Download, File, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -32,6 +32,9 @@ export function MediaWarehouse() {
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadController, setUploadController] = useState<AbortController | null>(null);
+  const uploadControllerRef = useRef<AbortController | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
@@ -48,33 +51,88 @@ export function MediaWarehouse() {
 
   async function uploadFile(file: File) {
     setUploading(true);
+    setUploadProgress(0);
     setUploadError(null);
+    const controller = new AbortController();
+    uploadControllerRef.current = controller;
+    setUploadController(controller);
+    const signal = controller.signal;
+    const contentType = file.type || "application/octet-stream";
+    let multipart: { objectPath: string; uploadId: string } | null = null;
+    const jsonPost = async (path: string, body: unknown) => {
+      const response = await fetch(path, {
+        method: "POST", credentials: "include", signal,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!response.ok) throw new Error(`Upload request failed (${response.status})`);
+      return response.json();
+    };
     try {
-      const contentType = file.type || "application/octet-stream";
-      const ticket = await fetch("/api/media-assets/upload-url", {
-        method: "POST", credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ originalFilename: file.name, contentType, sizeBytes: file.size }),
+      let objectPath: string;
+      if (file.size > 32 * 1024 * 1024) {
+        multipart = await jsonPost("/api/media-assets/multipart/start", {
+          originalFilename: file.name, contentType, sizeBytes: file.size,
+        }) as { objectPath: string; uploadId: string };
+        const partSize = 32 * 1024 * 1024;
+        const count = Math.ceil(file.size / partSize);
+        if (count > 10000) throw new Error("File exceeds multipart part limit");
+        const parts: { partNumber: number; etag: string }[] = [];
+        for (let index = 0; index < count; index++) {
+          if (signal.aborted) throw new DOMException("Cancelled", "AbortError");
+          const partNumber = index + 1;
+          const { uploadURL }: { uploadURL: string } = await jsonPost("/api/media-assets/multipart/part-url", {
+            ...multipart, partNumber,
+          });
+          const chunk = file.slice(index * partSize, Math.min((index + 1) * partSize, file.size));
+          let etag: string | null = null;
+          for (let attempt = 0; attempt < 3; attempt++) {
+            const response = await fetch(uploadURL, { method: "PUT", body: chunk, signal });
+            if (response.ok) {
+              etag = response.headers.get("ETag");
+              break;
+            }
+            if (attempt === 2) throw new Error(`Part ${partNumber} failed`);
+            await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)));
+          }
+          if (!etag) throw new Error("Storage did not expose ETag. Check R2 CORS ExposeHeaders.");
+          parts.push({ partNumber, etag });
+          setUploadProgress(Math.round((partNumber / count) * 100));
+        }
+        await jsonPost("/api/media-assets/multipart/complete", { ...multipart, parts });
+        objectPath = multipart.objectPath;
+        multipart = null;
+      } else {
+        const { uploadURL, objectPath: path }: { uploadURL: string; objectPath: string } =
+          await jsonPost("/api/media-assets/upload-url", {
+            originalFilename: file.name, contentType, sizeBytes: file.size,
+          });
+        const response = await fetch(uploadURL, {
+          method: "PUT", signal,
+          headers: { "Content-Type": contentType, "x-amz-meta-original-filename": encodeURIComponent(file.name) },
+          body: file,
+        });
+        if (!response.ok) throw new Error("File transfer failed");
+        objectPath = path;
+        setUploadProgress(100);
+      }
+      const { asset }: { asset: MediaAsset } = await jsonPost("/api/media-assets", {
+        objectPath, originalFilename: file.name, contentType,
       });
-      if (!ticket.ok) throw new Error("Could not start upload");
-      const { uploadURL, objectPath }: { uploadURL: string; objectPath: string } = await ticket.json();
-      const put = await fetch(uploadURL, {
-        method: "PUT",
-        headers: { "Content-Type": contentType, "x-amz-meta-original-filename": encodeURIComponent(file.name) },
-        body: file,
-      });
-      if (!put.ok) throw new Error("File transfer failed");
-      const registration = await fetch("/api/media-assets", {
-        method: "POST", credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ objectPath, originalFilename: file.name, contentType }),
-      });
-      if (!registration.ok) throw new Error("Upload finished but registration failed. Please contact support.");
-      const { asset }: { asset: MediaAsset } = await registration.json();
       setAssets((previous) => [asset, ...previous.filter((item) => item.id !== asset.id)]);
     } catch (error) {
-      setUploadError(error instanceof Error ? error.message : "Upload failed");
+      if (multipart) {
+        // Abort with a fresh request because the original signal may have been cancelled.
+        void fetch("/api/media-assets/multipart/abort", {
+          method: "POST", credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(multipart),
+        }).catch(() => {});
+      }
+      setUploadError(signal.aborted ? "Upload cancelled" : error instanceof Error ? error.message : "Upload failed");
     } finally {
+      uploadControllerRef.current = null;
+      setUploadController(null);
       setUploading(false);
     }
   }
@@ -189,7 +247,7 @@ export function MediaWarehouse() {
           </p>
         </div>
         <label className="inline-flex cursor-pointer items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-          {uploading ? "Uploading…" : "Upload any file"}
+          {uploading ? `Uploading ${uploadProgress}%` : "Upload any file"}
           <input type="file" className="sr-only" disabled={uploading} onChange={(event) => {
             const file = event.target.files?.[0];
             if (file) void uploadFile(file);
@@ -204,6 +262,7 @@ export function MediaWarehouse() {
             className="pl-9" value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
       </div>
+      {uploading && <div className="mb-4 flex items-center gap-3"><progress aria-label="Upload progress" value={uploadProgress} max={100} className="w-full" /><Button variant="outline" size="sm" onClick={() => uploadController?.abort()}>Cancel</Button></div>}
       {uploadError && <p role="alert" className="mb-4 text-sm text-red-400">{uploadError}</p>}
       {attachError && <p role="alert" className="mb-4 text-sm text-red-400">{attachError}</p>}
       {loading ? (
@@ -216,19 +275,19 @@ export function MediaWarehouse() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="rounded-xl border border-border/50 bg-card p-8 text-sm text-muted-foreground">
-          {search ? "No originals match your search." : "No originals yet. Upload a video to get started."}
+          {search ? "No originals match your search." : "No originals yet. Upload a file to get started."}
         </div>
       ) : (
         <div className="overflow-hidden rounded-xl border border-border/50 bg-card">
           <div className="border-b border-border/50 px-5 py-3 text-xs text-muted-foreground">
             {filtered.length} original{filtered.length === 1 ? "" : "s"} shown
-            {assets.length === 100 ? " · Showing the latest 100" : ""}
+            {nextBeforeId !== null ? " · More available" : ""}
           </div>
           <ul className="divide-y divide-border/50">
             {filtered.map((asset) => (
               <li key={asset.id} className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
                 <div className="flex min-w-0 items-center gap-3">
-                  <FileVideo2 className="h-5 w-5 shrink-0 text-primary" />
+                  <File className="h-5 w-5 shrink-0 text-primary" />
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-white" title={asset.originalFilename}>
                       {asset.originalFilename}
