@@ -283,6 +283,8 @@ router.post("/media-assets", requireAuth, async (req, res) => {
         res.status(422).json({ error: "Stored file checksum does not match" }); return;
       }
     }
+    // A retried registration must not turn a missing or replaced object into
+    // a fresh trusted catalogue entry. Storage metadata was checked above.
     const [asset] = await db.insert(mediaAssetsTable).values({
       ownerId: userId,
       storageKey: verified.key,
