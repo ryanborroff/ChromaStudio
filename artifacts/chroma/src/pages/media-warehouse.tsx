@@ -6,6 +6,8 @@ import { Download, File, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+type VerificationJob = { status: string; bytesProcessed: number; attempts: number; lastErrorCode: string | null };
+
 type MediaAsset = {
   id: number;
   originalFilename: string;
@@ -31,6 +33,7 @@ function formatSize(bytes: number | null) {
 export function MediaWarehouse() {
   const [, navigate] = useLocation();
   const [assets, setAssets] = useState<MediaAsset[]>([]);
+  const [verificationJobs, setVerificationJobs] = useState<Record<number, VerificationJob | null>>({});
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -300,6 +303,36 @@ export function MediaWarehouse() {
     return () => { clearTimeout(timeout); controller.abort(); };
   }, [search]);
 
+  // Poll only while the Warehouse is visible. A queued job may remain queued
+  // until the separate verification worker is scheduled in the environment.
+  useEffect(() => {
+    if (!assets.length) return;
+    let cancelled = false;
+    const refresh = async () => {
+      const pending = assets.filter((asset) => !asset.checksumSha256);
+      const results = await Promise.all(pending.map(async (asset) => {
+        try {
+          const response = await fetch(`/api/media-assets/${asset.id}/verification`, {
+            credentials: "include", cache: "no-store",
+          });
+          if (!response.ok) return null;
+          const result: { job: VerificationJob | null } = await response.json();
+          return { id: asset.id, job: result.job };
+        } catch { return null; }
+      }));
+      if (!cancelled) {
+        setVerificationJobs((previous) => {
+          const updated = { ...previous };
+          for (const result of results) if (result) updated[result.id] = result.job;
+          return updated;
+        });
+      }
+    };
+    void refresh();
+    const timer = window.setInterval(() => { if (!document.hidden) void refresh(); }, 15000);
+    return () => { cancelled = true; window.clearInterval(timer); };
+  }, [assets]);
+
   const filtered = assets;
 
   return (
@@ -358,7 +391,7 @@ export function MediaWarehouse() {
                       {asset.originalFilename}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {formatSize(asset.sizeBytes)} · {asset.checksumSha256 ? "SHA-256 verified" : "Stored (checksum not verified)"} · {new Date(asset.createdAt).toLocaleDateString()}
+                      {formatSize(asset.sizeBytes)} · {asset.checksumSha256 ? "SHA-256 verified" : verificationJobs[asset.id] ? `Checksum: ${verificationJobs[asset.id]?.status}${verificationJobs[asset.id]?.status === "running" ? ` (${formatSize(verificationJobs[asset.id]?.bytesProcessed ?? 0)} processed)` : ""}` : "Stored (checksum not verified)"} · {new Date(asset.createdAt).toLocaleDateString()}
                     </p>
                   </div>
                 </div>
