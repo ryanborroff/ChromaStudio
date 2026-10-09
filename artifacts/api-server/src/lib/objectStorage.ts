@@ -5,7 +5,7 @@ import {
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { randomUUID } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { getR2Client, getR2Bucket } from "./r2Client";
 import {
   type ObjectAclPolicy,
@@ -147,6 +147,23 @@ export class ObjectStorageService {
    * landed before marking a video "ready". Throws ObjectNotFoundError if
    * the object is missing.
    */
+  /**
+   * Independently hash stored bytes. Never treat an S3 multipart ETag as SHA-256.
+   * The response body is streamed so large camera originals are not buffered.
+   */
+  async calculateObjectSha256(objectPath: string): Promise<string> {
+    const { key } = await this.getObjectEntityFile(objectPath);
+    const response = await getR2Client().send(new GetObjectCommand({
+      Bucket: getR2Bucket(), Key: key,
+    }));
+    if (!response.Body) throw new ObjectNotFoundError();
+    const hash = createHash("sha256");
+    for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
+      hash.update(chunk);
+    }
+    return hash.digest("hex");
+  }
+
   async verifyObjectUpload(
     objectPath: string,
   ): Promise<{ key: string; sizeBytes: number; contentType: string | null; originalFilename: string | null }> {
