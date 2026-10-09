@@ -290,6 +290,9 @@ router.post("/media-assets", requireAuth, async (req, res) => {
       contentType: verified.contentType || "application/octet-stream",
       sizeBytes: verified.sizeBytes,
       checksumSha256: verifiedSha256,
+      // "verified" currently means the object exists and its metadata was
+      // checked. A cryptographic integrity claim is made only when a SHA-256
+      // digest was independently compared with the stored bytes.
       status: "verified",
       verifiedAt: new Date(),
     }).onConflictDoNothing({ target: [mediaAssetsTable.ownerId, mediaAssetsTable.storageKey] }).returning();
