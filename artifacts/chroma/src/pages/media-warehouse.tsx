@@ -61,6 +61,7 @@ export function MediaWarehouse() {
     const signal = controller.signal;
     const contentType = file.type || "application/octet-stream";
     let multipart: { objectPath: string; uploadId: string } | null = null;
+    // Sessions are isolated to this browser profile; server ownership is rechecked on every request.
     const sessionKey = `chroma:multipart:${file.name}:${file.size}:${file.lastModified}`;
     const jsonPost = async (path: string, body: unknown) => {
       const response = await fetch(path, {
@@ -94,8 +95,15 @@ export function MediaWarehouse() {
         const partSize = 32 * 1024 * 1024;
         const count = Math.ceil(file.size / partSize);
         if (count > 10000) throw new Error("File exceeds multipart part limit");
-        const { parts: uploadedParts }: { parts: { partNumber: number; etag: string; size: number }[] } =
-          await jsonPost("/api/media-assets/multipart/parts", multipart);
+        let uploadedParts: { partNumber: number; etag: string; size: number }[];
+        try {
+          ({ parts: uploadedParts } = await jsonPost("/api/media-assets/multipart/parts", multipart) as {
+            parts: { partNumber: number; etag: string; size: number }[];
+          });
+        } catch (error) {
+          // Do not silently create a new upload if a saved session is inaccessible.
+          throw new Error("Unable to recover the saved upload. Please cancel it before retrying.", { cause: error });
+        }
         const completed = new Map(uploadedParts.map((part) => [part.partNumber, part]));
         const parts: { partNumber: number; etag: string }[] = [];
         for (let index = 0; index < count; index++) {
