@@ -179,16 +179,6 @@ export function MediaWarehouse() {
 
   const filtered = assets;
 
-  return () => controller.abort();
-  }, []);
-
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    return query
-      ? assets.filter((asset) => asset.originalFilename.toLowerCase().includes(query))
-      : assets;
-  }, [assets, search]);
-
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6 flex flex-wrap items-start justify-between gap-4">
