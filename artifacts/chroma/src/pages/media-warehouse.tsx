@@ -31,6 +31,8 @@ export function MediaWarehouse() {
   const [, navigate] = useLocation();
   const [assets, setAssets] = useState<MediaAsset[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [search, setSearch] = useState("");
   const [selectedVideo, setSelectedVideo] = useState<Record<number, number>>({});
@@ -41,6 +43,39 @@ export function MediaWarehouse() {
   const eligibleVideos = (videosQuery.data?.videos ?? []).filter(
     (video) => video.privacy === "private" && !video.videoUrl && !video.streamProvider,
   );
+
+  async function uploadFile(file: File) {
+    setUploading(true);
+    setUploadError(null);
+    try {
+      const contentType = file.type || "application/octet-stream";
+      const ticket = await fetch("/api/media-assets/upload-url", {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ originalFilename: file.name, contentType, sizeBytes: file.size }),
+      });
+      if (!ticket.ok) throw new Error("Could not start upload");
+      const { uploadURL, objectPath }: { uploadURL: string; objectPath: string } = await ticket.json();
+      const put = await fetch(uploadURL, {
+        method: "PUT",
+        headers: { "Content-Type": contentType, "x-amz-meta-original-filename": encodeURIComponent(file.name) },
+        body: file,
+      });
+      if (!put.ok) throw new Error("File transfer failed");
+      const registration = await fetch("/api/media-assets", {
+        method: "POST", credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ objectPath, originalFilename: file.name, contentType }),
+      });
+      if (!registration.ok) throw new Error("Upload finished but registration failed. Please contact support.");
+      const { asset }: { asset: MediaAsset } = await registration.json();
+      setAssets((previous) => [asset, ...previous.filter((item) => item.id !== asset.id)]);
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  }
 
   async function createVideo(asset: MediaAsset) {
     const title = asset.originalFilename.replace(/\\.[^.]+$/, "").trim();
@@ -138,7 +173,14 @@ export function MediaWarehouse() {
             Your original files, stored privately and available for future projects.
           </p>
         </div>
-        <Button asChild><Link href="/videos/upload">Upload video</Link></Button>
+        <label className="inline-flex cursor-pointer items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
+          {uploading ? "Uploading…" : "Upload any file"}
+          <input type="file" className="sr-only" disabled={uploading} onChange={(event) => {
+            const file = event.target.files?.[0];
+            if (file) void uploadFile(file);
+            event.target.value = "";
+          }} />
+        </label>
       </div>
       <div className="mb-6 max-w-md">
         <div className="relative">
@@ -147,6 +189,7 @@ export function MediaWarehouse() {
             className="pl-9" value={search} onChange={(event) => setSearch(event.target.value)} />
         </div>
       </div>
+      {uploadError && <p role="alert" className="mb-4 text-sm text-red-400">{uploadError}</p>}
       {attachError && <p role="alert" className="mb-4 text-sm text-red-400">{attachError}</p>}
       {loading ? (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
