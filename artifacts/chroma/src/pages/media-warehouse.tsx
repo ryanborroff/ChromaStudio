@@ -117,6 +117,14 @@ export function MediaWarehouse() {
             // Do not silently create a new upload if a saved session is inaccessible.
             throw new Error("Unable to recover the saved upload. Please cancel it before retrying.", { cause: error });
           }
+          // Reject an inconsistent remote session rather than silently replacing
+          // unexpected parts and risking a corrupted completed original.
+          if (uploadedParts.some((part) =>
+            part.partNumber < 1 || part.partNumber > count ||
+            part.size !== Math.min(partSize, file.size - (part.partNumber - 1) * partSize)
+          ) || new Set(uploadedParts.map((part) => part.partNumber)).size !== uploadedParts.length) {
+            throw new Error("Saved upload parts do not match this file. Cancel the upload and restart.");
+          }
           const completed = new Map(uploadedParts.map((part) => [part.partNumber, part]));
           const parts: { partNumber: number; etag: string }[] = [];
           for (let index = 0; index < count; index++) {
