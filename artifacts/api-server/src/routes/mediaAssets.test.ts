@@ -100,6 +100,29 @@ describe("Media Warehouse multipart access and completion", () => {
     expect(calculateObjectSha256).not.toHaveBeenCalled();
   });
 
+  it("rejects multipart files exceeding the object storage size ceiling", async () => {
+    const app = await buildApp(1);
+    const result = await request(app).post("/media-assets/multipart/start").send({
+      originalFilename: "oversized.braw",
+      contentType: "application/octet-stream",
+      sizeBytes: 5 * 1024 ** 4 + 1,
+    });
+    expect(result.status).toBe(400);
+    expect(send).not.toHaveBeenCalled();
+  });
+
+  it("rejects nonpositive and oversized direct upload requests", async () => {
+    const app = await buildApp(1);
+    for (const sizeBytes of [0, 5 * 1024 ** 4 + 1]) {
+      const result = await request(app).post("/media-assets/upload-url").send({
+        originalFilename: "invalid.braw",
+        contentType: "application/octet-stream", sizeBytes,
+      });
+      expect(result.status).toBe(400);
+    }
+    expect(signedUrl).not.toHaveBeenCalled();
+  });
+
   it("requires authentication before listing uploaded parts", async () => {
     const app = await buildApp(null);
     const result = await request(app).post("/media-assets/multipart/parts").send(session);
