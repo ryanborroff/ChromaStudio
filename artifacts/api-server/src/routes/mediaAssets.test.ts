@@ -72,6 +72,34 @@ describe("Media Warehouse multipart access and completion", () => {
     expect(calculateObjectSha256).toHaveBeenCalledWith(objectPath);
   });
 
+  it("does not read R2 bytes for a checksum when storage access is denied", async () => {
+    canAccessObjectEntity.mockResolvedValue(false);
+    const app = await buildApp(99);
+    const result = await request(app).post("/media-assets").send({
+      objectPath, originalFilename: "original.braw",
+      contentType: "application/octet-stream", checksumSha256: "a".repeat(64),
+    });
+    expect(result.status).toBe(403);
+    expect(verifyObjectUpload).not.toHaveBeenCalled();
+    expect(calculateObjectSha256).not.toHaveBeenCalled();
+  });
+
+  it("rejects expensive synchronous hashing for large originals", async () => {
+    verifyObjectUpload.mockResolvedValue({
+      key: objectPath.slice("/objects/".length),
+      sizeBytes: 33 * 1024 * 1024,
+      contentType: "application/octet-stream",
+      originalFilename: "original.braw",
+    });
+    const app = await buildApp(1);
+    const result = await request(app).post("/media-assets").send({
+      objectPath, originalFilename: "original.braw",
+      contentType: "application/octet-stream", checksumSha256: "a".repeat(64),
+    });
+    expect(result.status).toBe(422);
+    expect(calculateObjectSha256).not.toHaveBeenCalled();
+  });
+
   it("requires authentication before listing uploaded parts", async () => {
     const app = await buildApp(null);
     const result = await request(app).post("/media-assets/multipart/parts").send(session);
