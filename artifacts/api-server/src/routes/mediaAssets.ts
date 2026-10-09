@@ -17,10 +17,32 @@ const registerSchema = z.object({
   checksumSha256: z.string().regex(/^[a-f0-9]{64}$/i).optional(),
 });
 const attachSchema = z.object({ videoId: z.number().int().positive() });
+const uploadRequestSchema = z.object({
+  originalFilename: z.string().trim().min(1).max(255),
+  contentType: z.string().trim().min(1).max(200).default("application/octet-stream"),
+  sizeBytes: z.number().int().positive(),
+});
 
 function ownerId(req: { user?: Express.User }): number {
   return (req.user as { id: number }).id;
 }
+
+/** Issue an owner-scoped signed PUT for any file type, independently of videos. */
+router.post("/media-assets/upload-url", requireAuth, async (req, res) => {
+  const parsed = uploadRequestSchema.safeParse(req.body);
+  if (!parsed.success) { res.status(400).json({ error: "Invalid file metadata" }); return; }
+  try {
+    const uploadURL = await storage.getObjectEntityUploadURL(String(ownerId(req)), {
+      originalFilename: parsed.data.originalFilename,
+      contentType: parsed.data.contentType,
+    });
+    const objectPath = storage.normalizeObjectEntityPath(uploadURL);
+    res.json({ uploadURL, objectPath, uploadMethod: "PUT" });
+  } catch (error) {
+    req.log.error({ err: error }, "Media Warehouse upload URL failed");
+    res.status(500).json({ error: "Failed to start upload" });
+  }
+});
 
 router.get("/media-assets", requireAuth, async (req, res) => {
   const rows = await db.select().from(mediaAssetsTable)
@@ -83,8 +105,8 @@ router.post("/media-assets", requireAuth, async (req, res) => {
     const [asset] = await db.insert(mediaAssetsTable).values({
       ownerId: userId,
       storageKey: verified.key,
-      originalFilename: parsed.data.originalFilename,
-      contentType: parsed.data.contentType,
+      originalFilename: verified.originalFilename || parsed.data.originalFilename,
+      contentType: verified.contentType || "application/octet-stream",
       sizeBytes: verified.sizeBytes,
       checksumSha256: parsed.data.checksumSha256,
       status: "verified",
