@@ -148,6 +148,27 @@ router.post("/media-assets/multipart/complete", requireAuth, async (req, res) =>
     if (new Set(parts.map((part) => part.partNumber)).size !== parts.length) {
       res.status(400).json({ error: "Duplicate part numbers" }); return;
     }
+    // Never trust client-provided ETags alone: verify the R2 session's parts.
+    const actualParts: { partNumber: number; etag: string }[] = [];
+    let marker: string | undefined;
+    do {
+      const listed = await getR2Client().send(new ListPartsCommand({
+        Bucket: getR2Bucket(), Key: file.key, UploadId: parsed.data.uploadId,
+        PartNumberMarker: marker,
+      }));
+      for (const part of listed.Parts ?? []) {
+        if (part.PartNumber && part.ETag) actualParts.push({ partNumber: part.PartNumber, etag: part.ETag });
+      }
+      if (!listed.IsTruncated) break;
+      if (!listed.NextPartNumberMarker || listed.NextPartNumberMarker === marker) throw new Error("Invalid parts pagination");
+      marker = listed.NextPartNumberMarker;
+    } while (actualParts.length <= 10000);
+    if (actualParts.length !== parts.length || parts.some((part, index) =>
+      part.partNumber !== index + 1 ||
+      !actualParts.some((actual) => actual.partNumber === part.partNumber && actual.etag === part.etag)
+    )) {
+      res.status(409).json({ error: "Uploaded parts do not match the completion request" }); return;
+    }
     await getR2Client().send(new CompleteMultipartUploadCommand({
       Bucket: getR2Bucket(), Key: file.key, UploadId: parsed.data.uploadId,
       MultipartUpload: { Parts: parts.map((part) => ({ PartNumber: part.partNumber, ETag: part.etag })) },
