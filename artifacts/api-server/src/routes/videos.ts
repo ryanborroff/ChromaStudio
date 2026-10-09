@@ -552,7 +552,7 @@ router.post(
     // confirm (the client's reported size may simply be stale/wrong), but it
     // is surfaced by leaving originalVerifiedAt unset for later inspection.
     const objectPath = video.videoUrl!.replace(/^\/api\/storage/, "");
-    let verification: { key: string; sizeBytes: number } | undefined;
+    let verification: { key: string; sizeBytes: number; contentType: string | null; originalFilename: string | null } | undefined;
     try {
       const svc = new ObjectStorageService();
       verification = await svc.verifyObjectUpload(objectPath);
@@ -587,8 +587,9 @@ router.post(
     // Register verified originals idempotently across confirmation retries.
     const [insertedAsset] = await db.insert(mediaAssetsTable).values({
       ownerId: user.id, storageKey: verification.key,
-      originalFilename: video.title || "video-" + video.id,
-      contentType: "video/mp4", sizeBytes: verification.sizeBytes,
+      originalFilename: verification.originalFilename || video.title || "video-" + video.id,
+      contentType: verification.contentType || "application/octet-stream",
+      sizeBytes: verification.sizeBytes,
       status: "verified", verifiedAt: new Date(),
     }).onConflictDoNothing({
       target: [mediaAssetsTable.ownerId, mediaAssetsTable.storageKey],
