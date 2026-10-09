@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { randomUUID } from "node:crypto";
-import { and, desc, eq, isNull } from "drizzle-orm";
+import { and, desc, eq, ilike, isNull, lt } from "drizzle-orm";
 import { z } from "zod/v4";
 import { db, mediaAssetsTable, videosTable } from "@workspace/db";
 import { requireAuth } from "../lib/auth";
@@ -45,10 +45,29 @@ router.post("/media-assets/upload-url", requireAuth, async (req, res) => {
 });
 
 router.get("/media-assets", requireAuth, async (req, res) => {
+  const parsed = z.object({
+    limit: z.coerce.number().int().min(1).max(100).default(50),
+    beforeId: z.coerce.number().int().positive().optional(),
+    search: z.string().trim().max(200).optional(),
+  }).safeParse(req.query);
+  if (!parsed.success) { res.status(400).json({ error: "Invalid search or pagination" }); return; }
+  const { limit, beforeId, search } = parsed.data;
+  const rows = await db.select().from(mediaAssetsTable)
+    .where(and(
+      eq(mediaAssetsTable.ownerId, ownerId(req)),
+      isNull(mediaAssetsTable.deletedAt),
+      beforeId ? lt(mediaAssetsTable.id, beforeId) : undefined,
+      search ? ilike(mediaAssetsTable.originalFilename, `%${search.replace(/[\\%_]/g, "\\router.get("/media-assets", requireAuth, async (req, res) => {
   const rows = await db.select().from(mediaAssetsTable)
     .where(and(eq(mediaAssetsTable.ownerId, ownerId(req)), isNull(mediaAssetsTable.deletedAt)))
     .orderBy(desc(mediaAssetsTable.createdAt)).limit(100);
   res.json({ assets: rows });
+});")}%`) : undefined,
+    ))
+    .orderBy(desc(mediaAssetsTable.id)).limit(limit + 1);
+  const hasMore = rows.length > limit;
+  const assets = rows.slice(0, limit);
+  res.json({ assets, nextBeforeId: hasMore ? assets[assets.length - 1]?.id ?? null : null });
 });
 
 router.get("/media-assets/:id", requireAuth, async (req, res) => {
