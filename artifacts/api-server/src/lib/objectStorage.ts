@@ -56,6 +56,18 @@ export class ObjectStorageService {
    * purge job only ever deletes originals/-scoped keys tied to a specific
    * soft-deleted row, never a blanket prefix delete.
    */
+  async setPrivateUploadOwner(key: string, ownerUserId: string): Promise<void> {
+    if (!/^private\/uploads\/[a-f0-9-]{36}$/i.test(key)) throw new Error("Invalid upload key");
+    await setObjectAclPolicy({ key }, { owner: ownerUserId, visibility: "private" });
+  }
+
+  async getObjectEntityFileForUpload(objectPath: string): Promise<R2ObjectRef> {
+    if (!/^\/objects\/private\/uploads\/[a-f0-9-]{36}$/i.test(objectPath)) {
+      throw new ObjectNotFoundError();
+    }
+    return { key: objectPath.slice("/objects/".length) };
+  }
+
   async getObjectEntityUploadURL(ownerUserId?: string, metadata?: { originalFilename: string; contentType: string }): Promise<string> {
     const key = `${PRIVATE_PREFIX}/uploads/${randomUUID()}`;
     // Write the owner ACL before issuing a client-accessible upload URL.
