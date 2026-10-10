@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "wouter";
 import {
   getGetReviewLinkQueryKey,
@@ -50,6 +50,8 @@ export function ReviewPage() {
   const [body, setBody] = useState("");
   const [approvalMessage, setApprovalMessage] = useState("");
   const [selectedFormat, setSelectedFormat] = useState("");
+  const [privatePlaybackUrl, setPrivatePlaybackUrl] = useState<string | null>(null);
+  const [privatePlaybackError, setPrivatePlaybackError] = useState(false);
   const { muxPlayerRef, streamRef, videoRef, getCurrentTime, seekTo } =
     usePlayerTime();
 
@@ -104,6 +106,50 @@ export function ReviewPage() {
       onSuccess: setUnlocked,
     },
   });
+
+  const reviewPassword = unlocked ? password : undefined;
+  const privateOriginal = !!session?.videoUrl &&
+    session.videoUrl.startsWith("/api/storage/objects/private/");
+  const selectedVideoId = session?.videoId;
+
+  useEffect(() => {
+    if (!privateOriginal || !token || !selectedVideoId ||
+        (session?.requiresPassword && !unlocked)) {
+      setPrivatePlaybackUrl(null);
+      setPrivatePlaybackError(false);
+      return;
+    }
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const refresh = async () => {
+      try {
+        const response = await fetch(`/api/review/${encodeURIComponent(token)}/playback`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ videoId: selectedVideoId, password: reviewPassword }),
+          cache: "no-store",
+        });
+        if (!response.ok) throw new Error("Review playback unavailable");
+        const result: { playbackUrl: string; expiresInSeconds: number } =
+          await response.json();
+        if (cancelled) return;
+        setPrivatePlaybackUrl(result.playbackUrl);
+        setPrivatePlaybackError(false);
+        timer = setTimeout(refresh, Math.max(15, result.expiresInSeconds - 30) * 1000);
+      } catch {
+        if (!cancelled) {
+          setPrivatePlaybackUrl(null);
+          setPrivatePlaybackError(true);
+        }
+      }
+    };
+    void refresh();
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
+  }, [privateOriginal, token, selectedVideoId, reviewPassword,
+      session?.requiresPassword, unlocked]);
 
   if (reviewQuery.isLoading) {
     return (
@@ -164,7 +210,6 @@ export function ReviewPage() {
 
   const canReview =
     !!session.streamPlaybackId || !!session.streamUid || !!session.videoUrl;
-  const reviewPassword = unlocked ? password : undefined;
   const versions = session.versions ?? [];
   const latestVersion = versions[versions.length - 1];
   const isLatestVersion =
@@ -180,7 +225,7 @@ export function ReviewPage() {
         }`
       : session.streamUid
         ? `https://videodelivery.net/${session.streamUid}/downloads/default.mp4?filename=${encodeURIComponent(`${safeTitle}-${format}.mp4`)}`
-        : session.videoUrl || "";
+        : privateOriginal ? (privatePlaybackUrl || "") : session.videoUrl || "";
 
   function captureCurrentTime() {
     setTimecode(getCurrentTime().toFixed(3));
@@ -311,10 +356,18 @@ export function ReviewPage() {
                   src={session.streamUid}
                   poster={session.thumbnailUrl || undefined}
                 />
-              ) : session.videoUrl ? (
+              ) : privateOriginal && privatePlaybackError ? (
+                <div className="flex h-full items-center justify-center text-sm text-red-400">
+                  Playback access is unavailable. Ask the filmmaker for a new review link.
+                </div>
+              ) : privateOriginal && !privatePlaybackUrl ? (
+                <div className="flex h-full items-center justify-center text-sm text-muted-foreground">
+                  Preparing secure playback…
+                </div>
+              ) : (privateOriginal ? privatePlaybackUrl : session.videoUrl) ? (
                 <video
                   ref={videoRef}
-                  src={session.videoUrl}
+                  src={privateOriginal ? privatePlaybackUrl || undefined : session.videoUrl || undefined}
                   poster={session.thumbnailUrl || undefined}
                   className="h-full w-full"
                   controls

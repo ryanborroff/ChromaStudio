@@ -4,6 +4,7 @@ import { eq, sql, desc, asc, ilike, or, and, inArray } from "drizzle-orm";
 import {
   db,
   videosTable,
+  mediaAssetsTable,
   usersTable,
   videoLikesTable,
   videoRatingsTable,
@@ -41,6 +42,7 @@ import {
 } from "@workspace/api-zod";
 import { getStreamingProvider } from "../lib/streaming/index.js";
 import { ObjectStorageService } from "../lib/objectStorage";
+import { ObjectPermission } from "../lib/objectAcl";
 
 const router: IRouter = Router();
 
@@ -323,7 +325,8 @@ router.post(
       // Returns a presigned PUT URL; the client should PUT the file (not FormData POST).
       try {
         const svc = new ObjectStorageService();
-        const uploadURL = await svc.getObjectEntityUploadURL();
+        const user = await getCurrentUser(req);
+        const uploadURL = await svc.getObjectEntityUploadURL(String(user.id));
         const objectPath = svc.normalizeObjectEntityPath(uploadURL);
         res.json(
           CreateVideoUploadUrlResponse.parse({
@@ -549,10 +552,18 @@ router.post(
     // confirm (the client's reported size may simply be stale/wrong), but it
     // is surfaced by leaving originalVerifiedAt unset for later inspection.
     const objectPath = video.videoUrl!.replace(/^\/api\/storage/, "");
-    let verification: { key: string; sizeBytes: number } | undefined;
+    let verification: { key: string; sizeBytes: number; contentType: string | null; originalFilename: string | null } | undefined;
     try {
       const svc = new ObjectStorageService();
       verification = await svc.verifyObjectUpload(objectPath);
+      const permitted = await svc.canAccessObjectEntity({
+        userId: String(user.id), objectFile: { key: verification.key },
+        requestedPermission: ObjectPermission.WRITE,
+      });
+      if (!permitted) {
+        res.status(403).json({ error: "Upload is not owned by this user" });
+        return;
+      }
     } catch (err) {
       req.log.error({ err, videoId: id }, "Failed to verify uploaded object");
       res.status(502).json({ error: "Could not verify uploaded file" });
@@ -573,9 +584,31 @@ router.post(
       );
     }
 
+    // Register verified originals idempotently across confirmation retries.
+    const [insertedAsset] = await db.insert(mediaAssetsTable).values({
+      ownerId: user.id, storageKey: verification.key,
+      originalFilename: verification.originalFilename || video.title || "video-" + video.id,
+      contentType: verification.contentType || "application/octet-stream",
+      sizeBytes: verification.sizeBytes,
+      status: "verified", verifiedAt: new Date(),
+    }).onConflictDoNothing({
+      target: [mediaAssetsTable.ownerId, mediaAssetsTable.storageKey],
+    }).returning({ id: mediaAssetsTable.id });
+    const [existingAsset] = insertedAsset ? [insertedAsset] : await db.select({
+      id: mediaAssetsTable.id,
+    }).from(mediaAssetsTable).where(and(
+      eq(mediaAssetsTable.ownerId, user.id),
+      eq(mediaAssetsTable.storageKey, verification.key),
+    )).limit(1);
+    if (!existingAsset) {
+      res.status(409).json({ error: "Source media is unavailable" });
+      return;
+    }
+
     const [updated] = await db
       .update(videosTable)
       .set({
+        mediaAssetId: existingAsset.id,
         streamStatus: "ready",
         storageKey: verification.key,
         fileSizeBytes: verification.sizeBytes,

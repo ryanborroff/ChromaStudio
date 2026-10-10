@@ -9,6 +9,7 @@ import {
   reviewNotificationsTable,
   projectsTable,
   videosTable,
+  mediaAssetsTable,
   notDeleted,
 } from "@workspace/db";
 import {
@@ -39,6 +40,8 @@ import {
 } from "@workspace/api-zod";
 import { getCurrentUser, requireAuth } from "../lib/auth";
 import { getStreamingProvider } from "../lib/streaming/index.js";
+import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
+import { ObjectPermission } from "../lib/objectAcl";
 
 const router: IRouter = Router();
 const guestAttempts = new Map<string, { count: number; resetAt: number }>();
@@ -70,13 +73,14 @@ async function getLink(token: string) {
   return link;
 }
 
-async function getLatestVideo(groupId: string) {
+async function getLatestVideo(groupId: string, ownerId: number) {
   const [video] = await db
     .select()
     .from(videosTable)
     .where(
       and(
         eq(videosTable.reviewGroupId, groupId),
+        eq(videosTable.userId, ownerId),
         eq(videosTable.streamStatus, "ready"),
         notDeleted(),
       ),
@@ -96,6 +100,7 @@ async function getLatestVideo(groupId: string) {
     .where(
       and(
         eq(videosTable.id, fallbackId),
+        eq(videosTable.userId, ownerId),
         isNull(videosTable.reviewGroupId),
         notDeleted(),
       ),
@@ -108,7 +113,7 @@ async function getLatestVideo(groupId: string) {
 
 // A specific, non-latest version within a group. Used when a guest switches
 // the version picker away from "latest" to compare against an earlier cut.
-async function getVideoInGroup(groupId: string, videoId: number) {
+async function getVideoInGroup(groupId: string, videoId: number, ownerId: number) {
   if (groupId.startsWith("video-")) {
     const fallbackId = Number(groupId.slice(6));
     if (fallbackId !== videoId) return null;
@@ -118,6 +123,7 @@ async function getVideoInGroup(groupId: string, videoId: number) {
       .where(
         and(
           eq(videosTable.id, videoId),
+          eq(videosTable.userId, ownerId),
           isNull(videosTable.reviewGroupId),
           notDeleted(),
         ),
@@ -131,6 +137,7 @@ async function getVideoInGroup(groupId: string, videoId: number) {
     .where(
       and(
         eq(videosTable.id, videoId),
+        eq(videosTable.userId, ownerId),
         eq(videosTable.reviewGroupId, groupId),
         eq(videosTable.streamStatus, "ready"),
         notDeleted(),
@@ -150,6 +157,7 @@ async function listGroupVersions(video: ReviewVideo) {
     .where(
       and(
         eq(videosTable.reviewGroupId, video.reviewGroupId),
+        eq(videosTable.userId, video.userId),
         eq(videosTable.streamStatus, "ready"),
         notDeleted(),
       ),
@@ -262,8 +270,8 @@ async function authorizeGuest(
   }
   const video =
     videoId != null
-      ? await getVideoInGroup(link.videoGroupId, videoId)
-      : await getLatestVideo(link.videoGroupId);
+      ? await getVideoInGroup(link.videoGroupId, videoId, link.createdBy)
+      : await getLatestVideo(link.videoGroupId, link.createdBy);
   if (!video) return null;
   return { link, video, groupId: getGroupId(video) };
 }
@@ -502,6 +510,60 @@ router.post(
   },
 );
 
+// Resolve playback only after validating the active review token, optional
+// password, selected version, and current storage ACL. Never expose the
+// original as a public object or grant unauthenticated general storage access.
+router.post("/review/:token/playback", async (req, res): Promise<void> => {
+  const token = typeof req.params.token === "string" ? req.params.token : "";
+  if (!/^[A-Za-z0-9_-]{16,128}$/.test(token)) {
+    res.status(404).json({ error: "Review link not found" }); return;
+  }
+  const body = req.body ?? {};
+  const password = typeof body.password === "string" ? body.password : undefined;
+  const videoId = body.videoId === undefined ? undefined : body.videoId;
+  if (videoId !== undefined && (!Number.isSafeInteger(videoId) || videoId <= 0)) {
+    res.status(400).json({ error: "Invalid version" }); return;
+  }
+  const authorized = await authorizeGuest(token, password, videoId);
+  if (!authorized) {
+    res.status(401).json({ error: "Invalid or expired review link" }); return;
+  }
+  const video = authorized.video;
+  if (!video.storageKey || !video.mediaAssetId || video.streamProvider) {
+    res.status(409).json({ error: "Object-storage playback unavailable for this version" }); return;
+  }
+  const [asset] = await db.select({ storageKey: mediaAssetsTable.storageKey })
+    .from(mediaAssetsTable).where(and(
+      eq(mediaAssetsTable.id, video.mediaAssetId),
+      eq(mediaAssetsTable.ownerId, video.userId),
+      eq(mediaAssetsTable.storageKey, video.storageKey),
+      eq(mediaAssetsTable.status, "verified"),
+      isNull(mediaAssetsTable.deletedAt),
+    )).limit(1);
+  if (!asset) { res.status(404).json({ error: "Source media unavailable" }); return; }
+  const storage = new ObjectStorageService();
+  try {
+    const objectFile = await storage.getObjectEntityFile("/objects/" + video.storageKey);
+    const permitted = await storage.canAccessObjectEntity({
+      userId: String(video.userId),
+      objectFile,
+      requestedPermission: ObjectPermission.READ,
+    });
+    if (!permitted) { res.status(403).json({ error: "Playback unavailable" }); return; }
+    const playbackUrl = await storage.getObjectEntityDownloadURL(objectFile, {
+      responseContentDisposition: "inline",
+    });
+    res.setHeader("Cache-Control", "no-store");
+    res.json({ playbackUrl, expiresInSeconds: 120, videoId: video.id });
+  } catch (error) {
+    if (error instanceof ObjectNotFoundError) {
+      res.status(404).json({ error: "Media not found" }); return;
+    }
+    req.log.error({ err: error }, "Review playback signing failed");
+    res.status(500).json({ error: "Playback unavailable" });
+  }
+});
+
 router.get("/review/:token", async (req, res): Promise<void> => {
   const params = GetReviewLinkParams.safeParse(req.params);
   if (!params.success) {
@@ -513,7 +575,7 @@ router.get("/review/:token", async (req, res): Promise<void> => {
     res.status(410).json({ error: "This review link is no longer active" });
     return;
   }
-  const video = await getLatestVideo(link.videoGroupId);
+  const video = await getLatestVideo(link.videoGroupId, link.createdBy);
   if (!video) {
     res.status(409).json({ error: "The latest video is still processing" });
     return;

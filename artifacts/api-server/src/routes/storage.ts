@@ -5,7 +5,7 @@ import {
   GetStorageUsageResponse,
 } from "@workspace/api-zod";
 import { and, eq, sql } from "drizzle-orm";
-import { db, videosTable } from "@workspace/db";
+import { db, videosTable, mediaAssetsTable } from "@workspace/db";
 import {
   ObjectStorageService,
   ObjectNotFoundError,
@@ -24,22 +24,43 @@ const STORAGE_LIMITS: Record<string, number> = {
 
 router.get("/storage/usage", requireAuth, async (req, res): Promise<void> => {
   const userId = (req.user as { id: number }).id;
-  const [usage] = await db
-    .select({
-      totalBytesUsed: sql<number>`coalesce(sum(${videosTable.fileSizeBytes}), 0)::bigint`,
-      videoCount: sql<number>`count(*)::int`,
-    })
-    .from(videosTable)
-    .where(
-      and(
-        eq(videosTable.userId, userId),
-        eq(videosTable.streamStatus, "ready"),
-      ),
-    );
+  // Warehouse originals are billed once, even when reused by multiple videos.
+  const [warehouse] = await db.select({
+    bytes: sql<string>`coalesce(sum(${mediaAssetsTable.sizeBytes}), 0)::text`,
+  }).from(mediaAssetsTable).where(and(
+    eq(mediaAssetsTable.ownerId, userId),
+    eq(mediaAssetsTable.status, "verified"),
+    sql`${mediaAssetsTable.deletedAt} IS NULL`,
+  ));
+  // Deduplicate legacy objects and avoid charging for originals already
+  // registered in the warehouse. This remains a compatibility fallback.
+  const legacy = await db.execute(sql`
+    SELECT coalesce(sum(bytes), 0)::text AS bytes FROM (
+      SELECT DISTINCT ON (v.storage_key) v.storage_key, v.file_size_bytes AS bytes
+      FROM videos v
+      WHERE v.user_id = ${userId} AND v.deleted_at IS NULL
+        AND v.stream_status = 'ready' AND v.media_asset_id IS NULL
+        AND v.storage_key IS NOT NULL
+        AND NOT EXISTS (
+          SELECT 1 FROM media_assets a
+          WHERE a.owner_id = ${userId} AND a.storage_key = v.storage_key
+            AND a.deleted_at IS NULL
+        )
+      ORDER BY v.storage_key, v.id DESC
+    ) distinct_legacy
+  `);
+  const [videoUsage] = await db.select({
+    videoCount: sql<number>`count(*)::int`,
+  }).from(videosTable).where(and(
+    eq(videosTable.userId, userId),
+    eq(videosTable.streamStatus, "ready"),
+    sql`${videosTable.deletedAt} IS NULL`,
+  ));
+  const totalBytesUsed = Number(warehouse?.bytes ?? 0)
+    + Number(legacy.rows[0]?.bytes ?? 0);
 
   const plan = (req.user as { plan?: string }).plan ?? "free";
   const planStorageLimitBytes = STORAGE_LIMITS[plan] ?? STORAGE_LIMITS.free;
-  const totalBytesUsed = Number(usage?.totalBytesUsed ?? 0);
   const usagePercent =
     planStorageLimitBytes > 0
       ? Number(((totalBytesUsed / planStorageLimitBytes) * 100).toFixed(2))
@@ -48,7 +69,7 @@ router.get("/storage/usage", requireAuth, async (req, res): Promise<void> => {
   res.json(
     GetStorageUsageResponse.parse({
       totalBytesUsed,
-      videoCount: usage?.videoCount ?? 0,
+      videoCount: videoUsage?.videoCount ?? 0,
       planStorageLimitBytes,
       usagePercent,
       warning: usagePercent >= 80,

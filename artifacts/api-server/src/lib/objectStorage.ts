@@ -5,7 +5,7 @@ import {
   PutObjectCommand,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { randomUUID } from "crypto";
+import { createHash, randomUUID } from "crypto";
 import { getR2Client, getR2Bucket } from "./r2Client";
 import {
   type ObjectAclPolicy,
@@ -56,15 +56,31 @@ export class ObjectStorageService {
    * purge job only ever deletes originals/-scoped keys tied to a specific
    * soft-deleted row, never a blanket prefix delete.
    */
-  async getObjectEntityUploadURL(ownerUserId?: string): Promise<string> {
+  async setPrivateUploadOwner(key: string, ownerUserId: string): Promise<void> {
+    if (!/^private\/uploads\/[a-f0-9-]{36}$/i.test(key)) throw new Error("Invalid upload key");
+    await setObjectAclPolicy({ key }, { owner: ownerUserId, visibility: "private" });
+  }
+
+  async getObjectEntityFileForUpload(objectPath: string): Promise<R2ObjectRef> {
+    if (!/^\/objects\/private\/uploads\/[a-f0-9-]{36}$/i.test(objectPath)) {
+      throw new ObjectNotFoundError();
+    }
+    return { key: objectPath.slice("/objects/".length) };
+  }
+
+  async getObjectEntityUploadURL(ownerUserId?: string, metadata?: { originalFilename: string; contentType: string; writeOnce?: boolean }): Promise<string> {
     const key = `${PRIVATE_PREFIX}/uploads/${randomUUID()}`;
     // Write the owner ACL before issuing a client-accessible upload URL.
     // Fail closed if ACL persistence fails.
     if (ownerUserId) {
       await setObjectAclPolicy({ key }, { owner: ownerUserId, visibility: "private" });
     }
-    const command = new PutObjectCommand({ Bucket: getR2Bucket(), Key: key });
-    return getSignedUrl(getR2Client(), command, { expiresIn: 900 });
+    const command = new PutObjectCommand({
+      Bucket: getR2Bucket(), Key: key,
+      ...(metadata?.writeOnce ? { IfNoneMatch: "*" } : {}),
+      ...(metadata ? { ContentType: metadata.contentType, Metadata: { "original-filename": encodeURIComponent(metadata.originalFilename) } } : {}),
+    });
+    return getSignedUrl(getR2Client(), command, { expiresIn: 900, signableHeaders: new Set(["if-none-match"]) });
   }
 
   /**
@@ -132,9 +148,34 @@ export class ObjectStorageService {
    * landed before marking a video "ready". Throws ObjectNotFoundError if
    * the object is missing.
    */
+  /**
+   * Independently hash stored bytes. Never treat an S3 multipart ETag as SHA-256.
+   * The response body is streamed so large camera originals are not buffered.
+   */
+  async calculateObjectSha256(objectPath: string, expectedSizeBytes?: number): Promise<string> {
+    const { key } = await this.getObjectEntityFile(objectPath);
+    const response = await getR2Client().send(new GetObjectCommand({
+      Bucket: getR2Bucket(), Key: key,
+    }));
+    if (!response.Body) throw new ObjectNotFoundError();
+    const hash = createHash("sha256");
+    let bytesRead = 0;
+    for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
+      bytesRead += chunk.byteLength;
+      if (expectedSizeBytes !== undefined && bytesRead > expectedSizeBytes) {
+        throw new Error("Stored object size changed during checksum verification");
+      }
+      hash.update(chunk);
+    }
+    if (expectedSizeBytes !== undefined && bytesRead !== expectedSizeBytes) {
+      throw new Error("Stored object size changed during checksum verification");
+    }
+    return hash.digest("hex");
+  }
+
   async verifyObjectUpload(
     objectPath: string,
-  ): Promise<{ key: string; sizeBytes: number }> {
+  ): Promise<{ key: string; sizeBytes: number; contentType: string | null; originalFilename: string | null }> {
     const { key } = await this.getObjectEntityFile(objectPath);
     const head = await getR2Client().send(
       new HeadObjectCommand({ Bucket: getR2Bucket(), Key: key }),
@@ -142,7 +183,12 @@ export class ObjectStorageService {
     if (head.ContentLength == null) {
       throw new ObjectNotFoundError();
     }
-    return { key, sizeBytes: head.ContentLength };
+    return {
+      key,
+      sizeBytes: head.ContentLength,
+      contentType: head.ContentType ?? null,
+      originalFilename: head.Metadata?.["original-filename"] ? decodeURIComponent(head.Metadata["original-filename"]) : null,
+    };
   }
 
   /**
