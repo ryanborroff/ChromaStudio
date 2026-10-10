@@ -1,6 +1,6 @@
 # Stage B: large-original integrity verification design
 
-Status: **design only, not implemented**. This document defines the next Stage B implementation gate. Do not report large-file checksum verification as available until the worker, database migration, security tests and real R2 exercises pass.
+Status: **partially implemented; release gates remain open**. The queue, verification worker and browser incremental hashing now have implementations. This document retains the design and acceptance gates. Do not report large-file checksum verification as available until the worker, database migration, security tests and real R2 exercises pass.
 
 ## Problem
 
@@ -34,4 +34,8 @@ The current signed direct PUT may be replayable until expiry and R2 keys may be 
 
 The founders' instruction is to **finish Stage B before starting Stage C**. Do not merge the Stage B branch into main, execute production migrations, or deploy to Railway without explicit approval following release-gate evidence. This restriction is deliberate, not a technical limitation. A passing CI/Semgrep run is necessary but insufficient. Real R2 upload/download/recovery exercises, browser tests, owner-isolation checks, a rehearsed database backup/migration/rollback, and verification-worker operational testing remain mandatory.
 
-The worker and queue have initial implementations, but are **not production-ready**. The browser still does not compute large-file incremental SHA-256, the worker has not been deployed or scheduled, and object overwrite protection and quota controls are incomplete. No live integration test or database migration has been performed as part of these commits.
+The worker and queue have initial implementations, but are **not production-ready**. The browser now computes incremental SHA-256 in a worker and submits large-file verification jobs. The verification worker has not been deployed or scheduled. Direct Warehouse uploads now sign a write-once condition; live R2 enforcement remains untested. Quota controls and the broader release gates remain incomplete. See the 10 October checkpoint for database-copy rehearsal evidence.
+
+## Prototype authorization (10 October 2026)
+
+The user explicitly authorized deployment and additive migrations to the existing Railway prototype, superseding the historical deployment restriction above. Preserve existing accounts, projects and all other application data. No reset or destructive schema synchronization is authorized. R2 credentials were absent on inspection; the user deferred configuring them. No Stage B prototype deployment or live migration has occurred.

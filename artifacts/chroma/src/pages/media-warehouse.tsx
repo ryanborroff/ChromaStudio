@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "wouter";
 import { useListVideos } from "@workspace/api-client-react";
+import { fileChecksum } from "@/lib/fileChecksum";
 import { queryClient } from "@/lib/queryClient";
 import { Download, File, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,7 @@ export function MediaWarehouse() {
   const [verificationJobs, setVerificationJobs] = useState<Record<number, VerificationJob | null>>({});
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [uploadPhase, setUploadPhase] = useState("Uploading");
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploadController, setUploadController] = useState<AbortController | null>(null);
   const cancelRequestedRef = useRef(false);
@@ -57,6 +59,7 @@ export function MediaWarehouse() {
   async function uploadFile(file: File) {
     setUploading(true);
     cancelRequestedRef.current = false;
+    setUploadPhase("Hashing");
     setUploadProgress(0);
     setUploadError(null);
     const controller = new AbortController();
@@ -77,6 +80,9 @@ export function MediaWarehouse() {
       return response.json();
     };
     try {
+      const expectedSha256 = await fileChecksum(file, signal, (progress) => setUploadProgress(Math.round(progress * 100)));
+      setUploadPhase("Uploading");
+      setUploadProgress(0);
       let objectPath: string;
       if (file.size > 32 * 1024 * 1024) {
         const saved = localStorage.getItem(sessionKey);
@@ -168,25 +174,24 @@ export function MediaWarehouse() {
           });
         const response = await fetch(uploadURL, {
           method: "PUT", signal,
-          headers: { "Content-Type": contentType, "x-amz-meta-original-filename": encodeURIComponent(file.name) },
+          headers: { "If-None-Match": "*", "Content-Type": contentType, "x-amz-meta-original-filename": encodeURIComponent(file.name) },
           body: file,
         });
         if (!response.ok) throw new Error("File transfer failed");
         objectPath = path;
         setUploadProgress(100);
       }
-      // Small files can be verified end-to-end without excessive browser memory.
-      // Large files remain unverified until a streaming client hashing path exists.
-      let checksumSha256: string | undefined;
-      if (file.size <= 32 * 1024 * 1024 && globalThis.crypto?.subtle) {
-        const digest = await crypto.subtle.digest("SHA-256", await file.arrayBuffer());
-        checksumSha256 = Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-      }
+      const checksumSha256 = file.size <= 32 * 1024 * 1024 ? expectedSha256 : undefined;
       const { asset }: { asset: MediaAsset } = await jsonPost("/api/media-assets", {
         objectPath, originalFilename: file.name, contentType, checksumSha256,
       });
-      localStorage.removeItem(sessionKey);
       setAssets((previous) => [asset, ...previous.filter((item) => item.id !== asset.id)]);
+      if (!asset.checksumSha256) {
+        setUploadPhase("Queuing verification");
+        const { job }: { job: VerificationJob } = await jsonPost(`/api/media-assets/${asset.id}/verify`, { expectedSha256 });
+        setVerificationJobs((previous) => ({ ...previous, [asset.id]: job }));
+      }
+      localStorage.removeItem(sessionKey);
     } catch (error) {
       if (multipart && cancelRequestedRef.current) {
         localStorage.removeItem(sessionKey);
@@ -345,7 +350,7 @@ export function MediaWarehouse() {
           </p>
         </div>
         <label className="inline-flex cursor-pointer items-center rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
-          {uploading ? `Uploading ${uploadProgress}%` : "Upload any file"}
+          {uploading ? `${uploadPhase} ${uploadProgress}%` : "Upload any file"}
           <input type="file" className="sr-only" disabled={uploading} onChange={(event) => {
             const file = event.target.files?.[0];
             if (file) void uploadFile(file);

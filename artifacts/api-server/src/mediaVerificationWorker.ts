@@ -29,6 +29,8 @@ export async function runVerificationJob(): Promise<boolean> {
         AND (j.status = 'queued' OR
           (j.status = 'running' AND j.lease_expires_at < now()))
         AND j.attempts < 3
+        AND (j.status = 'running' OR j.attempts = 0 OR
+          j.updated_at < now() - (interval '1 minute' * power(2, j.attempts)))
       ORDER BY j.created_at ASC
       FOR UPDATE OF j SKIP LOCKED LIMIT 1
     )
@@ -46,6 +48,10 @@ export async function runVerificationJob(): Promise<boolean> {
 
   const key = job.storage_key;
   const expectedSize = Number(job.size_bytes);
+  // Abort both network requests and stalled streams within a bounded budget.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6 * 60 * 60 * 1000);
+  const requestOptions = { abortSignal: controller.signal };
   try {
     if (!Number.isSafeInteger(expectedSize) || expectedSize < 0) throw new Error("invalid_size");
     const acl = await getObjectAclPolicy({ key });
@@ -54,15 +60,16 @@ export async function runVerificationJob(): Promise<boolean> {
     }
     const client = getR2Client();
     const bucket = getR2Bucket();
-    const before = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
+    const before = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }), requestOptions);
     if (before.ContentLength !== expectedSize) throw new Error("size_changed");
-    const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key, IfMatch: before.ETag }));
+    const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: key, IfMatch: before.ETag }), requestOptions);
     if (!object.Body) throw new Error("missing_body");
     if (!before.ETag || object.ETag !== before.ETag) throw new Error("object_changed");
     const hash = createHash("sha256");
     let processed = 0;
     let lastHeartbeat = Date.now();
     for await (const chunk of object.Body as AsyncIterable<Uint8Array>) {
+      controller.signal.throwIfAborted();
       processed += chunk.byteLength;
       if (processed > expectedSize) throw new Error("size_changed");
       hash.update(chunk);
@@ -78,7 +85,7 @@ export async function runVerificationJob(): Promise<boolean> {
       }
     }
     if (processed !== expectedSize) throw new Error("size_changed");
-    const after = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
+    const after = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: key }), requestOptions);
     if (after.ETag !== before.ETag || after.ContentLength !== before.ContentLength || after.LastModified?.getTime() !== before.LastModified?.getTime()) {
       throw new Error("object_changed");
     }
@@ -125,9 +132,13 @@ export async function runVerificationJob(): Promise<boolean> {
       UPDATE media_verification_jobs SET
         status = CASE WHEN attempts >= 3 THEN 'failed' ELSE 'queued' END,
         lease_owner = NULL, lease_expires_at = NULL, last_error_code = $3,
+        completed_at = CASE WHEN attempts >= 3 THEN now() ELSE NULL END,
         updated_at = now()
       WHERE id = $1 AND lease_owner = $2 AND status = 'running'
     `, [job.id, workerId, safeCode]);
+  } finally {
+    clearTimeout(timeout);
+    controller.abort();
   }
   return true;
 }

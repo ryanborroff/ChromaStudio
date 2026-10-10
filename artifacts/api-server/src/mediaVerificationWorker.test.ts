@@ -63,3 +63,20 @@ it("expires exhausted leases even when there is no claimable job", async () => {
   expect(mocks.query.mock.calls[0][0]).toContain("attempts >= 3");
   expect(mocks.send).not.toHaveBeenCalled();
 });
+
+it("records a mismatch without granting a verified checksum", async () => {
+  mocks.query.mockReset().mockResolvedValue({ rows: [], rowCount: 1 })
+    .mockResolvedValueOnce({ rows: [], rowCount: 0 })
+    .mockResolvedValueOnce({ rows: [{ ...job, expected_sha256: "0".repeat(64) }], rowCount: 1 });
+  await runVerificationJob();
+  expect(transaction.query.mock.calls[1][1]?.[2]).toBe("mismatch");
+  expect(transaction.query.mock.calls).toHaveLength(3);
+});
+
+it("does not commit a truncated stream", async () => {
+  mocks.send.mockReset().mockResolvedValueOnce({ ContentLength: bytes.length, ETag: '"same"' })
+    .mockResolvedValueOnce({ ETag: '"same"', Body: (async function* () { yield bytes.subarray(1); })() });
+  await runVerificationJob();
+  expect(mocks.connect).not.toHaveBeenCalled();
+  expect(mocks.query.mock.calls.at(-1)?.[1]?.[2]).toBe("size_changed");
+});

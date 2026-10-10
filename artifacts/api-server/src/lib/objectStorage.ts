@@ -68,7 +68,7 @@ export class ObjectStorageService {
     return { key: objectPath.slice("/objects/".length) };
   }
 
-  async getObjectEntityUploadURL(ownerUserId?: string, metadata?: { originalFilename: string; contentType: string }): Promise<string> {
+  async getObjectEntityUploadURL(ownerUserId?: string, metadata?: { originalFilename: string; contentType: string; writeOnce?: boolean }): Promise<string> {
     const key = `${PRIVATE_PREFIX}/uploads/${randomUUID()}`;
     // Write the owner ACL before issuing a client-accessible upload URL.
     // Fail closed if ACL persistence fails.
@@ -77,9 +77,10 @@ export class ObjectStorageService {
     }
     const command = new PutObjectCommand({
       Bucket: getR2Bucket(), Key: key,
+      ...(metadata?.writeOnce ? { IfNoneMatch: "*" } : {}),
       ...(metadata ? { ContentType: metadata.contentType, Metadata: { "original-filename": encodeURIComponent(metadata.originalFilename) } } : {}),
     });
-    return getSignedUrl(getR2Client(), command, { expiresIn: 900 });
+    return getSignedUrl(getR2Client(), command, { expiresIn: 900, signableHeaders: new Set(["if-none-match"]) });
   }
 
   /**

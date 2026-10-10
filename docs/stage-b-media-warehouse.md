@@ -31,7 +31,7 @@ Create one private, owner-scoped catalogue of source media that can be reused by
 - Storage usage must count each original object once, not each linked video.
 - Preserve the existing review comments, versions, approvals, deliveries, sharing, embeds and streaming integrations.
 - Schema migrations must be additive, reversible where feasible, and tested against a copy of the schema.
-- Do not deploy to Railway as part of Stage B development.
+- Deployment to the existing Railway prototype was explicitly authorized on 10 October 2026. Preserve all existing application data and use additive migrations.
 
 ## Acceptance criteria
 
@@ -68,3 +68,7 @@ Open validation work:
 - Add integration tests for cross-account attachment and retry behaviour.
 - CI passed at commit 1adb134; Semgrep still failed on that commit. Check the
   latest commit's checks before review or merge.
+
+## 10 October 2026 checkpoint
+
+Stage B remains incomplete. Browser large-file hashing and queue submission now exist. See [checkpoint evidence](stage-b-checkpoint-2026-10-10.md) for local validation, database-copy rehearsal and outstanding live acceptance tests.

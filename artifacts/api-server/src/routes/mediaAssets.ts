@@ -37,6 +37,7 @@ router.post("/media-assets/upload-url", requireAuth, async (req, res) => {
   if (!parsed.success) { res.status(400).json({ error: "Invalid file metadata" }); return; }
   try {
     const uploadURL = await storage.getObjectEntityUploadURL(String(ownerId(req)), {
+      writeOnce: true,
       originalFilename: parsed.data.originalFilename,
       contentType: parsed.data.contentType,
     });
